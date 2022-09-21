@@ -9,7 +9,7 @@ public class FirstOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         waitForStart();
         while (opModeIsActive()) {
-            telemetry.addLine("This is a test");
+            telemetry.addLine("Test Github Desktop visualization");
             telemetry.update();
         }
     }
