@@ -12,16 +12,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public class DrivingSystem {
 
-    static final double WHEEL_RADIUS_CM = 4.8;
-    static final double TICKS_PER_ROTATION = 515;
-    static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * Math.PI;
+    private static final double WHEEL_RADIUS_CM = 4.8;
+    private static final double TICKS_PER_ROTATION = 515;
+    private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * Math.PI;
 
     /**
      * Creates an IMU object and calibrates it correctly to its actual face.
      * @param opMode the current opMode
      * @return an BNO055IMU object
      */
-    static BNO055IMU initalizeImu(LinearOpMode opMode){
+    private static BNO055IMU initalizeImu(LinearOpMode opMode){
         // Create IMU
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -125,7 +125,7 @@ public class DrivingSystem {
         driveMecanum(0, 0,0);
     }
 
-    private double getCurrentAngle() {
+    public double getCurrentAngle() {
         Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
         return orientation.firstAngle;
     }
@@ -247,6 +247,8 @@ public class DrivingSystem {
      * @param power How much power should be given to the motor, from 0 to 1.
      */
     public void driveSideways(double distance, double power) {
+        double ANGLE_DEVIATION_K = 0.05;
+
         // if we're traveling a negative distance, that means traveling left,
         // so the power should be inverted and so should the distance.
         if (distance < 0){
@@ -254,7 +256,6 @@ public class DrivingSystem {
             power = -power;
         }
 
-        double ANGLE_DEVIATION_K = 0.05;
 
         resetDistance();
         double startAngle = getCurrentAngle();
