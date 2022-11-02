@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -16,12 +19,50 @@ public class DrivingSystem {
     private static final double TICKS_PER_ROTATION = 515;
     private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * Math.PI;
 
+    private final LinearOpMode opMode;
+
+    private final BNO055IMU imu;
+    private final DcMotor frontRight;
+    private final DcMotor frontLeft;
+    private final DcMotor backRight;
+    private final DcMotor backLeft;
+    private double previousFrontRightTicks = 0;
+    private double previousFrontLeftTicks = 0;
+    private double previousBackRightTicks = 0;
+    private double previousBackLeftTicks = 0;
+    private double previousRotation = 0;
+    private double xPositionCM = 0;
+    private double yPositionCM = 0;
+    private double anglePositionDegrees = 0;
+
+    public DrivingSystem(LinearOpMode opMode) {
+        this.opMode = opMode;
+        imu = initializeImu(opMode);
+
+        // Creates objects to control the motors
+        frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
+        frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
+        backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
+        backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
+
+        // Makes the motors break when their power is set to zero, so they can better stop in place.
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // Some motors are wired in reverse, so we must reverse them back
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
     /**
      * Creates an IMU object and calibrates it correctly to its actual face.
+     *
      * @param opMode the current opMode
      * @return an BNO055IMU object
      */
-    private static BNO055IMU initalizeImu(LinearOpMode opMode){
+    private static BNO055IMU initializeImu(LinearOpMode opMode) {
         // Create IMU
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -49,62 +90,30 @@ public class DrivingSystem {
         imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
         opMode.sleep(100); //Changing modes again requires a delay
 
-        while (!imu.isGyroCalibrated()){
+        while (!imu.isGyroCalibrated()) {
             // wait for the gyroscope calibration
             opMode.sleep(10);
         }
         return imu;
     }
 
-
-    private final LinearOpMode opMode;
-
-    private final BNO055IMU imu;
-    private final DcMotor frontRight;
-    private final DcMotor frontLeft;
-    private final DcMotor backRight;
-    private final DcMotor backLeft;
-
-    public DrivingSystem(LinearOpMode opMode) {
-        this.opMode = opMode;
-        imu = initalizeImu(opMode);
-
-        // Creates objects to control the motors
-        frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
-        frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
-        backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
-        backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
-
-        // makes the motors break when their power is set to zero, so they can better stop in place.
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        // some motors are wired in reverse, so we must reverse them back
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-    }
-
     /**
      * Drives the robot on a mechanism drive.
-     * @param x vertical power, positive is right, negative is left
-     * @param y horizontal power, positive is forward, negative is backwards.
+     *
+     * @param x   vertical power, positive is right, negative is left
+     * @param y   horizontal power, positive is forward, negative is backwards.
      * @param rot rotational power, positive is clockwise, negative is counterclockwise. (todo: check this is correct)
      */
     public void driveMecanum(double x, double y, double rot) {
         double frontRightPower = y - x + rot;
-        double frontLeftPower  = y + x - rot;
-        double backRightPower  = y + x + rot;
-        double backLeftPower   = y - x - rot;
+        double frontLeftPower = y + x - rot;
+        double backRightPower = y + x + rot;
+        double backLeftPower = y - x - rot;
 
         // the function setPower only accepts numbers between -1 and 1.
         // If any number that we want to give it is greater than 1,
         // we must divide all the numbers equally so the maximum is 1.
-        double norm = Math.max(
-                Math.max(frontRightPower, frontLeftPower),
-                Math.max(backRightPower, backLeftPower)
-        );
+        double norm = Math.max(Math.max(frontRightPower, frontLeftPower), Math.max(backRightPower, backLeftPower));
         if (norm > 1) {
             frontRightPower /= norm;
             frontLeftPower /= norm;
@@ -116,15 +125,36 @@ public class DrivingSystem {
         frontLeft.setPower(frontLeftPower);
         backRight.setPower(backRightPower);
         backLeft.setPower(backLeftPower);
+        trackPosition();
     }
 
-    /**
+    /*
      * Makes the robot stop in place.
      */
-    public void stop(){
-        driveMecanum(0, 0,0);
+    public void stop() {
+        driveMecanum(0, 0, 0);
     }
 
+    /*
+     * Resets the distance measured on all encoders,
+     * should always called before initializing the robot.
+     */
+    private void resetDistance() {
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    /*
+     * Gets the robots current angle and returns it.
+     * @param Double representing the robot's current angle.
+     */
     public double getCurrentAngle() {
         Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
         return orientation.firstAngle;
@@ -132,9 +162,12 @@ public class DrivingSystem {
 
     /**
      * Given any angle, normalizes it such that it is between -180 and 180 degrees,
-     * increasing or decreasing by 360 to make it so.
+     * increasing or decreasing by 360 degrees to make it so.
+     *
+     * @param angle Random angle.
+     * @return The angle normalized (-180° < angle < 180°).
      */
-    public static double normalizeAngle(double angle){
+    public static double normalizeAngle(double angle) {
         while (angle >= 180.0) angle -= 360.0;
         while (angle < -180.0) angle += 360.0;
         return angle;
@@ -142,7 +175,9 @@ public class DrivingSystem {
 
     /**
      * Rotates the robot a given number of degrees.
-     * A positive angle means clockwise rotation, a negetive angle is counterclockwise. (todo: check this is correct)
+     * A positive angle means clockwise rotation, a negative angle is counterclockwise. TODO: fix this
+     *
+     * @param angle An angle to rotate the robot to.
      */
     public void rotate(double angle) {
         final double powerScalar = 0.007;
@@ -165,50 +200,42 @@ public class DrivingSystem {
             double rotatePower = -deviation * powerScalar - minPower * Math.signum(deviation);
             driveMecanum(0, 0, rotatePower);
         }
-        driveMecanum(0, 0, 0);  // stops the robot
+        stop();
     }
 
     /**
-     * Resets the distance measured on all encoders,
-     * should always called before initializing the robot.
-     */
-    private void resetDistance() {
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    /**
-     * returns how far forward, in centimeters,
-     * the robot has moved since the last time that resetDistance() was called.
+     * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
      * Assumes the robot hasn't moved in any other directions.
      */
     public double getForwardDistance() {
-        return (
-                frontLeft.getCurrentPosition() +
-                        frontRight.getCurrentPosition() +
-                        backLeft.getCurrentPosition() +
-                        backRight.getCurrentPosition()
-        ) / 4. * CM_PER_TICK;
+        return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
+                + backLeft.getCurrentPosition() + backRight.getCurrentPosition())
+                / 4. * CM_PER_TICK;
+    }
+
+    /**
+     * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
+     * Assumes the robot hasn't moved in any other directions.
+     * TODO: fix message
+     */
+    public double getPreviousForwardDistance() {
+        return (previousFrontLeftTicks + previousFrontRightTicks
+                + previousBackLeftTicks + previousBackRightTicks)
+                / 4. * CM_PER_TICK;
     }
 
     /**
      * Drives the robot straight a given distance.
-     * @param distance How far the robot should go, measured in centimeters. Positive is forwards, negative is backwards.
-     * @param power How much power should be given to the motor, from 0 to 1.
+     *
+     * @param distance How far the robot should go, measured in cm. Positive is forwards, negative is backwards.
+     * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveStraight(double distance, double power) {
         final double ANGLE_DEVIATION_SCALAR = 0.05;
 
         // if we're traveling a negative distance, that means traveling backwards,
         // so the power should be inverted and so should the distance.
-        if (distance < 0){
+        if (distance < 0) {
             distance = -distance;
             power = -power;
         }
@@ -223,39 +250,45 @@ public class DrivingSystem {
             double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
             driveMecanum(0, power, rotatePower);
         }
-        driveMecanum(0, 0, 0);
+        stop();
     }
 
     /**
-     * returns how far sideways, in centimeters,
-     * the robot has moved since the last time that resetDistance() was called.
+     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
      * Assumes the robot hasn't moved in any other directions.
      */
-
     public double getSidewaysDistance() {
-        return (
-                frontRight.getCurrentPosition() +
-                        - frontLeft.getCurrentPosition() +
-                        backRight.getCurrentPosition() +
-                        - backLeft.getCurrentPosition()
-        ) / 4. * CM_PER_TICK;
+        return (frontRight.getCurrentPosition() - frontLeft.getCurrentPosition()
+                + backLeft.getCurrentPosition() - backRight.getCurrentPosition())
+                / 4. * CM_PER_TICK;
     }
 
     /**
-     * Drives the robot straight a given distance.
-     * @param distance How far the robot should go, measured in centimeters. Positive is right, negative is left.
-     * @param power How much power should be given to the motor, from 0 to 1.
+     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
+     * Assumes the robot hasn't moved in any other directions.
+     * TODO: fix message
+     */
+    public double getPreviousSidewaysDistance() {
+        return (previousFrontRightTicks - previousFrontLeftTicks +
+                previousBackLeftTicks - previousBackRightTicks)
+                / 4. * CM_PER_TICK;
+    }
+
+    /**
+     * Drives the robot sideways a given distance.
+     *
+     * @param distance How far the robot should go, measured in cm. Positive is right, negative is left.
+     * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveSideways(double distance, double power) {
         double ANGLE_DEVIATION_K = 0.05;
 
         // if we're traveling a negative distance, that means traveling left,
         // so the power should be inverted and so should the distance.
-        if (distance < 0){
+        if (distance < 0) {
             distance = -distance;
             power = -power;
         }
-
 
         resetDistance();
         double startAngle = getCurrentAngle();
@@ -265,6 +298,24 @@ public class DrivingSystem {
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
             driveMecanum(power, 0, -angleDeviation * ANGLE_DEVIATION_K);
         }
-        driveMecanum(0, 0, 0);
+        stop();
+    }
+
+    public void trackPosition() {
+        final double currentAngle = (getCurrentAngle() + previousRotation) / 2;
+        final double deltaYCM = getForwardDistance() - getPreviousForwardDistance();
+        final double deltaXCM = getSidewaysDistance() - getPreviousSidewaysDistance();
+
+        previousFrontLeftTicks = frontLeft.getCurrentPosition();
+        previousFrontRightTicks = frontRight.getCurrentPosition();
+        previousBackLeftTicks = backLeft.getCurrentPosition();
+        previousBackRightTicks = backRight.getCurrentPosition();
+
+        xPositionCM += deltaYCM * Math.sin(currentAngle) + deltaXCM * Math.cos(currentAngle);
+        yPositionCM += deltaYCM * Math.cos(currentAngle) - deltaXCM * Math.sin(currentAngle);
+
+        telemetry.addData("X POS:", xPositionCM);
+        telemetry.addData("Y POS:", yPositionCM);
+        telemetry.update();
     }
 }
