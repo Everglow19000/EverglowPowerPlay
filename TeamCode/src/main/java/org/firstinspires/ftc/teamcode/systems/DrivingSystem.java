@@ -236,8 +236,8 @@ public class DrivingSystem {
         return (
                 frontRight.getCurrentPosition() +
                         - frontLeft.getCurrentPosition() +
-                        backRight.getCurrentPosition() +
-                        - backLeft.getCurrentPosition()
+                        - backRight.getCurrentPosition() +
+                        + backLeft.getCurrentPosition()
         ) / 4. * CM_PER_TICK;
     }
 
