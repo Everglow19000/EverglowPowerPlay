@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -30,10 +27,9 @@ public class DrivingSystem {
     private double previousFrontLeftTicks = 0;
     private double previousBackRightTicks = 0;
     private double previousBackLeftTicks = 0;
-    private double previousRotation = 0;
+    private double previousAngle = 0;
     private double xPositionCM = 0;
     private double yPositionCM = 0;
-    private double anglePositionDegrees = 0;
 
     public DrivingSystem(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -54,6 +50,9 @@ public class DrivingSystem {
         // Some motors are wired in reverse, so we must reverse them back
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // Reset Distance
+        resetDistance();
     }
 
     /**
@@ -65,7 +64,7 @@ public class DrivingSystem {
     private static BNO055IMU initializeImu(LinearOpMode opMode) {
         // Create IMU
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json";
         parameters.loggingEnabled = false;
@@ -156,13 +155,13 @@ public class DrivingSystem {
      * @param Double representing the robot's current angle.
      */
     public double getCurrentAngle() {
-        Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
+        Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
         return orientation.firstAngle;
     }
 
     /**
-     * Given any angle, normalizes it such that it is between -180 and 180 degrees,
-     * increasing or decreasing by 360 degrees to make it so.
+     * Given any angle, normalizes it such that it is between -180 and 180 RADIANS,
+     * increasing or decreasing by 360 RADIANS to make it so.
      *
      * @param angle Random angle.
      * @return The angle normalized (-180° < angle < 180°).
@@ -174,7 +173,7 @@ public class DrivingSystem {
     }
 
     /**
-     * Rotates the robot a given number of degrees.
+     * Rotates the robot a given number of RADIANS.
      * A positive angle means clockwise rotation, a negative angle is counterclockwise. TODO: fix this
      *
      * @param angle An angle to rotate the robot to.
@@ -186,14 +185,14 @@ public class DrivingSystem {
 
         double currentAngle = getCurrentAngle();
 
-        // Angles must always be between -180 and 180 degrees.
-        // The function used below adds or subtracts 360 degrees from the angle
+        // Angles must always be between -180 and 180 RADIANS.
+        // The function used below adds or subtracts 360 RADIANS from the angle
         // so that it's always in the good range.
         double targetAngle = normalizeAngle(currentAngle + angle);
 
         double deviation = normalizeAngle(currentAngle - targetAngle);
 
-        while (Math.abs(deviation) > epsilon) { // once the angular error is less than 0.5 degrees, we have arrived
+        while (Math.abs(deviation) > epsilon) { // once the angular error is less than 0.5 RADIANS, we have arrived
             currentAngle = getCurrentAngle();
             deviation = normalizeAngle(currentAngle - targetAngle);
             // the power is proportional to the deviation, but may not go below minPower.
@@ -246,7 +245,7 @@ public class DrivingSystem {
 
         while (Math.abs(forwardDistance) < distance) {
             forwardDistance = getForwardDistance();
-            double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - getCurrentAngle());
+            double angleDeviation = AngleUnit.RADIANS.normalize(startAngle - getCurrentAngle());
             double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
             driveMecanum(0, power, rotatePower);
         }
@@ -301,8 +300,9 @@ public class DrivingSystem {
         stop();
     }
 
-    public void trackPosition() {
-        final double currentAngle = (getCurrentAngle() + previousRotation) / 2;
+        public void trackPosition() {
+        final double currentAngle = getCurrentAngle();
+        final double angleAverage = (currentAngle + previousAngle) / 2;
         final double deltaYCM = getForwardDistance() - getPreviousForwardDistance();
         final double deltaXCM = getSidewaysDistance() - getPreviousSidewaysDistance();
 
@@ -310,12 +310,34 @@ public class DrivingSystem {
         previousFrontRightTicks = frontRight.getCurrentPosition();
         previousBackLeftTicks = backLeft.getCurrentPosition();
         previousBackRightTicks = backRight.getCurrentPosition();
+        previousAngle = currentAngle;
 
-        xPositionCM += deltaYCM * Math.sin(currentAngle) + deltaXCM * Math.cos(currentAngle);
-        yPositionCM += deltaYCM * Math.cos(currentAngle) - deltaXCM * Math.sin(currentAngle);
+        yPositionCM += deltaYCM * Math.cos(angleAverage) - deltaXCM * Math.sin(angleAverage);
+        xPositionCM += deltaYCM * Math.sin(angleAverage) + deltaXCM * Math.cos(angleAverage);
 
-        telemetry.addData("X POS:", xPositionCM);
-        telemetry.addData("Y POS:", yPositionCM);
-        telemetry.update();
+        opMode.telemetry.addData("X POS:", xPositionCM);
+        opMode.telemetry.addData("Y POS:", yPositionCM);
+        opMode.telemetry.addData("ANGLE:", Math.toDegrees(currentAngle));
+        opMode.telemetry.update();
     }
+//    public void trackPosition() {
+//        //final double currentAngle = getCurrentAngle();
+//        //final double angleAverage = (currentAngle + previousAngle) / 2;
+//        final double deltaYCM = getForwardDistance() - getPreviousForwardDistance();
+//        final double deltaXCM = getSidewaysDistance() - getPreviousSidewaysDistance();
+//
+//        previousFrontLeftTicks = frontLeft.getCurrentPosition();
+//        previousFrontRightTicks = frontRight.getCurrentPosition();
+//        previousBackLeftTicks = backLeft.getCurrentPosition();
+//        previousBackRightTicks = backRight.getCurrentPosition();
+//        //previousAngle = currentAngle;
+//
+//        xPositionCM += deltaXCM;
+//        yPositionCM += deltaYCM;
+//
+//        opMode.telemetry.addData("X POS:", xPositionCM);
+//        opMode.telemetry.addData("Y POS:", yPositionCM);
+//        opMode.telemetry.addData("ANGLE:", getCurrentAngle());
+//        opMode.telemetry.update();
+//    }
 }

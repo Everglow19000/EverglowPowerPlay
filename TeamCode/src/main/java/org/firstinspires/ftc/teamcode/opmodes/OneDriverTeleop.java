@@ -11,8 +11,8 @@ public class OneDriverTeleop extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
-        while (opModeIsActive()){
-            drivingSystem.driveMecanum(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
+        while (opModeIsActive()) {
+            drivingSystem.driveMecanum(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
         }
     }
 }
