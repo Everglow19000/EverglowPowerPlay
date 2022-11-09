@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import android.util.Pair;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 
 public class DrivingSystem {
 
@@ -23,13 +26,12 @@ public class DrivingSystem {
     private final DcMotor frontLeft;
     private final DcMotor backRight;
     private final DcMotor backLeft;
-    private double previousFrontRightTicks = 0;
-    private double previousFrontLeftTicks = 0;
-    private double previousBackRightTicks = 0;
-    private double previousBackLeftTicks = 0;
+
+    private PointD PreviousDistances = new PointD(0., 0.);
+
     private double previousAngle = 0;
-    private double xPositionCM = 0;
-    private double yPositionCM = 0;
+    private PointD PositionCM = new PointD(0., 0.);
+
 
     public DrivingSystem(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -207,21 +209,51 @@ public class DrivingSystem {
      * Assumes the robot hasn't moved in any other directions.
      */
     public double getForwardDistance() {
-        return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
+          return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
                 + backLeft.getCurrentPosition() + backRight.getCurrentPosition())
                 / 4. * CM_PER_TICK;
     }
 
     /**
-     * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
-     * Assumes the robot hasn't moved in any other directions.
-     * TODO: fix message
+     * @return Point: Sum of movement Sideways, Sum of movement Forward
+     * updates PreviousDistances
      */
-    public double getPreviousForwardDistance() {
-        return (previousFrontLeftTicks + previousFrontRightTicks
-                + previousBackLeftTicks + previousBackRightTicks)
+    public PointD updateDistances() {
+        final double fLPosition = frontLeft.getCurrentPosition();
+        final double fRPosition = frontRight.getCurrentPosition();
+        final double bLPosition = backLeft.getCurrentPosition();
+        final double bRPosition = backRight.getCurrentPosition();
+
+        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition)
                 / 4. * CM_PER_TICK;
+        PreviousDistances.x = returnXValue;
+        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition)
+                / 4. * CM_PER_TICK;
+        PreviousDistances.y = returnYValue;
+
+        return new PointD(returnXValue, returnYValue);
     }
+
+    /**
+     * @return Point: Sum of movement Sideways, Sum of movement Forward
+     */
+
+    public PointD getDistances() {
+        final double fLPosition = frontLeft.getCurrentPosition();
+        final double fRPosition = frontRight.getCurrentPosition();
+        final double bLPosition = backLeft.getCurrentPosition();
+        final double bRPosition = backRight.getCurrentPosition();
+
+        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition)
+                / 4. * CM_PER_TICK;
+        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition)
+                / 4. * CM_PER_TICK;
+
+        return new PointD(returnXValue, returnYValue);
+    }
+
+
+
 
     /**
      * Drives the robot straight a given distance.
@@ -262,16 +294,6 @@ public class DrivingSystem {
                 / 4. * CM_PER_TICK;
     }
 
-    /**
-     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
-     * Assumes the robot hasn't moved in any other directions.
-     * TODO: fix message
-     */
-    public double getPreviousSidewaysDistance() {
-        return (previousFrontRightTicks - previousFrontLeftTicks +
-                previousBackLeftTicks - previousBackRightTicks)
-                / 4. * CM_PER_TICK;
-    }
 
     /**
      * Drives the robot sideways a given distance.
@@ -300,44 +322,29 @@ public class DrivingSystem {
         stop();
     }
 
-        public void trackPosition() {
+
+    /**
+     * Keeps track of robot position on the field
+     */
+    public void trackPosition() {
+        double deltaXCM = -PreviousDistances.x;
+        double deltaYCM = -PreviousDistances.y;
+        final PointD correntDistances = updateDistances();
+
+        deltaXCM += correntDistances.x;
+        deltaYCM += correntDistances.y;
+
         final double currentAngle = getCurrentAngle();
         final double angleAverage = (currentAngle + previousAngle) / 2;
-        final double deltaYCM = getForwardDistance() - getPreviousForwardDistance();
-        final double deltaXCM = getSidewaysDistance() - getPreviousSidewaysDistance();
-
-        previousFrontLeftTicks = frontLeft.getCurrentPosition();
-        previousFrontRightTicks = frontRight.getCurrentPosition();
-        previousBackLeftTicks = backLeft.getCurrentPosition();
-        previousBackRightTicks = backRight.getCurrentPosition();
         previousAngle = currentAngle;
 
-        yPositionCM += deltaYCM * Math.cos(angleAverage) - deltaXCM * Math.sin(angleAverage);
-        xPositionCM += deltaYCM * Math.sin(angleAverage) + deltaXCM * Math.cos(angleAverage);
+        PositionCM.x += deltaYCM * Math.sin(angleAverage) + deltaXCM * Math.cos(angleAverage);
+        PositionCM.y += deltaYCM * Math.cos(angleAverage) - deltaXCM * Math.sin(angleAverage);
 
-        opMode.telemetry.addData("X POS:", xPositionCM);
-        opMode.telemetry.addData("Y POS:", yPositionCM);
+
+        opMode.telemetry.addData("X POS:", PositionCM.x);
+        opMode.telemetry.addData("Y POS:", PositionCM.y);
         opMode.telemetry.addData("ANGLE:", Math.toDegrees(currentAngle));
         opMode.telemetry.update();
     }
-//    public void trackPosition() {
-//        //final double currentAngle = getCurrentAngle();
-//        //final double angleAverage = (currentAngle + previousAngle) / 2;
-//        final double deltaYCM = getForwardDistance() - getPreviousForwardDistance();
-//        final double deltaXCM = getSidewaysDistance() - getPreviousSidewaysDistance();
-//
-//        previousFrontLeftTicks = frontLeft.getCurrentPosition();
-//        previousFrontRightTicks = frontRight.getCurrentPosition();
-//        previousBackLeftTicks = backLeft.getCurrentPosition();
-//        previousBackRightTicks = backRight.getCurrentPosition();
-//        //previousAngle = currentAngle;
-//
-//        xPositionCM += deltaXCM;
-//        yPositionCM += deltaYCM;
-//
-//        opMode.telemetry.addData("X POS:", xPositionCM);
-//        opMode.telemetry.addData("Y POS:", yPositionCM);
-//        opMode.telemetry.addData("ANGLE:", getCurrentAngle());
-//        opMode.telemetry.update();
-//    }
 }
