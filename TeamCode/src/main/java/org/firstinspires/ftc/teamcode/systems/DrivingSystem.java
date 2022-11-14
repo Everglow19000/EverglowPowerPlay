@@ -176,8 +176,8 @@ public class DrivingSystem {
         final double bLPosition = backLeft.getCurrentPosition();
         final double bRPosition = backRight.getCurrentPosition();
 
-        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition)  / 4. * CM_PER_TICK;
-        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition)  / 4. * CM_PER_TICK;
+        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition) / 4. * CM_PER_TICK;
+        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition) / 4. * CM_PER_TICK;
 
         return new PointD(returnXValue, returnYValue);
     }
@@ -223,6 +223,30 @@ public class DrivingSystem {
     }
 
 
+    public void driveByAxis(double powerX, double powerY, double powerRot) {
+        final double currentAngle = getCurrentAngle();
+        final double cosAngle = cos(currentAngle);
+        final double sinAngle = sin(currentAngle);
+        final double powerRatio = powerY / powerX;
+
+        //double movementRatio /*ratio of S to F*/ = (cosAngle - sinAngle * powerRatio) / (cosAngle * powerRatio + sinAngle);
+        //double movementRatio = (cosAngle - (powerY / powerX) * sinAngle) / (sinAngle + cosAngle); // x/y
+        //double forwardPower = powerY / (cosAngle - sinAngle / movementRatio);
+        //double sidewaysPower = forwardPower * movementRatio;
+
+        double forwardPower = cosAngle * powerY + sinAngle * powerX;
+        double sidewaysPower = cosAngle * powerX - sinAngle * powerY;
+
+        opMode.telemetry.addData("forwardPower:", forwardPower);
+        opMode.telemetry.addData("sidewaysPower:", sidewaysPower);
+        opMode.telemetry.update();
+
+        driveMecanum(sidewaysPower, forwardPower, powerRot);
+
+        stop();
+    }
+
+
     /**
      * Keeps track of robot position on the field
      */
@@ -242,10 +266,10 @@ public class DrivingSystem {
         PositionCM.y += deltaYCM * cos(angleAverage) - deltaXCM * sin(angleAverage);
 
 
-        opMode.telemetry.addData("X POS:", PositionCM.x);
-        opMode.telemetry.addData("Y POS:", PositionCM.y);
-        opMode.telemetry.addData("ANGLE:", currentAngle * RADIANS_TO_DEGREES);
-        opMode.telemetry.update();
+        //opMode.telemetry.addData("X POS:", PositionCM.x);
+        //opMode.telemetry.addData("Y POS:", PositionCM.y);
+        //opMode.telemetry.addData("ANGLE:", currentAngle * RADIANS_TO_DEGREES);
+        //opMode.telemetry.update();
     }
 
 
@@ -286,7 +310,6 @@ public class DrivingSystem {
             driveMecanum(0, power, angleDeviation * ANGLE_DEVIATION_SCALAR);
         }
 
-
         stop();
     }
 
@@ -326,6 +349,7 @@ public class DrivingSystem {
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
             driveMecanum(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR);
         }
+
         stop();
     }
 
@@ -389,6 +413,4 @@ public class DrivingSystem {
 
         stop();
     }
-
-
 }
