@@ -1,5 +1,11 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Double.max;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 import android.util.Pair;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -14,10 +20,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 
 public class DrivingSystem {
-
+    public static final  double DEGREES_TO_RADIANS = PI / 180.0;
+    public static final  double RADIANS_TO_DEGREES_ = 180.0 / PI;
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
-    private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * Math.PI;
+    private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
 
     private final LinearOpMode opMode;
 
@@ -98,43 +105,6 @@ public class DrivingSystem {
         return imu;
     }
 
-    /**
-     * Drives the robot on a mechanism drive.
-     *
-     * @param x   vertical power, positive is right, negative is left
-     * @param y   horizontal power, positive is forward, negative is backwards.
-     * @param rot rotational power, positive is clockwise, negative is counterclockwise. (todo: check this is correct)
-     */
-    public void driveMecanum(double x, double y, double rot) {
-        double frontRightPower = y - x + rot;
-        double frontLeftPower = y + x - rot;
-        double backRightPower = y + x + rot;
-        double backLeftPower = y - x - rot;
-
-        // the function setPower only accepts numbers between -1 and 1.
-        // If any number that we want to give it is greater than 1,
-        // we must divide all the numbers equally so the maximum is 1.
-        double norm = Math.max(Math.max(frontRightPower, frontLeftPower), Math.max(backRightPower, backLeftPower));
-        if (norm > 1) {
-            frontRightPower /= norm;
-            frontLeftPower /= norm;
-            backRightPower /= norm;
-            backLeftPower /= norm;
-        }
-
-        frontRight.setPower(frontRightPower);
-        frontLeft.setPower(frontLeftPower);
-        backRight.setPower(backRightPower);
-        backLeft.setPower(backLeftPower);
-        trackPosition();
-    }
-
-    /*
-     * Makes the robot stop in place.
-     */
-    public void stop() {
-        driveMecanum(0, 0, 0);
-    }
 
     /*
      * Resets the distance measured on all encoders,
@@ -152,14 +122,6 @@ public class DrivingSystem {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    /*
-     * Gets the robots current angle and returns it.
-     * @param Double representing the robot's current angle.
-     */
-    public double getCurrentAngle() {
-        Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
-        return orientation.firstAngle;
-    }
 
     /**
      * Given any angle, normalizes it such that it is between -180 and 180 RADIANS,
@@ -169,50 +131,45 @@ public class DrivingSystem {
      * @return The angle normalized (-180° < angle < 180°).
      */
     public static double normalizeAngle(double angle) {
-        while (angle >= 180.0) angle -= 360.0;
-        while (angle < -180.0) angle += 360.0;
+        while (angle >= PI) angle -= 2.0*PI;
+        while (angle < -PI) angle += 2.0*PI;
         return angle;
     }
 
+
+
     /**
-     * Rotates the robot a given number of RADIANS.
-     * A positive angle means clockwise rotation, a negative angle is counterclockwise. TODO: fix this
-     *
-     * @param angle An angle to rotate the robot to.
+     * Gets the robots current angle and returns it. Angle is mesured relative to the robot's starting angle, with positive angles being counterclockwise.
+     * @return double representing the robot's current angle.
      */
-    public void rotate(double angle) {
-        final double powerScalar = 0.007;
-        final double minPower = 0.2;
-        final double epsilon = 0.5;
-
-        double currentAngle = getCurrentAngle();
-
-        // Angles must always be between -180 and 180 RADIANS.
-        // The function used below adds or subtracts 360 RADIANS from the angle
-        // so that it's always in the good range.
-        double targetAngle = normalizeAngle(currentAngle + angle);
-
-        double deviation = normalizeAngle(currentAngle - targetAngle);
-
-        while (Math.abs(deviation) > epsilon) { // once the angular error is less than 0.5 RADIANS, we have arrived
-            currentAngle = getCurrentAngle();
-            deviation = normalizeAngle(currentAngle - targetAngle);
-            // the power is proportional to the deviation, but may not go below minPower.
-            double rotatePower = -deviation * powerScalar - minPower * Math.signum(deviation);
-            driveMecanum(0, 0, rotatePower);
-        }
-        stop();
+    public double getCurrentAngle() {
+        Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
+        return orientation.firstAngle;
     }
+
 
     /**
      * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
      * Assumes the robot hasn't moved in any other directions.
      */
     public double getForwardDistance() {
-          return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
+
+        return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
                 + backLeft.getCurrentPosition() + backRight.getCurrentPosition())
                 / 4. * CM_PER_TICK;
     }
+
+
+    /**
+     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
+     * Assumes the robot hasn't moved in any other directions.
+     */
+    public double getSidewaysDistance() {
+        return (frontRight.getCurrentPosition() - frontLeft.getCurrentPosition()
+                + backLeft.getCurrentPosition() - backRight.getCurrentPosition())
+                / 4. * CM_PER_TICK;
+    }
+
 
     /**
      * @return Point: Sum of movement Sideways, Sum of movement Forward
@@ -254,6 +211,70 @@ public class DrivingSystem {
 
 
 
+    /**
+     * Drives the robot on a mechanism drive.
+     *
+     * @param x   vertical power, positive is left, negative is right
+     * @param y   horizontal power, positive is forward, negative is backwards.
+     * @param rot rotational power, positive is counter clockwise, negative is clockwise.
+     */
+    public void driveMecanum(double x, double y, double rot) {
+        double frontRightPower = y + x + rot;
+        double frontLeftPower = y - x - rot;
+        double backRightPower = y - x + rot;
+        double backLeftPower = y + x - rot;
+
+        // the function setPower only accepts numbers between -1 and 1.
+        // If any number that we want to give it is greater than 1,
+        // we must divide all the numbers equally so the maximum is 1.
+        double norm = Math.max(Math.max(frontRightPower, frontLeftPower), Math.max(backRightPower, backLeftPower));
+        if (norm > 1) {
+            frontRightPower /= norm;
+            frontLeftPower /= norm;
+            backRightPower /= norm;
+            backLeftPower /= norm;
+        }
+
+        frontRight.setPower(frontRightPower);
+        frontLeft.setPower(frontLeftPower);
+        backRight.setPower(backRightPower);
+        backLeft.setPower(backLeftPower);
+        trackPosition();
+    }
+
+    /*
+     * Makes the robot stop in place.
+     */
+    public void stop() {
+        driveMecanum(0, 0, 0);
+    }
+
+
+    /**
+     * Keeps track of robot position on the field
+     */
+    public void trackPosition() {
+        double deltaXCM = -PreviousDistances.x;
+        double deltaYCM = -PreviousDistances.y;
+        final PointD correntDistances = updateDistances();
+
+        deltaXCM += correntDistances.x;
+        deltaYCM += correntDistances.y;
+
+        final double currentAngle = getCurrentAngle();
+        final double angleAverage = (currentAngle + previousAngle) / 2;
+        previousAngle = currentAngle;
+
+        PositionCM.x += deltaYCM * sin(angleAverage) + deltaXCM * cos(angleAverage);
+        PositionCM.y += deltaYCM * cos(angleAverage) - deltaXCM * sin(angleAverage);
+
+
+        opMode.telemetry.addData("X POS:", PositionCM.x);
+        opMode.telemetry.addData("Y POS:", PositionCM.y);
+        opMode.telemetry.addData("ANGLE:", currentAngle*RADIANS_TO_DEGREES_);
+        opMode.telemetry.update();
+    }
+
 
     /**
      * Drives the robot straight a given distance.
@@ -275,24 +296,16 @@ public class DrivingSystem {
         double startAngle = getCurrentAngle();
         double forwardDistance = getForwardDistance();
 
-        while (Math.abs(forwardDistance) < distance) {
+        while (abs(forwardDistance) < distance) {
             forwardDistance = getForwardDistance();
-            double angleDeviation = AngleUnit.RADIANS.normalize(startAngle - getCurrentAngle());
-            double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
-            driveMecanum(0, power, rotatePower);
+            double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
+            driveMecanum(0, power, angleDeviation * ANGLE_DEVIATION_SCALAR);
         }
+
+
         stop();
     }
 
-    /**
-     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
-     * Assumes the robot hasn't moved in any other directions.
-     */
-    public double getSidewaysDistance() {
-        return (frontRight.getCurrentPosition() - frontLeft.getCurrentPosition()
-                + backLeft.getCurrentPosition() - backRight.getCurrentPosition())
-                / 4. * CM_PER_TICK;
-    }
 
 
     /**
@@ -302,7 +315,7 @@ public class DrivingSystem {
      * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveSideways(double distance, double power) {
-        double ANGLE_DEVIATION_K = 0.05;
+        double ANGLE_DEVIATION_SCALAR = 0.05;
 
         // if we're traveling a negative distance, that means traveling left,
         // so the power should be inverted and so should the distance.
@@ -314,37 +327,72 @@ public class DrivingSystem {
         resetDistance();
         double startAngle = getCurrentAngle();
         double sidewaysDistance = getSidewaysDistance();
-        while (Math.abs(sidewaysDistance) < distance) {
+        while (abs(sidewaysDistance) < distance) {
             sidewaysDistance = getSidewaysDistance();
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            driveMecanum(power, 0, -angleDeviation * ANGLE_DEVIATION_K);
+            driveMecanum(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR);
         }
         stop();
     }
 
 
     /**
-     * Keeps track of robot position on the field
+     * Rotates the robot a given number of RADIANS.
+     * A positive angle means clockwise rotation, a negative angle is counterclockwise. TODO: fix this
+     *
+     * @param angle An angle to rotate the robot to.
      */
-    public void trackPosition() {
-        double deltaXCM = -PreviousDistances.x;
-        double deltaYCM = -PreviousDistances.y;
-        final PointD correntDistances = updateDistances();
+    public void rotate(double angle) {
+        final double powerScalar = 0.007;
+        final double minPower = 0.2;
+        final double epsilon = 0.5;
 
-        deltaXCM += correntDistances.x;
-        deltaYCM += correntDistances.y;
+        double currentAngle = getCurrentAngle();
 
-        final double currentAngle = getCurrentAngle();
-        final double angleAverage = (currentAngle + previousAngle) / 2;
-        previousAngle = currentAngle;
+        // Angles must always be between -180 and 180 RADIANS.
+        // The function used below adds or subtracts 360 RADIANS from the angle
+        // so that it's always in the good range.
+        double targetAngle = normalizeAngle(currentAngle + angle);
 
-        PositionCM.x += deltaYCM * Math.sin(angleAverage) + deltaXCM * Math.cos(angleAverage);
-        PositionCM.y += deltaYCM * Math.cos(angleAverage) - deltaXCM * Math.sin(angleAverage);
+        double deviation = normalizeAngle(targetAngle - currentAngle);
 
-
-        opMode.telemetry.addData("X POS:", PositionCM.x);
-        opMode.telemetry.addData("Y POS:", PositionCM.y);
-        opMode.telemetry.addData("ANGLE:", Math.toDegrees(currentAngle));
-        opMode.telemetry.update();
+        while (abs(deviation) > epsilon) { // once the angular error is less than 0.5 RADIANS, we have arrived
+            currentAngle = getCurrentAngle();
+            deviation = normalizeAngle(targetAngle - currentAngle);
+            // the power is proportional to the deviation, but may not go below minPower.
+            double rotatePower = deviation * deviation * powerScalar + minPower * Math.signum(deviation);
+            driveMecanum(0, 0, rotatePower);
+        }
+        stop();
     }
+
+    /**
+     * Drives the Robot in straight line to given position on the board(x, y, angle)
+     * @param targetPointCm is the point to move to
+     * @param targetAngle is the angle to finish in
+     */
+    public void moveTo(PointD targetPointCm, double targetAngle) {
+        final double powerScalar = 0.007;
+        final double angleScalar = 0.01;
+        final double minPower = 0.2;
+        final double minAnglePower = 0.15;
+        final double epsilon = 0.5;
+        final double angleEpsilon = 2.0;
+
+        while(abs(targetPointCm.x - PositionCM.x) > epsilon || abs(targetPointCm.y - PositionCM.y) > epsilon | abs(getCurrentAngle() - targetAngle) > angleEpsilon) {
+            final PointD correntPosition = getDistances();
+            final double correntAngle = getCurrentAngle();
+            final double xDeviation = targetPointCm.x - correntPosition.x;
+            final double yDeviation = targetPointCm.y - correntPosition.y;
+            final double angleDeviation = normalizeAngle(targetAngle - correntAngle);
+
+            driveMecanum(max(minPower, (xDeviation*cos(correntAngle) + yDeviation*sin(correntAngle)) * (xDeviation*cos(correntAngle) + yDeviation*sin(correntAngle)) * powerScalar),
+                    max(minPower, (-xDeviation*sin(correntAngle) + yDeviation*cos(correntAngle)) * (-xDeviation*sin(correntAngle) + yDeviation*cos(correntAngle)) * powerScalar),
+                    max(minAnglePower, angleDeviation * angleDeviation * angleScalar));
+        }
+
+        stop();
+    }
+
+
 }
