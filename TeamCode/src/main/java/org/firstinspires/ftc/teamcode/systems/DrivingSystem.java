@@ -12,15 +12,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 
 import static java.lang.Double.max;
-import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import android.util.Pair;
+import static java.lang.Math.PI;
 
 public class DrivingSystem {
-    public static final  double DEGREES_TO_RADIANS = PI / 180.0;
-    public static final  double RADIANS_TO_DEGREES_ = 180.0 / PI;
+    public static final double RADIANS_TO_DEGREES = 180.0 / PI;
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
     private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
@@ -129,15 +127,15 @@ public class DrivingSystem {
      * @return The angle normalized (-180° < angle < 180°).
      */
     public static double normalizeAngle(double angle) {
-        while (angle >= PI) angle -= 2.0*PI;
-        while (angle < -PI) angle += 2.0*PI;
+        while (angle >= PI) angle -= 2.0 * PI;
+        while (angle < -PI) angle += 2.0 * PI;
         return angle;
     }
 
 
-
     /**
-     * Gets the robots current angle and returns it. Angle is mesured relative to the robot's starting angle, with positive angles being counterclockwise.
+     * Gets the robots current angle and returns it. Angle is measured relative to the robot's starting angle, with positive angles being counterclockwise.
+     *
      * @return double representing the robot's current angle.
      */
     public double getCurrentAngle() {
@@ -147,30 +145,8 @@ public class DrivingSystem {
 
 
     /**
-     * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
-     * Assumes the robot hasn't moved in any other directions.
-     */
-    public double getForwardDistance() {
-
-        return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
-                + backLeft.getCurrentPosition() + backRight.getCurrentPosition())
-                / 4. * CM_PER_TICK;
-    }
-
-
-    /**
-     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
-     * Assumes the robot hasn't moved in any other directions.
-     */
-    public double getSidewaysDistance() {
-        return (frontRight.getCurrentPosition() - frontLeft.getCurrentPosition()
-                + backLeft.getCurrentPosition() - backRight.getCurrentPosition())
-                / 4. * CM_PER_TICK;
-    }
-
-
-    /**
      * Updates the position of the robot from the wheel positions.
+     *
      * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
     public PointD updateDistances() {
@@ -179,11 +155,10 @@ public class DrivingSystem {
         final double bLPosition = backLeft.getCurrentPosition();
         final double bRPosition = backRight.getCurrentPosition();
 
-        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition)
-                / 4. * CM_PER_TICK;
+        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition) / 4. * CM_PER_TICK;
+        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition) / 4. * CM_PER_TICK;
+
         PreviousDistances.x = returnXValue;
-        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition)
-                / 4. * CM_PER_TICK;
         PreviousDistances.y = returnYValue;
 
         return new PointD(returnXValue, returnYValue);
@@ -192,6 +167,7 @@ public class DrivingSystem {
 
     /**
      * Gets the position of the robot from the wheel positions.
+     *
      * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
     public PointD getDistances() {
@@ -200,14 +176,11 @@ public class DrivingSystem {
         final double bLPosition = backLeft.getCurrentPosition();
         final double bRPosition = backRight.getCurrentPosition();
 
-        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition)
-                / 4. * CM_PER_TICK;
-        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition)
-                / 4. * CM_PER_TICK;
+        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition)  / 4. * CM_PER_TICK;
+        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition)  / 4. * CM_PER_TICK;
 
         return new PointD(returnXValue, returnYValue);
     }
-
 
 
     /**
@@ -241,7 +214,8 @@ public class DrivingSystem {
         trackPosition();
     }
 
-    /*
+
+    /**
      * Makes the robot stop in place.
      */
     public void stop() {
@@ -255,10 +229,10 @@ public class DrivingSystem {
     public void trackPosition() {
         double deltaXCM = -PreviousDistances.x;
         double deltaYCM = -PreviousDistances.y;
-        final PointD correntDistances = updateDistances();
+        final PointD currentDistances = updateDistances();
 
-        deltaXCM += correntDistances.x;
-        deltaYCM += correntDistances.y;
+        deltaXCM += currentDistances.x;
+        deltaYCM += currentDistances.y;
 
         final double currentAngle = getCurrentAngle();
         final double angleAverage = (currentAngle + previousAngle) / 2;
@@ -270,8 +244,19 @@ public class DrivingSystem {
 
         opMode.telemetry.addData("X POS:", PositionCM.x);
         opMode.telemetry.addData("Y POS:", PositionCM.y);
-        opMode.telemetry.addData("ANGLE:", currentAngle*RADIANS_TO_DEGREES_);
+        opMode.telemetry.addData("ANGLE:", currentAngle * RADIANS_TO_DEGREES);
         opMode.telemetry.update();
+    }
+
+
+    /**
+     * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
+     * Assumes the robot hasn't moved in any other directions.
+     */
+    public double getForwardDistance() {
+        return (frontLeft.getCurrentPosition() + frontRight.getCurrentPosition()
+                + backLeft.getCurrentPosition() + backRight.getCurrentPosition())
+                / 4. * CM_PER_TICK;
     }
 
 
@@ -304,6 +289,7 @@ public class DrivingSystem {
 
         stop();
     }
+
 
     /**
      * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
@@ -374,10 +360,12 @@ public class DrivingSystem {
         stop();
     }
 
+
     /**
      * Drives the Robot in straight line to given position on the board(x, y, angle)
+     *
      * @param targetPointCm is the point to move to
-     * @param targetAngle is the angle to finish in
+     * @param targetAngle   is the angle to finish in
      */
     public void moveTo(PointD targetPointCm, double targetAngle) {
         final double powerScalar = 0.007;
@@ -387,15 +375,15 @@ public class DrivingSystem {
         final double epsilon = 0.5;
         final double angleEpsilon = 2.0;
 
-        while(abs(targetPointCm.x - PositionCM.x) > epsilon || abs(targetPointCm.y - PositionCM.y) > epsilon | abs(getCurrentAngle() - targetAngle) > angleEpsilon) {
-            final PointD correntPosition = getDistances();
-            final double correntAngle = getCurrentAngle();
-            final double xDeviation = targetPointCm.x - correntPosition.x;
-            final double yDeviation = targetPointCm.y - correntPosition.y;
-            final double angleDeviation = normalizeAngle(targetAngle - correntAngle);
+        while (abs(targetPointCm.x - PositionCM.x) > epsilon || abs(targetPointCm.y - PositionCM.y) > epsilon | abs(getCurrentAngle() - targetAngle) > angleEpsilon) {
+            final PointD currentPosition = getDistances();
+            final double currentAngle = getCurrentAngle();
+            final double xDeviation = targetPointCm.x - currentPosition.x;
+            final double yDeviation = targetPointCm.y - currentPosition.y;
+            final double angleDeviation = normalizeAngle(targetAngle - currentAngle);
 
-            driveMecanum(max(minPower, (xDeviation*cos(correntAngle) + yDeviation*sin(correntAngle)) * (xDeviation*cos(correntAngle) + yDeviation*sin(correntAngle)) * powerScalar),
-                    max(minPower, (-xDeviation*sin(correntAngle) + yDeviation*cos(correntAngle)) * (-xDeviation*sin(correntAngle) + yDeviation*cos(correntAngle)) * powerScalar),
+            driveMecanum(max(minPower, (xDeviation * cos(currentAngle) + yDeviation * sin(currentAngle)) * (xDeviation * cos(currentAngle) + yDeviation * sin(currentAngle)) * powerScalar),
+                    max(minPower, (-xDeviation * sin(currentAngle) + yDeviation * cos(currentAngle)) * (-xDeviation * sin(currentAngle) + yDeviation * cos(currentAngle)) * powerScalar),
                     max(minAnglePower, angleDeviation * angleDeviation * angleScalar));
         }
 
