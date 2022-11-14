@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import android.util.Pair;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -27,9 +25,8 @@ public class DrivingSystem {
     private final DcMotor backRight;
     private final DcMotor backLeft;
 
-    private PointD PreviousDistances = new PointD(0., 0.);
-
     private double previousAngle = 0;
+    private PointD PreviousDistances = new PointD(0., 0.);
     private PointD PositionCM = new PointD(0., 0.);
 
 
@@ -215,8 +212,8 @@ public class DrivingSystem {
     }
 
     /**
-     * @return Point: Sum of movement Sideways, Sum of movement Forward
-     * updates PreviousDistances
+     * Updates the position of the robot from the wheel positions.
+     * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
     public PointD updateDistances() {
         final double fLPosition = frontLeft.getCurrentPosition();
@@ -234,10 +231,11 @@ public class DrivingSystem {
         return new PointD(returnXValue, returnYValue);
     }
 
-    /**
-     * @return Point: Sum of movement Sideways, Sum of movement Forward
-     */
 
+    /**
+     * Gets the position of the robot from the wheel positions.
+     * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
+     */
     public PointD getDistances() {
         final double fLPosition = frontLeft.getCurrentPosition();
         final double fRPosition = frontRight.getCurrentPosition();
@@ -251,8 +249,6 @@ public class DrivingSystem {
 
         return new PointD(returnXValue, returnYValue);
     }
-
-
 
 
     /**
@@ -283,6 +279,7 @@ public class DrivingSystem {
         }
         stop();
     }
+
 
     /**
      * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
