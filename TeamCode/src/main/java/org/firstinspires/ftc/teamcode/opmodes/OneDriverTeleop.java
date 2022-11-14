@@ -12,7 +12,7 @@ public class OneDriverTeleop extends LinearOpMode {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
         while (opModeIsActive()) {
-            drivingSystem.driveMecanum(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
+            drivingSystem.driveMecanum(-gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
         }
     }
 }
