@@ -1,13 +1,5 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import static java.lang.Double.max;
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-
-import android.util.Pair;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,6 +10,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PointD;
+
+import static java.lang.Double.max;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+import android.util.Pair;
 
 public class DrivingSystem {
     public static final  double DEGREES_TO_RADIANS = PI / 180.0;
@@ -34,9 +33,8 @@ public class DrivingSystem {
     private final DcMotor backRight;
     private final DcMotor backLeft;
 
-    private PointD PreviousDistances = new PointD(0., 0.);
-
     private double previousAngle = 0;
+    private PointD PreviousDistances = new PointD(0., 0.);
     private PointD PositionCM = new PointD(0., 0.);
 
 
@@ -172,8 +170,8 @@ public class DrivingSystem {
 
 
     /**
-     * @return Point: Sum of movement Sideways, Sum of movement Forward
-     * updates PreviousDistances
+     * Updates the position of the robot from the wheel positions.
+     * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
     public PointD updateDistances() {
         final double fLPosition = frontLeft.getCurrentPosition();
@@ -191,10 +189,11 @@ public class DrivingSystem {
         return new PointD(returnXValue, returnYValue);
     }
 
-    /**
-     * @return Point: Sum of movement Sideways, Sum of movement Forward
-     */
 
+    /**
+     * Gets the position of the robot from the wheel positions.
+     * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
+     */
     public PointD getDistances() {
         final double fLPosition = frontLeft.getCurrentPosition();
         final double fRPosition = frontRight.getCurrentPosition();
@@ -306,6 +305,15 @@ public class DrivingSystem {
         stop();
     }
 
+    /**
+     * @return The distance the robot has moved sideways, in cm, since the last time that resetDistance() was called.
+     * Assumes the robot hasn't moved in any other directions.
+     */
+    public double getSidewaysDistance() {
+        return (frontRight.getCurrentPosition() - frontLeft.getCurrentPosition()
+                + backLeft.getCurrentPosition() - backRight.getCurrentPosition())
+                / 4. * CM_PER_TICK;
+    }
 
 
     /**
