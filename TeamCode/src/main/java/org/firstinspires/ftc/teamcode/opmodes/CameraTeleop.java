@@ -17,8 +17,9 @@ public class CameraTeleop extends LinearOpMode {
     public void runOpMode() {
         EverglowGamepad ourGamepad = new EverglowGamepad(gamepad1);
         DrivingSystem drivingSystem = new DrivingSystem(this);
-        waitForStart();
         CameraSystem cameraSystem = new CameraSystem(this);
+        waitForStart();
+        cameraSystem.captureImage();
         while (opModeIsActive()){
             if (ourGamepad.circle()){
                 cameraSystem.captureImage();

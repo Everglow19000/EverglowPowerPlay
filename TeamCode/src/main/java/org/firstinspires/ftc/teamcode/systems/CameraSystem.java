@@ -33,6 +33,8 @@ public class CameraSystem {
         @Override
         public Mat processFrame(Mat input) {
             if (isCapturingImage) {
+                opMode.telemetry.addLine("Capture");
+                opMode.telemetry.update();
                 isCapturingImage = false;
                 try {
                     String timeStamp = AndroidUtils.timestampString();
@@ -44,6 +46,7 @@ public class CameraSystem {
                     e.printStackTrace();
                 }
             }
+
             return input;
         }
     }
@@ -56,7 +59,7 @@ public class CameraSystem {
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         camera.setPipeline(cameraPipeline);
         camera.openCameraDevice();
-        camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        camera.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
     }
 
     public void captureImage(){
