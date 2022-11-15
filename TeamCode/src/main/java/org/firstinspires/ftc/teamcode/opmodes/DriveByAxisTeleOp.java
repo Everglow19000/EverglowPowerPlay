@@ -5,14 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 
-@TeleOp(name = "OneDriverTeleop")
-public class OneDriverTeleop extends LinearOpMode {
+@TeleOp(name = "DriveByAxisTeleOp")
+public class DriveByAxisTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
         while (opModeIsActive()) {
-            drivingSystem.driveMecanum(-gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
+            drivingSystem.driveByAxis(-gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
             drivingSystem.printPosition();
             telemetry.update();
         }

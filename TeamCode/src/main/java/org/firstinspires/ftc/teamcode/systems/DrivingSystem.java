@@ -18,6 +18,12 @@ import static java.lang.Math.sin;
 import static java.lang.Math.PI;
 
 public class DrivingSystem {
+
+    /**
+     * True if our code is for Armadillo, our old robot. If using our new robot, then false.
+     */
+    public static final boolean IS_ARMADILLO = false;
+
     public static final double RADIANS_TO_DEGREES = 180.0 / PI;
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -26,10 +32,10 @@ public class DrivingSystem {
     private final LinearOpMode opMode;
 
     private final BNO055IMU imu;
-    private final DcMotor frontRight;
-    private final DcMotor frontLeft;
-    private final DcMotor backRight;
-    private final DcMotor backLeft;
+    public final DcMotor frontRight;
+    public final DcMotor frontLeft;
+    public final DcMotor backRight;
+    public final DcMotor backLeft;
 
     private double previousAngle = 0;
     private PointD PreviousDistances = new PointD(0., 0.);
@@ -39,7 +45,6 @@ public class DrivingSystem {
     public DrivingSystem(LinearOpMode opMode) {
         this.opMode = opMode;
         imu = initializeImu(opMode);
-
         // Creates objects to control the motors
         frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
         frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
@@ -52,9 +57,15 @@ public class DrivingSystem {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // Some motors are wired in reverse, so we must reverse them back
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        // Some motors are wired in reverse, so we must reverse them back.
+        // different between armadillo and our new robot.
+        if (IS_ARMADILLO) {
+            frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+            backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        }else {
+            frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+            backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
 
         // Reset Distance
         resetDistance();
@@ -79,24 +90,26 @@ public class DrivingSystem {
         // and named "imu".
         BNO055IMU imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+        if (IS_ARMADILLO) {
+            // armadillo requires extra configuration for its IMU.
+            // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
+            byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
+            byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
+            //Need to be in CONFIG mode to write to registers
+            imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal & 0x0F);
+            opMode.sleep(100); //Changing modes requires a delay before doing anything else
+            //Write to the AXIS_MAP_CONFIG register
+            imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, AXIS_MAP_CONFIG_BYTE & 0x0F);
+            //Write to the AXIS_MAP_SIGN register
+            imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE & 0x0F);
+            //Need to change back into the IMU mode to use the gyro
+            imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
+            opMode.sleep(100); //Changing modes again requires a delay
 
-        // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
-        byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
-        byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
-        //Need to be in CONFIG mode to write to registers
-        imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal & 0x0F);
-        opMode.sleep(100); //Changing modes requires a delay before doing anything else
-        //Write to the AXIS_MAP_CONFIG register
-        imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, AXIS_MAP_CONFIG_BYTE & 0x0F);
-        //Write to the AXIS_MAP_SIGN register
-        imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE & 0x0F);
-        //Need to change back into the IMU mode to use the gyro
-        imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
-        opMode.sleep(100); //Changing modes again requires a delay
-
-        while (!imu.isGyroCalibrated()) {
-            // wait for the gyroscope calibration
-            opMode.sleep(10);
+            while (!imu.isGyroCalibrated()) {
+                // wait for the gyroscope calibration
+                opMode.sleep(10);
+            }
         }
         return imu;
     }
@@ -141,27 +154,6 @@ public class DrivingSystem {
     public double getCurrentAngle() {
         Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
         return orientation.firstAngle;
-    }
-
-
-    /**
-     * Updates the position of the robot from the wheel positions.
-     *
-     * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
-     */
-    public PointD updateDistances() {
-        final double fLPosition = frontLeft.getCurrentPosition();
-        final double fRPosition = frontRight.getCurrentPosition();
-        final double bLPosition = backLeft.getCurrentPosition();
-        final double bRPosition = backRight.getCurrentPosition();
-
-        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition) / 4. * CM_PER_TICK;
-        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition) / 4. * CM_PER_TICK;
-
-        PreviousDistances.x = returnXValue;
-        PreviousDistances.y = returnYValue;
-
-        return new PointD(returnXValue, returnYValue);
     }
 
 
@@ -248,6 +240,26 @@ public class DrivingSystem {
 
 
     /**
+     * Updates the position of the robot from the wheel positions.
+     *
+     * @return Point: Sum of movement Sideways, Sum of movement Forward; in cm.
+     */
+    public PointD updateDistances() {
+        final double fLPosition = frontLeft.getCurrentPosition();
+        final double fRPosition = frontRight.getCurrentPosition();
+        final double bLPosition = backLeft.getCurrentPosition();
+        final double bRPosition = backRight.getCurrentPosition();
+
+        final double returnXValue = (fRPosition - fLPosition + bLPosition - bRPosition) / 4. * CM_PER_TICK;
+        final double returnYValue = (fLPosition + fRPosition + bLPosition + bRPosition) / 4. * CM_PER_TICK;
+
+        PreviousDistances.x = returnXValue;
+        PreviousDistances.y = returnYValue;
+
+        return new PointD(returnXValue, returnYValue);
+    }
+
+    /**
      * Keeps track of robot position on the field
      */
     public void trackPosition() {
@@ -265,11 +277,20 @@ public class DrivingSystem {
         PositionCM.x += deltaYCM * sin(angleAverage) + deltaXCM * cos(angleAverage);
         PositionCM.y += deltaYCM * cos(angleAverage) - deltaXCM * sin(angleAverage);
 
-
         //opMode.telemetry.addData("X POS:", PositionCM.x);
         //opMode.telemetry.addData("Y POS:", PositionCM.y);
         //opMode.telemetry.addData("ANGLE:", currentAngle * RADIANS_TO_DEGREES);
         //opMode.telemetry.update();
+    }
+
+    /**
+     * Print the robot's current position to the telemetry.
+     * Must call telemetry.update() after using this method
+     */
+    public void printPosition(){
+        opMode.telemetry.addData("x", PositionCM.x);
+        opMode.telemetry.addData("y", PositionCM.y);
+        opMode.telemetry.addData("rot", Math.toDegrees(previousAngle));
     }
 
 
