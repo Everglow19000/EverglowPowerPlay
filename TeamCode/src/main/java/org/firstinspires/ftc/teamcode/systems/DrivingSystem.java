@@ -9,11 +9,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.opmodes.Location;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 
 import static java.lang.Double.max;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
+import static java.lang.Math.signum;
 import static java.lang.Math.sin;
 import static java.lang.Math.PI;
 
@@ -37,9 +39,10 @@ public class DrivingSystem {
     public final DcMotor backRight;
     public final DcMotor backLeft;
 
-    private double previousAngle = 0;
-    private PointD PreviousDistances = new PointD(0., 0.);
-    private PointD PositionCM = new PointD(0., 0.);
+
+    private Location PreviousDistances = new Location(0., 0., 0.);
+
+    private Location PositionCM= new Location(0., 0., 0.);
 
 
     public DrivingSystem(LinearOpMode opMode) {
@@ -114,7 +117,6 @@ public class DrivingSystem {
         return imu;
     }
 
-
     /*
      * Resets the distance measured on all encoders,
      * should always called before initializing the robot.
@@ -156,7 +158,6 @@ public class DrivingSystem {
         return orientation.firstAngle;
     }
 
-
     /**
      * Gets the position of the robot from the wheel positions.
      *
@@ -178,15 +179,12 @@ public class DrivingSystem {
     /**
      * Drives the robot on a mechanism drive.
      *
-     * @param x   vertical power, positive is left, negative is right
-     * @param y   horizontal power, positive is forward, negative is backwards.
-     * @param rot rotational power, positive is counter clockwise, negative is clockwise.
      */
-    public void driveMecanum(double x, double y, double rot) {
-        double frontRightPower = y + x + rot;
-        double frontLeftPower = y - x - rot;
-        double backRightPower = y - x + rot;
-        double backLeftPower = y + x - rot;
+    public void driveMecanum(Location drivePowers) {
+        double frontRightPower = drivePowers.y + drivePowers.x + drivePowers.angle;
+        double frontLeftPower = drivePowers.y - drivePowers.x - drivePowers.angle;
+        double backRightPower = drivePowers.y - drivePowers.x + drivePowers.angle;
+        double backLeftPower = drivePowers.y + drivePowers.x - drivePowers.angle;
 
         // the function setPower only accepts numbers between -1 and 1.
         // If any number that we want to give it is greater than 1,
@@ -211,33 +209,23 @@ public class DrivingSystem {
      * Makes the robot stop in place.
      */
     public void stop() {
-        driveMecanum(0, 0, 0);
+        driveMecanum(new Location(0, 0, 0));
     }
 
 
-    public void driveByAxis(double powerX, double powerY, double powerRot) {
+    public void driveByAxis(Location drivePowers) {
         final double currentAngle = getCurrentAngle();
         final double cosAngle = cos(currentAngle);
         final double sinAngle = sin(currentAngle);
-        final double powerRatio = powerY / powerX;
 
-        //double movementRatio /*ratio of S to F*/ = (cosAngle - sinAngle * powerRatio) / (cosAngle * powerRatio + sinAngle);
-        //double movementRatio = (cosAngle - (powerY / powerX) * sinAngle) / (sinAngle + cosAngle); // x/y
-        //double forwardPower = powerY / (cosAngle - sinAngle / movementRatio);
-        //double sidewaysPower = forwardPower * movementRatio;
+        Location mecanumPowers = new Location(0, 0, 0);
 
-        double forwardPower = cosAngle * powerY + sinAngle * powerX;
-        double sidewaysPower = cosAngle * powerX - sinAngle * powerY;
+        mecanumPowers.x = cosAngle * drivePowers.x - sinAngle * drivePowers.y;
+        mecanumPowers.y = cosAngle * drivePowers.y + sinAngle * drivePowers.x;
+        mecanumPowers.angle = drivePowers.angle;
 
-        opMode.telemetry.addData("forwardPower:", forwardPower);
-        opMode.telemetry.addData("sidewaysPower:", sidewaysPower);
-        opMode.telemetry.update();
-
-        driveMecanum(sidewaysPower, forwardPower, powerRot);
-
-        stop();
+        driveMecanum(mecanumPowers);
     }
-
 
     /**
      * Updates the position of the robot from the wheel positions.
@@ -271,16 +259,11 @@ public class DrivingSystem {
         deltaYCM += currentDistances.y;
 
         final double currentAngle = getCurrentAngle();
-        final double angleAverage = (currentAngle + previousAngle) / 2;
-        previousAngle = currentAngle;
+        final double angleAverage = (currentAngle + PreviousDistances.angle) / 2;
+        PreviousDistances.angle = currentAngle;
 
         PositionCM.x += deltaYCM * sin(angleAverage) + deltaXCM * cos(angleAverage);
         PositionCM.y += deltaYCM * cos(angleAverage) - deltaXCM * sin(angleAverage);
-
-        //opMode.telemetry.addData("X POS:", PositionCM.x);
-        //opMode.telemetry.addData("Y POS:", PositionCM.y);
-        //opMode.telemetry.addData("ANGLE:", currentAngle * RADIANS_TO_DEGREES);
-        //opMode.telemetry.update();
     }
 
     /**
@@ -290,9 +273,8 @@ public class DrivingSystem {
     public void printPosition(){
         opMode.telemetry.addData("x", PositionCM.x);
         opMode.telemetry.addData("y", PositionCM.y);
-        opMode.telemetry.addData("rot", Math.toDegrees(previousAngle));
+        opMode.telemetry.addData("rot", PositionCM.angle);
     }
-
 
     /**
      * @return The distance the robot has moved forward, in cm, since the last time that resetDistance() was called.
@@ -328,7 +310,7 @@ public class DrivingSystem {
         while (abs(forwardDistance) < distance) {
             forwardDistance = getForwardDistance();
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            driveMecanum(0, power, angleDeviation * ANGLE_DEVIATION_SCALAR);
+            driveMecanum(new Location(0, power, angleDeviation * ANGLE_DEVIATION_SCALAR));
         }
 
         stop();
@@ -344,7 +326,6 @@ public class DrivingSystem {
                 + backLeft.getCurrentPosition() - backRight.getCurrentPosition())
                 / 4. * CM_PER_TICK;
     }
-
 
     /**
      * Drives the robot sideways a given distance.
@@ -368,12 +349,11 @@ public class DrivingSystem {
         while (abs(sidewaysDistance) < distance) {
             sidewaysDistance = getSidewaysDistance();
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            driveMecanum(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR);
+            driveMecanum(new Location(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
         }
 
         stop();
     }
-
 
     /**
      * Rotates the robot a given number of RADIANS.
@@ -399,8 +379,8 @@ public class DrivingSystem {
             currentAngle = getCurrentAngle();
             deviation = normalizeAngle(targetAngle - currentAngle);
             // the power is proportional to the deviation, but may not go below minPower.
-            double rotatePower = deviation * deviation * powerScalar + minPower * Math.signum(deviation);
-            driveMecanum(0, 0, rotatePower);
+            double rotatePower = deviation * deviation * powerScalar + minPower * signum(deviation);
+            driveMecanum(new Location (0, 0, rotatePower));
         }
         stop();
     }
@@ -409,27 +389,35 @@ public class DrivingSystem {
     /**
      * Drives the Robot in straight line to given position on the board(x, y, angle)
      *
-     * @param targetPointCm is the point to move to
-     * @param targetAngle   is the angle to finish in
+     *
      */
-    public void moveTo(PointD targetPointCm, double targetAngle) {
-        final double powerScalar = 0.007;
-        final double angleScalar = 0.01;
-        final double minPower = 0.2;
-        final double minAnglePower = 0.15;
-        final double epsilon = 0.5;
-        final double angleEpsilon = 2.0;
+    public void moveTo(Location targetLocation) {
+        final Location powerScalar = new Location(0.007, 0.008, 0.6);
+        final Location minPower = new Location(0.15, 0.18, 0.08);
+        final Location epsilon = new Location(0.5, 1, 0.0087);
 
-        while (abs(targetPointCm.x - PositionCM.x) > epsilon || abs(targetPointCm.y - PositionCM.y) > epsilon | abs(getCurrentAngle() - targetAngle) > angleEpsilon) {
-            final PointD currentPosition = getDistances();
-            final double currentAngle = getCurrentAngle();
-            final double xDeviation = targetPointCm.x - currentPosition.x;
-            final double yDeviation = targetPointCm.y - currentPosition.y;
-            final double angleDeviation = normalizeAngle(targetAngle - currentAngle);
+        Location Deviation = PositionCM.difference(targetLocation);
+        Location actPowers = new Location(0., 0., 0.);
 
-            driveMecanum(max(minPower, (xDeviation * cos(currentAngle) + yDeviation * sin(currentAngle)) * (xDeviation * cos(currentAngle) + yDeviation * sin(currentAngle)) * powerScalar),
-                    max(minPower, (-xDeviation * sin(currentAngle) + yDeviation * cos(currentAngle)) * (-xDeviation * sin(currentAngle) + yDeviation * cos(currentAngle)) * powerScalar),
-                    max(minAnglePower, angleDeviation * angleDeviation * angleScalar));
+        while (abs(Deviation.x) > epsilon.x ||
+                abs(Deviation.y) > epsilon.y || abs(Deviation.angle) > epsilon.angle) {
+
+            if(abs(Deviation.x) > epsilon.x) {
+                actPowers.x = signum(Deviation.x) * minPower.x + Deviation.x * Deviation.x * powerScalar.x;
+            }
+
+            if(abs(Deviation.y) > epsilon.y) {
+                actPowers.y = signum(Deviation.y) * minPower.y + Deviation.y * Deviation.y * powerScalar.y;
+            }
+
+            if(abs(Deviation.angle) > epsilon.angle) {
+                actPowers.angle = signum(Deviation.angle) * minPower.angle + Deviation.angle * Deviation.angle * powerScalar.angle;
+            }
+
+            driveByAxis(actPowers);
+
+            actPowers.setValue(0, 0, 0);
+            Deviation = PositionCM.difference(targetLocation);
         }
 
         stop();
