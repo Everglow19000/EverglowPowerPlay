@@ -6,12 +6,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "DriveByAxisTeleOp")
-public class DriveByAxisTeleOp extends LinearOpMode {
+@TeleOp(name = "moveTo")
+public class moveTo extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
+
+        drivingSystem.moveTo(new Pose(-40, 0, Math.PI));
         Pose actPowers = new Pose(0, 0, 0);
         while (opModeIsActive()) {
             actPowers.x = -gamepad1.left_stick_x;
@@ -19,8 +21,8 @@ public class DriveByAxisTeleOp extends LinearOpMode {
             actPowers.angle = -gamepad1.right_stick_x;
             drivingSystem.driveByAxis(actPowers);
 
-            //drivingSystem.printPosition();
-            //telemetry.update();
+            drivingSystem.printPosition();
+            telemetry.update();
         }
     }
 }

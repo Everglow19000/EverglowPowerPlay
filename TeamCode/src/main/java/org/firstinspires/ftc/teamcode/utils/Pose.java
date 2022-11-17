@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+import static java.lang.Math.PI;
+
 /**
  * An object encompassing a set of two dimensional position and orientation.
  */
@@ -18,6 +20,11 @@ public class Pose {
         this.x = x;
         this.y = y;
         this.angle = angle;
+    }
+
+    public void normalizeAngle() {
+        while (angle >= PI) angle -= 2.0 * PI;
+        while (angle < -PI) angle += 2.0 * PI;
     }
 
     /**
