@@ -10,10 +10,12 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 public class moveTo extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        getRuntime();
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
 
-        drivingSystem.moveTo(new Pose(-40, 0, Math.PI));
+        drivingSystem.move2(new Pose(0, 0, Math.PI));
+
         Pose actPowers = new Pose(0, 0, 0);
         while (opModeIsActive()) {
             actPowers.x = -gamepad1.left_stick_x;
