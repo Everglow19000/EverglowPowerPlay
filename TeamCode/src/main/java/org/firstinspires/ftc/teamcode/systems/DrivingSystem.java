@@ -1,5 +1,12 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.max;
+import static java.lang.Math.signum;
+import static java.lang.Math.sin;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,21 +16,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PointD;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.cos;
-import static java.lang.Math.max;
-import static java.lang.Math.signum;
-import static java.lang.Math.sin;
-import static java.lang.Math.PI;
+import org.firstinspires.ftc.teamcode.utils.Pose;
 
 /**
  * A class for handling the driving of the robot.
  */
 public class DrivingSystem {
-
     /**
      * True if our code is for Armadillo, our old robot. If using our new robot, then false.
      */
@@ -46,8 +45,7 @@ public class DrivingSystem {
     private double blPreviousTicks = 0;
     private double brPreviousTicks = 0;
 
-
-    private Pose positionCM = new Pose(0., 0., 0.);
+    private final Pose positionCM = new Pose(0., 0., 0.);
 
     /**
      * @param opMode The Current opmode the robot is running with.
@@ -118,10 +116,9 @@ public class DrivingSystem {
         return imu;
     }
 
-
-    /*
+    /**
      * Resets the distance measured on all encoders,
-     * should always called before initializing the robot.
+     * should always be called before initializing the robot.
      */
     private void resetDistance() {
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -134,7 +131,6 @@ public class DrivingSystem {
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-
 
     /**
      * Given any angle, normalizes it such that it is between pi and pi RADIANS,
@@ -149,7 +145,6 @@ public class DrivingSystem {
         return angle;
     }
 
-
     /**
      * Gets the robots current angle and returns it.
      * Angle is measured relative to the robot's starting angle, with positive angles being counterclockwise.
@@ -161,9 +156,9 @@ public class DrivingSystem {
         return orientation.firstAngle;
     }
 
-
     /**
      * Gets the movement of the robot in the robot's axis since the last tracked position.
+     *
      * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
     public PointD getDistances() {
@@ -173,7 +168,7 @@ public class DrivingSystem {
         final double bRChange = backRight.getCurrentPosition() - brPreviousTicks;
 
         PointD movementChange = new PointD();
-        movementChange.x = (- fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
+        movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
         movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
         return movementChange;
@@ -182,10 +177,10 @@ public class DrivingSystem {
     /**
      * Gets the movement of the robot in the robot's axis since the last tracked position and resets it.
      * should be called only by trackPosition.
+     *
      * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
-
-    public PointD updateDistances() {
+    private PointD updateDistances() {
         double flTicks = frontLeft.getCurrentPosition();
         double frTicks = frontRight.getCurrentPosition();
         double blTicks = backLeft.getCurrentPosition();
@@ -202,15 +197,14 @@ public class DrivingSystem {
         brPreviousTicks = brTicks;
 
         PointD movementChange = new PointD();
-        movementChange.x = (- fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
+        movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
         movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
         return movementChange;
     }
 
-
     /**
-     * Drives the robot and keeps track of it's position.
+     * Drives the robot and keeps track of its position.
      * Gets called multiple times per second.
      */
     public void driveMecanum(Pose powers) {
@@ -238,7 +232,6 @@ public class DrivingSystem {
         trackPosition();
     }
 
-
     /**
      * Makes the robot stop in place.
      */
@@ -246,9 +239,8 @@ public class DrivingSystem {
         driveMecanum(new Pose());
     }
 
-
     /**
-     * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+     * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
      */
     public void driveByAxis(Pose Powers) {
         final double currentAngle = getCurrentAngle();
@@ -263,13 +255,11 @@ public class DrivingSystem {
         Pose mecanumPowers = new Pose(
                 cosAngle * Powers.x - sinAngle * Powers.y,
                 cosAngle * Powers.y + sinAngle * Powers.x,
-                Powers.angle);
-
-
+                Powers.angle
+        );
 
         driveMecanum(mecanumPowers);
     }
-
 
     /**
      * Keeps track of robot's position on the field.
@@ -285,7 +275,6 @@ public class DrivingSystem {
         positionCM.y += positionChange.y * cos(angleAverage) - positionChange.x * sin(angleAverage);
     }
 
-
     /**
      * Prints the robot's current position to the telemetry.
      * Must call telemetry.update() after using this method.
@@ -296,12 +285,11 @@ public class DrivingSystem {
         opMode.telemetry.addData("rot", positionCM.angle);
     }
 
-
     /**
      * Drives the robot straight a given distance.
      *
      * @param distance How far the robot should go, measured in cm.
-     * @param power How much power should be given to the motor, from 0 to 1.
+     * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveStraight(double distance, double power) {
         final double ANGLE_DEVIATION_SCALAR = 0.05;
@@ -322,17 +310,14 @@ public class DrivingSystem {
             driveMecanum(new Pose(0, power, angleDeviation * ANGLE_DEVIATION_SCALAR));
             forwardDistance = updateDistances().y;
         }
-
         stop();
     }
 
-
-
     /**
-     * Drives the robot sideways a given distance.
+     * Drives the robot sideways a given distance. Positive direction is rightwards.
      *
      * @param distance How far the robot should go, measured in cm.
-     * @param power How much power should be given to the motor, from 0 to 1.
+     * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveSideways(double distance, double power) {
         double ANGLE_DEVIATION_SCALAR = 0.05;
@@ -355,7 +340,6 @@ public class DrivingSystem {
 
         stop();
     }
-
 
     /**
      * Rotates the robot a given number of radians.
@@ -387,9 +371,8 @@ public class DrivingSystem {
         stop();
     }
 
-
     /**
-     * Drives the Robot in straight line to given position on the board(x, y, angle).
+     * Drives the Robot in straight line to given position on the board (x, y, angle).
      *
      * @param targetLocation The location which the robot needs to be driven to.
      */

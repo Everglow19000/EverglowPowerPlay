@@ -59,6 +59,4 @@ public class Pose {
         return new Pose(targetPose.x - x, targetPose.y - y,
                 targetPose.angle - angle);
     }
-
-
 }
