@@ -24,9 +24,13 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
  */
 public class DrivingSystem {
     /**
-     * True if our code is for Armadillo, our old robot. If using our new robot, then false.
+     * Enum to indicate which robot we are currently running. The IMU initialization is
+     * unique for each robot, since the Control Hub's orientation is different.
      */
-    public static final boolean IS_ARMADILLO = false;
+    private enum Robot {
+        ARMADILLO, NEW_ROBOT
+    };
+    private static final Robot robot = Robot.NEW_ROBOT;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -92,7 +96,7 @@ public class DrivingSystem {
         // and named "imu".
         BNO055IMU imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        if (IS_ARMADILLO) {
+        if (robot == Robot.ARMADILLO) {
             // armadillo requires extra configuration for its IMU.
             // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
             byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
@@ -133,13 +137,13 @@ public class DrivingSystem {
     }
 
     /**
-     * Given any angle, normalizes it such that it is between pi and pi RADIANS,
+     * Given any angle, normalizes it such that it is between -PI and PI RADIANS,
      * increasing or decreasing by 2 * PI RADIANS to make it so.
      *
      * @param angle Random angle.
      * @return The angle normalized (-PI < angle < PI).
      */
-    public static double normalizeAngle(double angle) {
+    private static double normalizeAngle(double angle) {
         while (angle >= PI) angle -= 2.0 * PI;
         while (angle < -PI) angle += 2.0 * PI;
         return angle;
@@ -264,7 +268,7 @@ public class DrivingSystem {
     /**
      * Keeps track of robot's position on the field.
      */
-    public void trackPosition() {
+    private void trackPosition() {
         final PointD positionChange = updateDistances();
 
         final double currentAngle = getCurrentAngle();
@@ -381,7 +385,7 @@ public class DrivingSystem {
         final Pose minPower = new Pose(0.12, 0.15, 0.08);
         final Pose epsilon = new Pose(0.5, 1, 0.0087);
 
-        Pose Deviation = positionCM.difference(targetLocation);
+        Pose Deviation = Pose.difference(targetLocation, positionCM);
         Deviation.normalizeAngle();
         Pose actPowers = new Pose();
 
@@ -401,7 +405,7 @@ public class DrivingSystem {
             driveByAxis(actPowers);
 
             actPowers.setValue(new Pose());
-            Deviation = positionCM.difference(targetLocation);
+            Deviation = Pose.difference(targetLocation, positionCM);
             Deviation.normalizeAngle();
         }
 

@@ -15,6 +15,6 @@ public class PointD {
     }
 
     public double hyp() {
-        return Math.sqrt(x * x + y * y);
+        return Math.hypot(x, y);
     }
 }

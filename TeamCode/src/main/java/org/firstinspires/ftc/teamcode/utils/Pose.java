@@ -22,9 +22,26 @@ public class Pose {
         this.angle = angle;
     }
 
+    public double hyp() {
+        return Math.hypot(x, y);
+    }
+
     public void normalizeAngle() {
         while (angle >= PI) angle -= 2.0 * PI;
         while (angle < -PI) angle += 2.0 * PI;
+    }
+
+    /**
+     * Given any angle, normalizes it such that it is between -PI and PI RADIANS,
+     * increasing or decreasing by 2 * PI RADIANS to make it so.
+     *
+     * @param angle Random angle.
+     * @return The angle normalized (-PI < angle < PI).
+     */
+    public static double normalizeAngle(double angle) {
+        while (angle >= PI) angle -= 2.0 * PI;
+        while (angle < -PI) angle += 2.0 * PI;
+        return angle;
     }
 
     /**
@@ -52,11 +69,12 @@ public class Pose {
     /**
      * Calculate the difference between the values of two poses.
      *
-     * @param targetPose A given pose.
-     * @return A new pose object with the new values.
+     * @param pose1 A given pose.
+     * @param pose2 Another given pose.
+     * @return A new pose object containing the differences in values.
      */
-    public Pose difference(Pose targetPose) {
-        return new Pose(targetPose.x - x, targetPose.y - y,
-                targetPose.angle - angle);
+    public static Pose difference(Pose pose1, Pose pose2) {
+        return new Pose(pose1.x - pose2.x, pose1.y - pose2.y,
+                pose1.angle - pose2.angle);
     }
 }
