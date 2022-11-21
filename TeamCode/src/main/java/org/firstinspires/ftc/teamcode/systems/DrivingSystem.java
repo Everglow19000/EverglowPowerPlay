@@ -1,5 +1,13 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.max;
+import static java.lang.Math.signum;
+import static java.lang.Math.sin;
+import static java.lang.Math.toRadians;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,18 +17,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.utils.PIDControler;
-import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PointD;
-import org.firstinspires.ftc.teamcode.utils.PosePIDControler;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.cos;
-import static java.lang.Math.max;
-import static java.lang.Math.signum;
-import static java.lang.Math.sin;
-import static java.lang.Math.PI;
-import static java.lang.Math.toRadians;
+import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 
 /**
  * A class for handling the driving of the robot.
@@ -28,9 +28,18 @@ import static java.lang.Math.toRadians;
 public class DrivingSystem {
 
     /**
-     * True if our code is for Armadillo, our old robot. If using our new robot, then false.
+     * Marker marking PID activated methods.
      */
-    public static final boolean IS_ARMADILLO = true;
+    @interface PID{}
+
+    /**
+     * Enum to indicate which robot we are currently running. The IMU initialization is
+     * unique for each robot, since the Control Hub's orientation is different.
+     */
+    private enum Robot {
+        ARMADILLO, NEW_ROBOT
+    }
+    private static final Robot robot = Robot.NEW_ROBOT;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -49,6 +58,7 @@ public class DrivingSystem {
     private double blPreviousTicks = 0;
     private double brPreviousTicks = 0;
 
+    private final double ROTATION_EPSILON = toRadians(0.5);
 
     private Pose positionCM = new Pose(0., 0., 0.);
 
@@ -97,7 +107,7 @@ public class DrivingSystem {
         // and named "imu".
         BNO055IMU imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        if (IS_ARMADILLO) {
+        if (robot == Robot.ARMADILLO) {
             // armadillo requires extra configuration for its IMU.
             // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
             byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
@@ -121,8 +131,7 @@ public class DrivingSystem {
         return imu;
     }
 
-
-    /*
+    /**
      * Resets the distance measured on all encoders,
      * should always called before initializing the robot.
      */
@@ -138,20 +147,18 @@ public class DrivingSystem {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-
     /**
-     * Given any angle, normalizes it such that it is between pi and pi RADIANS,
+     * Given any angle, normalizes it such that it is between PI and PI RADIANS,
      * increasing or decreasing by 2 * PI RADIANS to make it so.
      *
      * @param angle Random angle.
      * @return The angle normalized (-PI < angle < PI).
      */
-    public static double normalizeAngle(double angle) {
+    private static double normalizeAngle(double angle) {
         while (angle >= PI) angle -= 2.0 * PI;
         while (angle < -PI) angle += 2.0 * PI;
         return angle;
     }
-
 
     /**
      * Gets the robots current angle and returns it.
@@ -164,9 +171,9 @@ public class DrivingSystem {
         return orientation.firstAngle;
     }
 
-
     /**
      * Gets the movement of the robot in the robot's axis since the last tracked position.
+     *
      * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
     public PointD getDistances() {
@@ -176,7 +183,7 @@ public class DrivingSystem {
         final double bRChange = backRight.getCurrentPosition() - brPreviousTicks;
 
         PointD movementChange = new PointD();
-        movementChange.x = (- fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
+        movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
         movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
         return movementChange;
@@ -185,9 +192,9 @@ public class DrivingSystem {
     /**
      * Gets the movement of the robot in the robot's axis since the last tracked position and resets it.
      * should be called only by trackPosition.
+     *
      * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
      */
-
     public PointD updateDistances() {
         double flTicks = frontLeft.getCurrentPosition();
         double frTicks = frontRight.getCurrentPosition();
@@ -205,12 +212,11 @@ public class DrivingSystem {
         brPreviousTicks = brTicks;
 
         PointD movementChange = new PointD();
-        movementChange.x = (- fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
+        movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
         movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
         return movementChange;
     }
-
 
     /**
      * Drives the robot and keeps track of it's position.
@@ -241,14 +247,12 @@ public class DrivingSystem {
         trackPosition();
     }
 
-
     /**
      * Makes the robot stop in place.
      */
     public void stop() {
         driveMecanum(new Pose());
     }
-
 
     /**
      * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
@@ -269,15 +273,13 @@ public class DrivingSystem {
                 Powers.angle);
 
 
-
         driveMecanum(mecanumPowers);
     }
-
 
     /**
      * Keeps track of robot's position on the field.
      */
-    public void trackPosition() {
+    private void trackPosition() {
         final PointD positionChange = updateDistances();
 
         final double currentAngle = getCurrentAngle();
@@ -288,7 +290,6 @@ public class DrivingSystem {
         positionCM.y += positionChange.y * cos(angleAverage) - positionChange.x * sin(angleAverage);
     }
 
-
     /**
      * Prints the robot's current position to the telemetry.
      * Must call telemetry.update() after using this method.
@@ -298,7 +299,6 @@ public class DrivingSystem {
         opMode.telemetry.addData("y", positionCM.y);
         opMode.telemetry.addData("rot", positionCM.angle);
     }
-
 
     /**
      * Drives the robot straight a given distance.
@@ -352,11 +352,8 @@ public class DrivingSystem {
             driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
             sidewaysDistance = updateDistances().x;
         }
-
         stop();
     }
-
-
 
     /**
      * Rotates the robot a given number of radians.
@@ -367,7 +364,6 @@ public class DrivingSystem {
     public void rotate(double angle) {
         final double powerScalar = 0.007;
         final double minPower = 0.2;
-        final double epsilon = 0.5;
 
         double currentAngle = getCurrentAngle();
 
@@ -378,7 +374,7 @@ public class DrivingSystem {
 
         double deviation = normalizeAngle(targetAngle - currentAngle);
 
-        while (abs(deviation) > epsilon) { // once the angular error is less than 0.5 RADIANS, we have arrived
+        while (abs(deviation) > ROTATION_EPSILON) { // once the angular error is less than ROTATION_EPSILON, we have arrived
             currentAngle = getCurrentAngle();
             deviation = normalizeAngle(targetAngle - currentAngle);
             // the power is proportional to the deviation, but may not go below minPower.
@@ -387,7 +383,6 @@ public class DrivingSystem {
         }
         stop();
     }
-
 
     /**
      * Drives the Robot in straight line to given position on the board (x, y, angle).
@@ -426,12 +421,12 @@ public class DrivingSystem {
         stop();
     }
 
-
     /**
      * Drives the robot straight a given distance.
      *
      * @param distance How far the robot should go, measured in cm.
      */
+    @PID
     public void driveY(double distance) {
         final double ANGLE_DEVIATION_SCALAR = 0.05;
         final double epsilon = 0.5;
@@ -439,27 +434,27 @@ public class DrivingSystem {
         final double yTarget = positionCM.y + distance;
         final double startAngle = getCurrentAngle();
 
-        PIDControler myPIDControler = new PIDControler(0.1, 0.05, 0.2);
+        PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
         double deviation = yTarget - positionCM.y;
         Pose actPowers = new Pose();
 
         while (abs(deviation) > epsilon) {
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            actPowers.y = myPIDControler.powerByDeviation(deviation);
+            actPowers.y = myPIDController.powerByDeviation(deviation);
             actPowers.angle = ANGLE_DEVIATION_SCALAR * angleDeviation;
 
             driveMecanum(actPowers);
             deviation = yTarget - positionCM.y;
         }
-
         stop();
     }
 
-
     /**
      * Drives the robot sideways a given distance.
+     *
      * @param distance How far the robot should go, measured in cm.
      */
+    @PID
     public void driveX(double distance) {
         final double ANGLE_DEVIATION_SCALAR = 0.05;
         final double epsilon = 0.5;
@@ -467,23 +462,20 @@ public class DrivingSystem {
         final double xTarget = positionCM.x + distance;
         final double startAngle = getCurrentAngle();
 
-        PIDControler myPIDControler = new PIDControler(0.1, 0.05, 0.2);
+        PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
         double deviation = xTarget - positionCM.x;
         Pose actPowers = new Pose();
 
         while (abs(deviation) > epsilon) {
             double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            actPowers.x = myPIDControler.powerByDeviation(deviation);
+            actPowers.x = myPIDController.powerByDeviation(deviation);
             actPowers.angle = ANGLE_DEVIATION_SCALAR * angleDeviation;
 
             driveMecanum(actPowers);
             deviation = xTarget - positionCM.y;
         }
-
         stop();
     }
-
-
 
     /**
      * Rotates the robot a given number of radians.
@@ -491,20 +483,19 @@ public class DrivingSystem {
      *
      * @param angleDifference An angle to rotate the robot by.
      */
+    @PID
     public void driveAngle(double angleDifference) {
-        final double epsilon = toRadians(0.5);
         final double targetAngle = normalizeAngle(positionCM.angle + angleDifference);
         double deviation = normalizeAngle(targetAngle - positionCM.angle);
 
-        PIDControler myPIDControler = new PIDControler(0.1, 0.05, 0.2);
+        PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
         Pose actPowers = new Pose();
 
-        while (abs(deviation) > epsilon) {
-            actPowers.angle = myPIDControler.powerByDeviation(deviation);
+        while (abs(deviation) > ROTATION_EPSILON) {
+            actPowers.angle = myPIDController.powerByDeviation(deviation);
             driveMecanum(actPowers);
             deviation = normalizeAngle(targetAngle - positionCM.angle);
         }
-
         stop();
     }
 
@@ -513,37 +504,37 @@ public class DrivingSystem {
      *
      * @param targetLocation the location the robots moves to.
      */
-
+    @PID
     public void move2(Pose targetLocation) {
         final Pose Kp = new Pose(0.1, 0.1, 0.1);
         final Pose Ki = new Pose(0, 0, 0);
         final Pose Kd = new Pose(0, 0, 0);
 
-        final Pose epsilon = new Pose(0.5, 1, toRadians(0.5));
+        final Pose epsilon = new Pose(0.5, 1, ROTATION_EPSILON);
 
         Pose Deviation = Pose.difference(targetLocation, positionCM);
         Deviation.normalizeAngle();
-        PosePIDControler actPowers = new PosePIDControler(Kp, Ki, Kd);
+        PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
         while (opMode.opModeIsActive() && (
                 abs(Deviation.x) > epsilon.x ||
-                abs(Deviation.y) > epsilon.y ||
-                abs(Deviation.angle) > epsilon.angle)) {
+                        abs(Deviation.y) > epsilon.y ||
+                        abs(Deviation.angle) > epsilon.angle)) {
 
             driveByAxis(actPowers.powerByDeviation(Deviation));
 
             Deviation = Pose.difference(targetLocation, positionCM);
             Deviation.normalizeAngle();
         }
-
         stop();
     }
 
     /**
-     * drives the Robot to location  
+     * drives the Robot to location
      *
      * @param Distances the relative distances to the by.
      */
+    @PID
     public void moveRelativeToRobot(Pose Distances) {
         Pose targetLocation = new Pose();
 

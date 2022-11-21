@@ -56,6 +56,19 @@ public class Pose {
     }
 
     /**
+     * Sets values of the pose to given values.
+     *
+     * @param x     position on the sideways-axis of the robot's starting position
+     * @param y     position on the forward-axis of the robot's starting position
+     * @param angle azimuth angle relative to y-axis
+     */
+    public void setValue(double x, double y, double angle) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+    }
+
+    /**
      * Add a given pose's values to the pose's values.
      *
      * @param pose A given pose.
