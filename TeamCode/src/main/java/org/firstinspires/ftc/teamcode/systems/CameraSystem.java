@@ -6,28 +6,78 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.utils.AndroidUtils;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.apriltag.AprilTagDetection;
+import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class CameraSystem {
     private final LinearOpMode opMode;
     private final CameraPipeline cameraPipeline;
     private final OpenCvCamera camera;
 
+    static final double FX = 578.272;
+    static final double FY = 578.272;
+    static final double CX = 402.145;
+    static final double CY = 221.506;
+
+    public enum AprilTagType {
+        TAG_1,
+        TAG_2,
+        TAG_3,
+        UNIDENTIFIED,
+        DETECTION_ERROR,
+        INVALID,
+        DETECTION_IN_PROGRESS
+    }
+
+    // UNITS ARE METERS
+    static final double TAG_SIZE = 0.166;
+
     static class CameraPipeline extends OpenCvPipeline {
+        private long nativeApriltagPtr;
+        private Mat grey = new Mat();
+        private ArrayList<AprilTagDetection> detections = new ArrayList<>();
+
         private boolean isCapturingImage = false;
+        private boolean isDetectingAprilTag = false;
         private LinearOpMode opMode;
+
+        public AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED;
 
         public CameraPipeline(LinearOpMode opMode) {
             this.opMode = opMode;
+
+            nativeApriltagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
+        }
+
+        @Override
+        public void finalize()
+        {
+            // Might be null if createApriltagDetector() threw an exception
+            if(nativeApriltagPtr != 0)
+            {
+                // Delete the native context we created in the constructor
+                AprilTagDetectorJNI.releaseApriltagDetector(nativeApriltagPtr);
+                nativeApriltagPtr = 0;
+            }
+            else
+            {
+                System.out.println("AprilTagDetectionPipeline.finalize(): nativeApriltagPtr was NULL");
+            }
         }
 
         public void captureImage() {
             isCapturingImage = true;
+        }
+        public void detectAprilTag() {
+            isDetectingAprilTag = true;
         }
 
         @Override
@@ -44,6 +94,41 @@ public class CameraSystem {
                     opMode.telemetry.update();
                 } catch (Exception e) {
                     e.printStackTrace();
+                }
+            }
+
+            // needs to detect an april tag
+            if (isDetectingAprilTag) {
+                isDetectingAprilTag = false; // reset the boolean
+
+                try {
+                    // convert image to grey
+                    Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
+
+                    // call the detector on the image
+                    detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeApriltagPtr, grey, TAG_SIZE, FX, FY, CX, CY);
+
+                    // detected at least one april tag
+                    if (detections.size() > 0)
+                        // assign global variable based on result
+                        switch (detections.get(0).id) {
+                            case 0:
+                                aprilTagID = AprilTagType.TAG_1;
+                                break;
+                            case 2:
+                                aprilTagID = AprilTagType.TAG_2;
+                                break;
+                            case 3:
+                                aprilTagID = AprilTagType.TAG_3;
+                                break;
+                            default:
+                                aprilTagID = AprilTagType.INVALID;
+                        }
+                    else
+                        // error
+                        aprilTagID = AprilTagType.DETECTION_ERROR;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -64,6 +149,19 @@ public class CameraSystem {
 
     public void captureImage(){
         cameraPipeline.captureImage();
+    }
+    public AprilTagType detectAprilTag(){
+        // reset previous april tag id
+        cameraPipeline.aprilTagID = AprilTagType.DETECTION_IN_PROGRESS;
+
+        // makes the processFrame loop try to detect AprilTags
+        cameraPipeline.detectAprilTag();
+
+        // block the main loop until an AprilTag is detected
+        while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS) {}
+
+        // return the id
+        return cameraPipeline.aprilTagID;
     }
 
 

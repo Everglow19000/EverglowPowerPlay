@@ -21,9 +21,19 @@ public class CameraTeleop extends LinearOpMode {
         waitForStart();
         cameraSystem.captureImage();
         while (opModeIsActive()){
+            ourGamepad.update();
             if (ourGamepad.circle()){
                 cameraSystem.captureImage();
             }
+            if (ourGamepad.cross()) {
+                telemetry.addLine("Detecting AprilTag...");
+
+                CameraSystem.AprilTagType aprilTagType = cameraSystem.detectAprilTag();
+                telemetry.addData("AprilTag ID:", aprilTagType);
+                telemetry.update();
+            }
+
+            drivingSystem.driveMecanum(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
         }
     }
 }
