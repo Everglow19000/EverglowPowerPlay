@@ -21,6 +21,7 @@ public class CameraTeleop extends LinearOpMode {
         waitForStart();
         cameraSystem.captureImage();
         while (opModeIsActive()){
+            ourGamepad.update();
             if (ourGamepad.circle()){
                 cameraSystem.captureImage();
             }
