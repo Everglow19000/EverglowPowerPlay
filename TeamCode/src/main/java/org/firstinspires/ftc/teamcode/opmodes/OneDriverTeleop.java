@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
+import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "OneDriverTeleop")
@@ -12,15 +13,31 @@ public class OneDriverTeleop extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
+
+        EverglowGamepad myEverglowGamepad1 = new EverglowGamepad(gamepad1);
+        final int driveTypeCount = 2;
+        int driveType = 0;
         Pose actPowers = new Pose(0, 0, 0);
         while (opModeIsActive()) {
+            if(myEverglowGamepad1.triangle()) {
+                driveType = (driveType + 1) % driveTypeCount;
+            }
+
             actPowers.x = -gamepad1.left_stick_x;
             actPowers.y = -gamepad1.left_stick_y;
             actPowers.angle = -gamepad1.right_stick_x;
-            drivingSystem.driveMecanum(actPowers);
+
+            switch(driveType) {
+                case 0:
+                    drivingSystem.driveMecanum(actPowers);
+                case 1:
+                    drivingSystem.driveByAxis(actPowers);
+            }
 
             drivingSystem.printPosition();
             telemetry.update();
+
+            myEverglowGamepad1.update();
         }
     }
 }

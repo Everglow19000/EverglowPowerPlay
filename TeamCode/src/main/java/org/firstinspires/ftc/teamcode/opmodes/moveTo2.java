@@ -14,7 +14,7 @@ public class moveTo2 extends LinearOpMode {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         waitForStart();
 
-        drivingSystem.move2(new Pose(0, 0, Math.toRadians(7)));
+        drivingSystem.move2(new Pose(50, 80, Math.toRadians(180)));
 
         Pose actPowers = new Pose(0, 0, 0);
         while (opModeIsActive()) {

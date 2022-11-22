@@ -529,9 +529,9 @@ public class DrivingSystem {
     public void move2(Pose targetLocation) {
         final Pose Kp = new Pose(0.01, 0.01, 0.73);
         final Pose Ki = new Pose(0, 0, 0);
-        final Pose Kd = new Pose(0.000003, 0.000003, 0.00001);
+        final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
-        final Pose epsilon = new Pose(0.5, 1, ROTATION_EPSILON);
+        final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
 
         Pose Deviation = Pose.difference(targetLocation, positionCM);
         Deviation.normalizeAngle();
@@ -544,6 +544,8 @@ public class DrivingSystem {
 
             driveByAxis(actPowers.powerByDeviation(Deviation));
 
+            printPosition();
+            opMode.telemetry.update();
             Deviation = Pose.difference(targetLocation, positionCM);
             Deviation.normalizeAngle();
         }
