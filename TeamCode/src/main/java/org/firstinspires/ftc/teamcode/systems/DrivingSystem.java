@@ -6,6 +6,7 @@ import static java.lang.Math.cos;
 import static java.lang.Math.max;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
+import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -39,7 +40,7 @@ public class DrivingSystem {
     private enum Robot {
         ARMADILLO, NEW_ROBOT
     }
-    private static final Robot robot = Robot.NEW_ROBOT;
+    private static final Robot robot = Robot.ARMADILLO;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -262,11 +263,6 @@ public class DrivingSystem {
         final double cosAngle = cos(currentAngle);
         final double sinAngle = sin(currentAngle);
 
-        opMode.telemetry.addData("x", Powers.x);
-        opMode.telemetry.addData("y", Powers.y);
-        opMode.telemetry.addData("rot", Powers.angle);
-        opMode.telemetry.update();
-
         Pose mecanumPowers = new Pose(
                 cosAngle * Powers.x - sinAngle * Powers.y,
                 cosAngle * Powers.y + sinAngle * Powers.x,
@@ -297,7 +293,7 @@ public class DrivingSystem {
     public void printPosition() {
         opMode.telemetry.addData("x", positionCM.x);
         opMode.telemetry.addData("y", positionCM.y);
-        opMode.telemetry.addData("rot", positionCM.angle);
+        opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
     }
 
     /**
@@ -506,9 +502,9 @@ public class DrivingSystem {
      */
     @PID
     public void move2(Pose targetLocation) {
-        final Pose Kp = new Pose(0.1, 0.1, 0.1);
+        final Pose Kp = new Pose(0.01, 0.01, 0.73);
         final Pose Ki = new Pose(0, 0, 0);
-        final Pose Kd = new Pose(0, 0, 0);
+        final Pose Kd = new Pose(0.000003, 0.000003, 0.00001);
 
         final Pose epsilon = new Pose(0.5, 1, ROTATION_EPSILON);
 
