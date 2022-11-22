@@ -30,8 +30,10 @@ public class OneDriverTeleop extends LinearOpMode {
             switch(driveType) {
                 case 0:
                     drivingSystem.driveMecanum(actPowers);
+                    break;
                 case 1:
                     drivingSystem.driveByAxis(actPowers);
+                    break;
             }
 
             drivingSystem.printPosition();
