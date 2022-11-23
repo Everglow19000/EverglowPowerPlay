@@ -107,8 +107,8 @@ public class DrivingSystem {
         // and named "imu".
         BNO055IMU imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        if (robot == Robot.ARMADILLO) {
-            // armadillo requires extra configuration for its IMU.
+        if (robot == Robot.ARMADILLO || robot == Robot.NEW_ROBOT) {
+            // armadillo and new robot require extra configuration for its IMU.
             // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
             byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
             byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis

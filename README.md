@@ -505,7 +505,7 @@ Version 5.5 requires Android Studio 4.0 or later.
     * Improves logging and reduces log spam during these conditions
 * Syncs the Control Hub time and timezone to a connected web browser programming the robot, if a Driver Station is not available.
 * Adds bulk read functionality for REV Hubs
-  * A bulk caching mode must be set at the Hub level with `LynxModule#setBulkCachingMode()`. This applies to all relevant SDK hardware classes that reference that Hub.
+  * A bulk caching mode must be set at the Hub levels with `LynxModule#setBulkCachingMode()`. This applies to all relevant SDK hardware classes that reference that Hub.
   * The following following Hub bulk caching modes are available:
     * `BulkCachingMode.OFF` (default): All hardware calls operate as usual. Bulk data can read through `LynxModule#getBulkData()` and processed manually.
     * `BulkCachingMode.AUTO`: Applicable hardware calls are served from a bulk read cache that is cleared/refreshed automatically to ensure identical commands don't hit the same cache. The cache can also be cleared manually with `LynxModule#clearBulkCache()`, although this is not recommended.
