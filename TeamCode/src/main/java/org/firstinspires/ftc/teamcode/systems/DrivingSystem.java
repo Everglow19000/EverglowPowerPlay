@@ -6,6 +6,7 @@ import static java.lang.Math.cos;
 import static java.lang.Math.max;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
+import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -18,9 +19,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
-import org.firstinspires.ftc.teamcode.utils.PointD;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
+import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 
 /**
  * A class for handling the driving of the robot.
@@ -39,7 +40,7 @@ public class DrivingSystem {
     private enum Robot {
         ARMADILLO, NEW_ROBOT
     }
-    private static final Robot robot = Robot.NEW_ROBOT;
+    private static final Robot robot = Robot.ARMADILLO;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -172,6 +173,27 @@ public class DrivingSystem {
     }
 
     /**
+     * returns how far sideways and forward in centimeters,
+     * the robot has moved and rotated since the last time that resetDistance() was called.
+     * Assumes the robot hasn't moved in any other directions.
+     */
+    public Pose getDistancesOld(){
+        Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
+
+        final double fL = frontLeft.getCurrentPosition();
+        final double fR = frontRight.getCurrentPosition();
+        final double bL = backLeft.getCurrentPosition();
+        final double bR = backRight.getCurrentPosition();
+
+        Pose movementChange = new Pose();
+        movementChange.y = (fL + fR + bL + bR) / 4. * CM_PER_TICK;
+        movementChange.x = (fR - fL + bR - bL) / 4. * CM_PER_TICK;
+        movementChange.angle = orientation.firstAngle;
+
+        return movementChange;
+    }
+
+    /**
      * Gets the movement of the robot in the robot's axis since the last tracked position.
      *
      * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
@@ -183,6 +205,7 @@ public class DrivingSystem {
         final double bRChange = backRight.getCurrentPosition() - brPreviousTicks;
 
         PointD movementChange = new PointD();
+
         movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
         movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
@@ -262,11 +285,6 @@ public class DrivingSystem {
         final double cosAngle = cos(currentAngle);
         final double sinAngle = sin(currentAngle);
 
-        opMode.telemetry.addData("x", Powers.x);
-        opMode.telemetry.addData("y", Powers.y);
-        opMode.telemetry.addData("rot", Powers.angle);
-        opMode.telemetry.update();
-
         Pose mecanumPowers = new Pose(
                 cosAngle * Powers.x - sinAngle * Powers.y,
                 cosAngle * Powers.y + sinAngle * Powers.x,
@@ -297,7 +315,7 @@ public class DrivingSystem {
     public void printPosition() {
         opMode.telemetry.addData("x", positionCM.x);
         opMode.telemetry.addData("y", positionCM.y);
-        opMode.telemetry.addData("rot", positionCM.angle);
+        opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
     }
 
     /**
@@ -307,25 +325,27 @@ public class DrivingSystem {
      * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveStraight(double distance, double power) {
+
         final double ANGLE_DEVIATION_SCALAR = 0.05;
 
         // if we're traveling a negative distance, that means traveling backwards,
         // so the power should be inverted and so should the distance.
-        if (distance < 0) {
+        if (distance < 0){
             distance = -distance;
             power = -power;
         }
 
         resetDistance();
-        double startAngle = getCurrentAngle();
-        double forwardDistance = updateDistances().y;
+        double startAngle = getDistancesOld().angle;
+        double forwardDistance = getDistancesOld().y;
 
-        while (abs(forwardDistance) < distance) {
-            double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            driveMecanum(new Pose(0, power, angleDeviation * ANGLE_DEVIATION_SCALAR));
-            forwardDistance = updateDistances().y;
+        while (Math.abs(forwardDistance) < distance) {
+            forwardDistance = getDistancesOld().y;
+            double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - getDistancesOld().angle);
+            double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
+            driveMecanum(new Pose(0, power, rotatePower));
         }
-        stop();
+        resetDistance();
     }
 
     /**
@@ -335,24 +355,25 @@ public class DrivingSystem {
      * @param power    How much power should be given to the motor, from 0 to 1.
      */
     public void driveSideways(double distance, double power) {
-        double ANGLE_DEVIATION_SCALAR = 0.05;
-
         // if we're traveling a negative distance, that means traveling left,
         // so the power should be inverted and so should the distance.
-        if (distance < 0) {
+        if (distance < 0){
             distance = -distance;
             power = -power;
         }
 
+        double ANGLE_DEVIATION_K = 0.05;
+
         resetDistance();
-        double startAngle = getCurrentAngle();
-        double sidewaysDistance = updateDistances().x;
-        while (abs(sidewaysDistance) < distance) {
-            double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-            driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
-            sidewaysDistance = updateDistances().x;
+        double startAngle = getDistancesOld().angle;
+        double sidewaysDistance = getDistancesOld().x;
+        while (Math.abs(sidewaysDistance) < distance) {
+            sidewaysDistance = getDistancesOld().x;
+            double angleDeviation = normalizeAngle(startAngle - getDistancesOld().angle);
+            driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_K));
         }
         stop();
+
     }
 
     /**
@@ -506,11 +527,11 @@ public class DrivingSystem {
      */
     @PID
     public void move2(Pose targetLocation) {
-        final Pose Kp = new Pose(0.1, 0.1, 0.1);
+        final Pose Kp = new Pose(0.01, 0.01, 0.73);
         final Pose Ki = new Pose(0, 0, 0);
-        final Pose Kd = new Pose(0, 0, 0);
+        final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
-        final Pose epsilon = new Pose(0.5, 1, ROTATION_EPSILON);
+        final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
 
         Pose Deviation = Pose.difference(targetLocation, positionCM);
         Deviation.normalizeAngle();
@@ -523,6 +544,8 @@ public class DrivingSystem {
 
             driveByAxis(actPowers.powerByDeviation(Deviation));
 
+            printPosition();
+            opMode.telemetry.update();
             Deviation = Pose.difference(targetLocation, positionCM);
             Deviation.normalizeAngle();
         }

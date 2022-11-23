@@ -25,6 +25,6 @@ public class PIDController {
         lastTime = currentTime;
         lastDeviation = deviation;
 
-        return Kp * deviation + deviationIntegral * Ki - Kd * derivative;
+        return Kp * deviation + deviationIntegral * Ki + Kd * derivative;
     }
 }
