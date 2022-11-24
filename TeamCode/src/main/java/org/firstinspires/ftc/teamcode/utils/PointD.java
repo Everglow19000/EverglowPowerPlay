@@ -4,6 +4,9 @@ public class PointD {
     public double x;
     public double y;
 
+    /**
+     * Given no values, sets values to 0.
+     */
     public PointD() {
         this.x = 0;
         this.y = 0;
@@ -14,6 +17,9 @@ public class PointD {
         this.y = y;
     }
 
+    /**
+     * @return sqrt(x^2 + y^2).
+     */
     public double hyp() {
         return Math.hypot(x, y);
     }

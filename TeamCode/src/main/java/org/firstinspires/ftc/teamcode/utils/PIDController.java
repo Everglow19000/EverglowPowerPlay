@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 /**
- * used to control power activations while in track
+ * Used to control power activations while in track.
  */
 public class PIDController {
     private double deviationIntegral = 0;

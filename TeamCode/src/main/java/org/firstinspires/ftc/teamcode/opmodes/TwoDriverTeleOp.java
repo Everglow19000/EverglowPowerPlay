@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,27 +9,32 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.systems.Claw;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBar;
+import org.firstinspires.ftc.teamcode.systems.GWheel;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "TwoDriverTeleOp")
 public class TwoDriverTeleOp extends LinearOpMode {
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
         EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
+
         DrivingSystem drivingSystem = new DrivingSystem(this);
         Claw claw = new Claw(this);
         FourBar fourBar = new FourBar(this);
+//        GWheel gWheel = new GWheel(this);
+
+        Pose actPowers = new Pose(0, 0, 0);
+        final int divisorSpeed = 10;
 
         waitForStart();
-        Pose actPowers = new Pose(0, 0, 0);
+
         while (opModeIsActive()) {
             gamepadA.update();
             gamepadB.update();
 
-            //If we want to drive and turn slower, for finer adjustment
-            final int divisorSpeed = 10;
+            // If we want to drive and turn slower, for finer adjustment
             if (gamepad1.left_bumper) {
                 actPowers.x = -gamepad1.left_stick_x / divisorSpeed;
                 actPowers.y = -gamepad1.left_stick_y / divisorSpeed;
@@ -40,7 +44,9 @@ public class TwoDriverTeleOp extends LinearOpMode {
                 actPowers.y = -gamepad1.left_stick_y;
                 actPowers.angle = -gamepad1.right_stick_x;
             }
+
             drivingSystem.driveMecanum(actPowers);
+
             if (gamepadB.rt()) {
                 claw.close();
             }
@@ -64,6 +70,7 @@ public class TwoDriverTeleOp extends LinearOpMode {
 //            if(gamepad.lb()){
 //                gWheel.toggleSpit();
 //            }
+
             drivingSystem.printPosition();
             telemetry.addData("Angle 1", (drivingSystem.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle));
             telemetry.addData("Angle 2", (drivingSystem.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).secondAngle));

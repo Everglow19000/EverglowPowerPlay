@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+@TeleOp(name = "MinCameraTeleop")
+@Disabled
 public class MinCameraTeleop extends LinearOpMode {
 
     static class Pipeline extends OpenCvPipeline {
@@ -35,7 +38,7 @@ public class MinCameraTeleop extends LinearOpMode {
         DcMotor motor = hardwareMap.get(DcMotor.class, "front_right");
 
         waitForStart();
-        while (opModeIsActive()){
+        while (opModeIsActive()) {
             motor.setPower(gamepad1.right_stick_x);
         }
         motor.setPower(0); // even this doesn't work or get called, for some reason.

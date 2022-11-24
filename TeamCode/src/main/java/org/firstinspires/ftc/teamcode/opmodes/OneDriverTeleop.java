@@ -6,24 +6,29 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.systems.Claw;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBar;
+import org.firstinspires.ftc.teamcode.systems.GWheel;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "OneDriverTeleop")
 public class OneDriverTeleop extends LinearOpMode {
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
+
         DrivingSystem drivingSystem = new DrivingSystem(this);
         Claw claw = new Claw(this);
         FourBar fourBar = new FourBar(this);
-        //GWheel gWheel = new GWheel(this);
+//        GWheel gWheel = new GWheel(this);
+
+        Pose actPowers = new Pose(0, 0, 0);
+        final int driveTypeCount = 2;
 
         waitForStart();
-        Pose actPowers = new Pose(0, 0, 0);
+
         while (opModeIsActive()) {
             gamepad.update();
-            final int driveTypeCount = 2;
+
             int driveType = 0;
             if (gamepad.triangle()) {
                 driveType = (driveType + 1) % driveTypeCount;
@@ -35,6 +40,7 @@ public class OneDriverTeleop extends LinearOpMode {
                 actPowers.angle = -gamepad1.right_stick_x;
             }
             drivingSystem.driveMecanum(actPowers);
+
 //            switch(driveType) {
 //                case 0:
 //                    drivingSystem.driveMecanum(actPowers);
@@ -43,6 +49,7 @@ public class OneDriverTeleop extends LinearOpMode {
 //                    drivingSystem.driveByAxis(actPowers);
 //                    break;
 //            }
+
             if (gamepad.rt()) {
                 claw.close();
             }
@@ -66,6 +73,7 @@ public class OneDriverTeleop extends LinearOpMode {
 //            if(gamepad.lb()){
 //                gWheel.toggleSpit();
 //            }
+
             drivingSystem.printPosition();
             telemetry.update();
         }
