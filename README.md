@@ -1,8 +1,8 @@
 ![Everglow Logo](doc/media/everglow-logo.jpeg)
 
-<span style="text-align: center;">
-<h1 style="margin-bottom: 0rem;">Everglow #19,000</h1>
-<h3 style="margin-top: 0rem;">PowerPlay</h3>
+<span align="center">
+<h1 >Everglow #19,000</h1>
+<h3 >PowerPlay</h3>
 <p>Everglow's code for the FTC PowerPlay season.</p>
 </span>
 
