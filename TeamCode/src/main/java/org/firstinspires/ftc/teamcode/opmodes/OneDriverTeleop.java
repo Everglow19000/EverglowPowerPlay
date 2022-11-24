@@ -25,21 +25,24 @@ public class OneDriverTeleop extends LinearOpMode {
             gamepad.update();
             final int driveTypeCount = 2;
             int driveType = 0;
-            if(gamepad.triangle()) {
+            if (gamepad.triangle()) {
                 driveType = (driveType + 1) % driveTypeCount;
             }
 
-            actPowers.x = -gamepad1.left_stick_x;
-            actPowers.y = -gamepad1.left_stick_y;
-            actPowers.angle = -gamepad1.right_stick_x;
-            switch(driveType) {
-                case 0:
-                    drivingSystem.driveMecanum(actPowers);
-                    break;
-                case 1:
-                    drivingSystem.driveByAxis(actPowers);
-                    break;
+            if (gamepad1.left_stick_button) {
+                actPowers.x = -gamepad1.left_stick_x;
+                actPowers.y = -gamepad1.left_stick_y;
+                actPowers.angle = -gamepad1.right_stick_x;
             }
+            drivingSystem.driveMecanum(actPowers);
+//            switch(driveType) {
+//                case 0:
+//                    drivingSystem.driveMecanum(actPowers);
+//                    break;
+//                case 1:
+//                    drivingSystem.driveByAxis(actPowers);
+//                    break;
+//            }
             if (gamepad.rt()) {
                 claw.close();
             }

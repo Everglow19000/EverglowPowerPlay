@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
+import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -39,7 +40,11 @@ public class CameraTeleop extends LinearOpMode {
                 telemetry.update();
             }
 
-            drivingSystem.driveMecanum(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x);
+            Pose actPowers = new Pose();
+            actPowers.x = -gamepad1.left_stick_x;
+            actPowers.y = -gamepad1.left_stick_y;
+            actPowers.angle = -gamepad1.right_stick_x;
+            drivingSystem.driveMecanum(actPowers);
         }
     }
 }

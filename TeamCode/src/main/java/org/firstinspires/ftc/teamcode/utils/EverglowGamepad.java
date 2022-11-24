@@ -16,9 +16,9 @@ public class EverglowGamepad {
     private boolean previousUp;
     private boolean previousDown;
     private boolean previousRb;
-    private boolean  previousRt;
+    private boolean previousRt;
     private boolean previousLb;
-    private boolean  previousLt;
+    private boolean previousLt;
     private boolean previousShare;
 
     private boolean currentA;
@@ -30,9 +30,9 @@ public class EverglowGamepad {
     private boolean currentUp;
     private boolean currentDown;
     private boolean currentRb;
-    private boolean  currentRt;
+    private boolean currentRt;
     private boolean currentLb;
-    private boolean  currentLt;
+    private boolean currentLt;
     private boolean currentShare;
 
     public EverglowGamepad(Gamepad gamepad) {
@@ -43,78 +43,81 @@ public class EverglowGamepad {
     /**
      * cross
      */
-    public boolean a(){
+    public boolean a() {
         return currentA && !previousA;
     }
 
     /**
      * circle
      */
-    public boolean b(){
+    public boolean b() {
         return currentB && !previousB;
     }
 
     /**
      * square
      */
-    public boolean x(){
+    public boolean x() {
         return currentX && !previousX;
     }
 
     /**
      * triangle
      */
-    public boolean y(){
+    public boolean y() {
         return currentY && !previousY;
     }
 
     // aliases with a ps4 controller
-    public boolean cross(){
+    public boolean cross() {
         return a();
     }
-    public boolean circle(){
+
+    public boolean circle() {
         return b();
     }
-    public boolean square(){
+
+    public boolean square() {
         return x();
     }
-    public boolean triangle(){
+
+    public boolean triangle() {
         return y();
     }
 
-    public boolean dpad_left(){
+    public boolean dpad_left() {
         return currentLeft && !previousLeft;
     }
 
-    public boolean dpad_right(){
+    public boolean dpad_right() {
         return currentRight && !previousRight;
     }
 
-    public boolean dpad_up(){
+    public boolean dpad_up() {
         return currentUp && !previousUp;
     }
 
-    public boolean dpad_down(){
+    public boolean dpad_down() {
         return currentDown && !previousDown;
     }
 
-    public boolean rt(){
+    public boolean rt() {
         return currentRt && !previousRt;
     }
 
-    public boolean lt(){
+    public boolean lt() {
         return currentLt && !previousLt;
     }
 
-    public boolean rb(){
+    public boolean rb() {
         return currentRb && !previousRb;
     }
 
-    public boolean lb(){
+    public boolean lb() {
         return currentLb && !previousLb;
     }
 
-    public boolean crossHold(){
+    public boolean crossHold() {
         return crossHoldTimer.seconds() > 4;
     }
 
@@ -128,9 +131,9 @@ public class EverglowGamepad {
         previousX = currentX;
         previousY = currentY;
         previousRight = currentRight;
-        previousLeft  = currentLeft;
-        previousUp    = currentUp;
-        previousDown  = currentDown;
+        previousLeft = currentLeft;
+        previousUp = currentUp;
+        previousDown = currentDown;
 
         previousLb = currentLb;
         previousLt = currentLt;
@@ -153,7 +156,7 @@ public class EverglowGamepad {
         currentRt = gamepad.right_trigger > 0.1;
         currentShare = gamepad.share;
 
-        if(!gamepad.a){
+        if (!gamepad.a) {
             crossHoldTimer.reset();
         }
     }

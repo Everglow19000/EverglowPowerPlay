@@ -19,9 +19,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
-import org.firstinspires.ftc.teamcode.utils.PosePIDController;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PointD;
+import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 
 /**
  * A class for handling the driving of the robot.
@@ -31,7 +31,8 @@ public class DrivingSystem {
     /**
      * Marker marking PID activated methods.
      */
-    @interface PID{}
+    @interface PID {
+    }
 
     /**
      * Enum to indicate which robot we are currently running. The IMU initialization is
@@ -40,7 +41,8 @@ public class DrivingSystem {
     private enum Robot {
         ARMADILLO, NEW_ROBOT
     }
-    private static final Robot robot = Robot.ARMADILLO;
+
+    private static final Robot robot = Robot.NEW_ROBOT;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -48,7 +50,7 @@ public class DrivingSystem {
 
     private final LinearOpMode opMode;
 
-    private final BNO055IMU imu;
+    public final BNO055IMU imu;
     public final DcMotor frontRight;
     public final DcMotor frontLeft;
     public final DcMotor backRight;
@@ -108,26 +110,32 @@ public class DrivingSystem {
         // and named "imu".
         BNO055IMU imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        if (robot == Robot.ARMADILLO || robot == Robot.NEW_ROBOT) {
-            // armadillo and new robot require extra configuration for its IMU.
-            // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
-            byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
-            byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
-            //Need to be in CONFIG mode to write to registers
-            imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal & 0x0F);
-            opMode.sleep(100); //Changing modes requires a delay before doing anything else
-            //Write to the AXIS_MAP_CONFIG register
-            imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, AXIS_MAP_CONFIG_BYTE & 0x0F);
-            //Write to the AXIS_MAP_SIGN register
-            imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE & 0x0F);
-            //Need to change back into the IMU mode to use the gyro
-            imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
-            opMode.sleep(100); //Changing modes again requires a delay
+        // armadillo and new robot require extra configuration for its IMU.
+        // copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
 
-            while (!imu.isGyroCalibrated()) {
-                // wait for the gyroscope calibration
-                opMode.sleep(10);
-            }
+        byte axisMapConfigByte; //This is what to write to the AXIS_MAP_CONFIG register to swap the needed axis
+
+        if (robot == Robot.ARMADILLO){
+            axisMapConfigByte = 0x6; // swap x and z axis
+        }else {
+            axisMapConfigByte = 0x18; // swap x and y axis
+        }
+
+        byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
+        // Need to be in CONFIG mode to write to registers
+        imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal & 0b1111);
+        opMode.sleep(100); //Changing modes requires a delay before doing anything else
+        //Write to the AXIS_MAP_CONFIG register
+        imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, axisMapConfigByte & 0b111111);
+        //Write to the AXIS_MAP_SIGN register
+        imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE & 0b111);
+        //Need to change back into the IMU mode to use the gyro
+        imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
+        opMode.sleep(100); // Changing modes again requires a delay
+
+        while (!imu.isGyroCalibrated()) {
+            // wait for the gyroscope calibration
+            opMode.sleep(10);
         }
         return imu;
     }
@@ -177,7 +185,7 @@ public class DrivingSystem {
      * the robot has moved and rotated since the last time that resetDistance() was called.
      * Assumes the robot hasn't moved in any other directions.
      */
-    public Pose getDistancesOld(){
+    public Pose getDistancesOld() {
         Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
 
         final double fL = frontLeft.getCurrentPosition();
@@ -330,7 +338,7 @@ public class DrivingSystem {
 
         // if we're traveling a negative distance, that means traveling backwards,
         // so the power should be inverted and so should the distance.
-        if (distance < 0){
+        if (distance < 0) {
             distance = -distance;
             power = -power;
         }
@@ -357,7 +365,7 @@ public class DrivingSystem {
     public void driveSideways(double distance, double power) {
         // if we're traveling a negative distance, that means traveling left,
         // so the power should be inverted and so should the distance.
-        if (distance < 0){
+        if (distance < 0) {
             distance = -distance;
             power = -power;
         }

@@ -45,7 +45,6 @@ public class CameraSystem {
     static class CameraPipeline extends OpenCvPipeline {
         private long nativeApriltagPtr; // a pointer to the JNI AprilTag detector
         private Mat grey = new Mat(); // a blank canvas to store the b&w image
-        private ArrayList<AprilTagDetection> detections = new ArrayList<>(); // stores the detections from the AprilTag detector
 
         private LinearOpMode opMode; // the OpMode that's currently running
         private boolean isCapturingImage = false;
@@ -62,14 +61,14 @@ public class CameraSystem {
 
         // runs when class is deleted
         @Override
-        public void finalize()
+        protected void finalize()
         {
             // -- safely delete AprilTag detector from memory -- //
             // Might be null if createApriltagDetector() threw an exception
             if(nativeApriltagPtr != 0)
             {
                 // Delete the native context we created in the constructor
-                AprilTagDetectorJNI.releaseApriltagDetector(nativeApriltagPtr);
+//                AprilTagDetectorJNI.releaseApriltagDetector(nativeApriltagPtr);
                 nativeApriltagPtr = 0;
             }
             else
@@ -122,9 +121,9 @@ public class CameraSystem {
                     Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
 
                     // call the detector on the image
-                    detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeApriltagPtr, grey, TAG_SIZE, FX, FY, CX, CY);
+                    ArrayList<AprilTagDetection> detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeApriltagPtr, grey, TAG_SIZE, FX, FY, CX, CY);
 
-                    if (detections.size() > 0) // detected at least one april tag
+                    if (detections.size() > 0) { // detected at least one april tag
                         // assign global variable based on result
                         switch (detections.get(0).id) {
                             case 0:
@@ -139,13 +138,13 @@ public class CameraSystem {
                             default:
                                 aprilTagID = AprilTagType.INVALID;
                         }
-                    else // no AprilTag detected
+                    }else{ // no AprilTag detected
                         aprilTagID = AprilTagType.DETECTION_ERROR;
+                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
-
             return input;
         }
     }
