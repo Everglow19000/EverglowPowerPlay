@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
-import static java.lang.Math.cos;
 import static java.lang.Math.max;
-import static java.lang.Math.signum;
 import static java.lang.Math.sin;
+import static java.lang.Math.cos;
+import static java.lang.Math.signum;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
+
+import android.util.Pair;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -19,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
+import org.firstinspires.ftc.teamcode.utils.Path;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
@@ -329,6 +332,26 @@ public class DrivingSystem {
         opMode.telemetry.addData("x", positionCM.x);
         opMode.telemetry.addData("y", positionCM.y);
         opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
+    }
+
+    /**
+     * Drives the robot according to a given mathematical function.
+     *
+     * @param path The Mathematical Function that describes the path the robot should follow.
+     */
+    public void driveByPath(Path path) {
+        if (path == null) {
+            stop();
+            return;
+        }
+        double u = 0;
+        while (u < 1) {
+            Pair<PointD, Double> pathReturn = path.VelocityForPoint(positionCM.toPointD(), u);
+            PointD velocity = pathReturn.first;
+            driveMecanum(velocity.toPose(0));
+            u = pathReturn.second;
+        }
+        stop();
     }
 
     /**
