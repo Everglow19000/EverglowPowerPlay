@@ -6,12 +6,12 @@ import static java.lang.Math.max;
 
 public class Path {
 
-    Function x;
-    Function y;
+    public Function x;
+    public Function y;
     Function xTag;
     Function yTag;
 
-    interface Function {
+    public interface Function {
         double function(double u);
     }
 
@@ -36,7 +36,7 @@ public class Path {
      * @param u The "tick" value of the path (0 <= u <= 1).
      * @return A PointD object with the x and y velocities.
      */
-    public PointD VelocityAtPoint(double u) {
+    private PointD VelocityAtPoint(double u) {
         double yVelocity = yTag.function(u);
         double xVelocity = xTag.function(u);
         double max = max(abs(yVelocity), abs(xVelocity));
@@ -53,7 +53,7 @@ public class Path {
      * @param uPrevious The previous u value.
      * @return The next u value.
      */
-    public double NearestPointU(PointD location, double uPrevious) {
+    private double NearestPointU(PointD location, double uPrevious) {
         //The derivative of the distance squared between the previous point and the path
         Function errorTag = (u) -> 2 * (x.function(u) - location.x) * xTag.function(u)
                 + 2 * (y.function(u) - location.y) * yTag.function(u);
@@ -62,7 +62,7 @@ public class Path {
 
         //Check when errorTag approaches 0 (minima point) to find the nearest point on the path
         //or when u is out of bounds, which means we reached the end of the path
-        while (errorTag.function(u) < -1E-7 || u >= 1) {
+        while (errorTag.function(u) < -1E-7 && u < 1) {
             u -= alpha * errorTag.function(u);
         }
 
@@ -81,7 +81,7 @@ public class Path {
         double u = NearestPointU(location, uPrevious);
         PointD velocity = VelocityAtPoint(u);
         PointD error = new PointD(x.function(u) - location.x, y.function(u) - location.y);
-        double alpha = 1.0;
+        double alpha = 0.01;
 
         velocity.x += alpha * error.x;
         velocity.y += alpha * error.y;

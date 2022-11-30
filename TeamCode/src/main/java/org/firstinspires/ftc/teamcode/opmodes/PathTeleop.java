@@ -16,15 +16,22 @@ public class PathTeleop extends LinearOpMode {
         EverglowGamepad gamePad = new EverglowGamepad(gamepad1);
 
         DrivingSystem drivingSystem = new DrivingSystem(this);
-        Claw claw = new Claw(this);
-        FourBar fourBar = new FourBar(this);
+        //Claw claw = new Claw(this);
+        //FourBar fourBar = new FourBar(this);
 
         waitForStart();
 
-        while (opModeIsActive()) {
+        if (opModeIsActive()) {
             gamePad.update();
 
-            drivingSystem.driveByPath(new Path()); //TODO: fill in the path
+            double r = 30;
+            Path path = new Path(
+                    (u) -> r * Math.cos(u * 2 * Math.PI) - r,
+                    (u) -> r * Math.sin(u * 2 * Math.PI),
+                    (u) -> -2 * Math.PI * r * Math.sin(u * 2 * Math.PI),
+                    (u) -> 2 * Math.PI * r * Math.cos(u * 2 * Math.PI)
+            );
+            drivingSystem.driveByPath(path);
 
 /*            if (gamePad.rt()) {
                 claw.close();
@@ -43,8 +50,8 @@ public class PathTeleop extends LinearOpMode {
                 fourBar.goTo(FourBar.Level.NEUTRAL);
             }*/
 
-            drivingSystem.printPosition();
-            telemetry.update();
+            //drivingSystem.printPosition();
+            //telemetry.update();
         }
     }
 }

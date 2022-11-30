@@ -269,7 +269,7 @@ public class DrivingSystem {
         // If any number that we want to give it is greater than 1,
         // we must divide all the numbers equally so the maximum is 1
         // and the proportions are preserved.
-        double norm = max(max(frontRightPower, frontLeftPower), max(backRightPower, backLeftPower));
+        double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower))) * 4;
         if (norm > 1) {
             frontRightPower /= norm;
             frontLeftPower /= norm;
@@ -345,11 +345,19 @@ public class DrivingSystem {
             return;
         }
         double u = 0;
-        while (u < 1) {
+        while (u < 1 && opMode.opModeIsActive()) {
             Pair<PointD, Double> pathReturn = path.VelocityForPoint(positionCM.toPointD(), u);
-            PointD velocity = pathReturn.first;
-            driveMecanum(velocity.toPose(0));
+            Pose velocity = pathReturn.first.toPose(0);
+            driveMecanum(velocity);
             u = pathReturn.second;
+            opMode.telemetry.addData("u: ", u);
+            opMode.telemetry.addData("previous x: ", positionCM.x);
+            opMode.telemetry.addData("previous y: ", positionCM.y);
+            opMode.telemetry.addData("previous rot: ", toDegrees(positionCM.angle));
+            opMode.telemetry.addData("current x: ", path.x.function(u));
+            opMode.telemetry.addData("current y: ", path.y.function(u));
+            opMode.telemetry.addData("current rot: ", toDegrees(velocity.angle));
+            opMode.telemetry.update();
         }
         stop();
     }
