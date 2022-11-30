@@ -21,7 +21,7 @@ public class FourBar {
         motor.setTargetPosition(0);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         motor.setPower(0.7);
-        goTo(Level.NEUTRAL);
+        //goTo(Level.NEUTRAL);
     }
 
     public void goTo(Level level) {
