@@ -451,37 +451,37 @@ public class DrivingSystem {
     /**
      * Drives the robot in a straight line to a given position on the board (x, y, angle).
      *
-     * @param targetLocation The location and orientation for the robot to reach.
+     * @param targetPose The location and orientation for the robot to reach.
      */
-    public void moveTo(Pose targetLocation) {
+    public void moveTo(Pose targetPose) {
         final Pose powerScalar = new Pose(0.007, 0.008, 0.6);
         final Pose minPower = new Pose(0.12, 0.15, 0.08);
         final Pose epsilon = new Pose(0.5, 1, 0.0087);
 
-        Pose Deviation = Pose.difference(targetLocation, positionCM);
-        Deviation.normalizeAngle();
+        Pose deviation = Pose.difference(targetPose, positionCM);
+        deviation.normalizeAngle();
         Pose actPowers = new Pose();
 
-        while (abs(Deviation.x) > epsilon.x ||
-                abs(Deviation.y) > epsilon.y ||
-                abs(Deviation.angle) > epsilon.angle) {
+        while (abs(deviation.x) > epsilon.x ||
+                abs(deviation.y) > epsilon.y ||
+                abs(deviation.angle) > epsilon.angle) {
 
-            if (abs(Deviation.x) > epsilon.x) {
-                actPowers.x = signum(Deviation.x) * minPower.x + Deviation.x * powerScalar.x;
+            if (abs(deviation.x) > epsilon.x) {
+                actPowers.x = signum(deviation.x) * minPower.x + deviation.x * powerScalar.x;
             }
-            if (abs(Deviation.y) > epsilon.y) {
-                actPowers.y = signum(Deviation.y) * minPower.y + Deviation.y * powerScalar.y;
+            if (abs(deviation.y) > epsilon.y) {
+                actPowers.y = signum(deviation.y) * minPower.y + deviation.y * powerScalar.y;
             }
-            if (abs(Deviation.angle) > epsilon.angle) {
-                actPowers.angle = signum(Deviation.angle) * minPower.angle
-                        + Deviation.angle * powerScalar.angle;
+            if (abs(deviation.angle) > epsilon.angle) {
+                actPowers.angle = signum(deviation.angle) * minPower.angle
+                        + deviation.angle * powerScalar.angle;
             }
 
             driveByAxis(actPowers);
 
             actPowers.setValue(new Pose());
-            Deviation = Pose.difference(targetLocation, positionCM);
-            Deviation.normalizeAngle();
+            deviation = Pose.difference(targetPose, positionCM);
+            deviation.normalizeAngle();
         }
         stop();
     }
