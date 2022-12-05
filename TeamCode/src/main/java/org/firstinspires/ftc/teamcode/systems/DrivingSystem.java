@@ -354,8 +354,8 @@ public class DrivingSystem {
             opMode.telemetry.addData("previous x: ", positionCM.x);
             opMode.telemetry.addData("previous y: ", positionCM.y);
             opMode.telemetry.addData("previous rot: ", toDegrees(positionCM.angle));
-            opMode.telemetry.addData("current x: ", path.x.function(u));
-            opMode.telemetry.addData("current y: ", path.y.function(u));
+            opMode.telemetry.addData("current x: ", path.x(u));
+            opMode.telemetry.addData("current y: ", path.y(u));
             opMode.telemetry.addData("current rot: ", toDegrees(velocity.angle));
             opMode.telemetry.update();
         }
@@ -567,17 +567,17 @@ public class DrivingSystem {
     /**
      * Drives the robot to a given location on the field.
      *
-     * @param targetLocation The location and orientation for the robot to reach.
+     * @param targetPose The location and orientation for the robot to reach.
      */
     @PID
-    public void move2(Pose targetLocation) {
+    public void move2(Pose targetPose) {
         final Pose Kp = new Pose(0.01, 0.01, 0.73);
         final Pose Ki = new Pose(0, 0, 0);
         final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
         final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
 
-        Pose Deviation = Pose.difference(targetLocation, positionCM);
+        Pose Deviation = Pose.difference(targetPose, positionCM);
         Deviation.normalizeAngle();
         PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
@@ -589,7 +589,7 @@ public class DrivingSystem {
             driveByAxis(actPowers.powerByDeviation(Deviation));
             printPosition();
             opMode.telemetry.update();
-            Deviation = Pose.difference(targetLocation, positionCM);
+            Deviation = Pose.difference(targetPose, positionCM);
             Deviation.normalizeAngle();
         }
         stop();
@@ -602,15 +602,15 @@ public class DrivingSystem {
      */
     @PID
     public void moveRelativeToRobot(Pose distances) {
-        Pose targetLocation = new Pose();
+        Pose targetPose = new Pose();
 
         final double cosAngle = cos(positionCM.angle);
         final double sinAngle = sin(positionCM.angle);
 
-        targetLocation.x = positionCM.x + distances.x * cosAngle + distances.y * sinAngle;
-        targetLocation.y = positionCM.y - distances.x * sinAngle + distances.y * cosAngle;
-        targetLocation.angle = normalizeAngle(positionCM.angle + distances.angle);
+        targetPose.x = positionCM.x + distances.x * cosAngle + distances.y * sinAngle;
+        targetPose.y = positionCM.y - distances.x * sinAngle + distances.y * cosAngle;
+        targetPose.angle = normalizeAngle(positionCM.angle + distances.angle);
 
-        move2(targetLocation);
+        move2(targetPose);
     }
 }
