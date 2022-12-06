@@ -40,11 +40,11 @@ public abstract class Path {
      */
     private double NearestPointU(PointD location, double uPrevious) {
         //A small value to add to the u value to try to get as close as possible to the path
-        double alpha = 0.01, u = uPrevious;
+        double alpha = 1E-4, u = uPrevious, epsilon = -1E-7;
 
         //Check when errorTag approaches 0 (minima point) to find the nearest point on the path
         //or when u is out of bounds, which means we reached the end of the path
-        while (errorTag(u, location) < -1E-7 && u < 1) {
+        while (errorTag(u, location) < epsilon && u < 1) {
             u -= alpha * errorTag(u, location);
         }
 
@@ -74,7 +74,7 @@ public abstract class Path {
         double u = NearestPointU(location, uPrevious);
         PointD velocity = VelocityAtPoint(u);
         PointD error = new PointD(x(u) - location.x, y(u) - location.y);
-        double alpha = 0.01;
+        double alpha = 0.4;
 
         velocity.x += alpha * error.x;
         velocity.y += alpha * error.y;

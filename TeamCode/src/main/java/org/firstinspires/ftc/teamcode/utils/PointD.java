@@ -33,6 +33,17 @@ public class PointD {
     }
 
     /**
+     * Calculates the difference between the values of two poses.
+     *
+     * @param pointD1 A given pose.
+     * @param pointD2 Another given pose.
+     * @return A new pose object containing the differences in values (pointD1 - pointD2).
+     */
+    public static PointD difference(PointD pointD1, PointD pointD2) {
+        return new PointD(pointD1.x - pointD2.x, pointD1.y - pointD2.y);
+    }
+
+    /**
      * Converts a Pose object to a PointD object.
      *
      * @param angle the angle to add to the Pose object, as PointD does not have an angle.

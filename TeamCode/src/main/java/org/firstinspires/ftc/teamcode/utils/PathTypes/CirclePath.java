@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.utils.PointD;
 public class CirclePath extends Path {
 
     private double radius;
-    private PointD center;
+    private PointD startPoint;
 
     /**
      * Creates a circle path.
@@ -16,17 +16,17 @@ public class CirclePath extends Path {
      */
     public CirclePath(double radius, PointD center) {
         this.radius = radius;
-        this.center = center;
+        this.startPoint = PointD.difference(center, new PointD(radius, 0));
     }
 
     @Override
     public double x(double u) {
-        return radius * Math.cos(u * 2 * Math.PI) + center.x;
+        return radius * Math.cos(u * 2 * Math.PI) + startPoint.x;
     }
 
     @Override
     public double y(double u) {
-        return radius * Math.sin(u * 2 * Math.PI) + center.y;
+        return radius * Math.sin(u * 2 * Math.PI) + startPoint.y;
     }
 
     @Override
