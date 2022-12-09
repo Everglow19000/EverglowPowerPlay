@@ -108,13 +108,17 @@ public abstract class SplineDrive {
 
         CubicPolynomial[] polynomials = new CubicPolynomial[yValues.length - 1];
 
-        for(int i=0; i<polynomials.length; i++){
+        double nextM0 = m0;
+        double m1;
 
-            double m1;
-            if(i == polynomials.length-1) m1 = mf;
-            else m1 = (yValues[i]-yValues[i+2])/-2;
+        for(int i=0; i<polynomials.length; i++) {
 
-            polynomials[i] = findPolynomial(yValues[i], m0, yValues[i+1],m1);
+            if (i == polynomials.length - 1) m1 = mf;
+            else m1 = (yValues[i] - yValues[i + 2]) / -2;
+
+            polynomials[i] = findPolynomial(yValues[i], nextM0, yValues[i+1], m1);
+
+            nextM0 = m1;
         }
 
         return polynomials;
