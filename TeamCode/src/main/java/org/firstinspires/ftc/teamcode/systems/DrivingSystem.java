@@ -65,6 +65,20 @@ public class DrivingSystem {
 
     private final Pose positionCM = new Pose(0., 0., 0.);
 
+    private long lastCycleTime; // the time, in microseconds since the program began of the last time trackPosition was called.
+    private long lastCycleDuration; // the duration, in microseconds, of the time between when trackPosition was called the last 2 times.
+
+    public long getLastCycleTime(){
+        return lastCycleTime;
+    }
+    public long getLastCycleDuration(){
+        return lastCycleDuration;
+    }
+
+    public Pose getPosition(){
+        return new Pose(positionCM);
+    }
+
     /**
      * @param opMode The current opMode running on the robot.
      */
@@ -89,6 +103,9 @@ public class DrivingSystem {
 
         // Reset Distance
         resetDistance();
+
+        lastCycleTime = System.nanoTime();
+
     }
 
     /**
@@ -246,6 +263,10 @@ public class DrivingSystem {
         movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
         movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
+        long currentTime = System.nanoTime();
+        this.lastCycleDuration = currentTime - lastCycleTime;
+        this.lastCycleTime = currentTime;
+
         return movementChange;
     }
 
@@ -294,7 +315,7 @@ public class DrivingSystem {
      * @param powers Relative velocities vector.
      */
     public void driveByAxis(Pose powers) {
-        final double currentAngle = getCurrentAngle();
+        final double currentAngle = positionCM.angle;
         final double cosAngle = cos(currentAngle);
         final double sinAngle = sin(currentAngle);
 
@@ -329,6 +350,8 @@ public class DrivingSystem {
         opMode.telemetry.addData("x", positionCM.x);
         opMode.telemetry.addData("y", positionCM.y);
         opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
+        double cycleFrequency = 1000000. / lastCycleDuration;
+        opMode.telemetry.addData("Cycle Frequency [Hz]: ", cycleFrequency);
     }
 
     /**
