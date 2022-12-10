@@ -43,7 +43,7 @@ public class PositionLogger {
         if (robotStates.isEmpty()){
             return;
         }
-        File positionLogsDir = new File(AppUtil.ROOT_FOLDER, "everglow_position_logs");
+        File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "everglow_position_logs");
         String filename = String.format(Locale.US, "positionLog-%s.csv", AndroidUtils.timestampString());
         File currentLog = new File(positionLogsDir, filename);
         double startTimeMicros = robotStates.get(0).time;
