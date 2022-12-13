@@ -1,12 +1,11 @@
-![Everglow Logo](doc/media/everglow-logo.jpeg)
+![Everglow Banner](doc/media/everglow-banner.png)
 
 <span align="center">
-<h1>Everglow #19000</h1>
-<h3>PowerPlay</h3>
+<h1>PowerPlay Season Repository</h1>
 <p>Everglow's code for the FTC PowerPlay season.</p>
 </span>
 
----
+<br />
 
 ### Find Us On
 
