@@ -19,14 +19,15 @@ import java.util.Locale;
 public class PositionLogger {
     private final DrivingSystem drivingSystem;
     private final List<RobotState> robotStates;
-    static class RobotState{
+
+    private static class RobotState {
+        long time;
+        Pose pose;
+
         public RobotState(long time, Pose pose) {
             this.time = time;
             this.pose = pose;
         }
-
-        long time;
-        Pose pose;
     }
 
     public PositionLogger(DrivingSystem drivingSystem) {
@@ -34,7 +35,7 @@ public class PositionLogger {
         robotStates = new ArrayList<>();
     }
 
-    public void update(){
+    public void update() {
 //        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
 
         RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition());
@@ -42,9 +43,8 @@ public class PositionLogger {
     }
 
 
-
     public void saveTo(File fileToCreate) throws IOException {
-        if (robotStates.isEmpty()){
+        if (robotStates.isEmpty()) {
             return;
         }
         double startTimeNanos = robotStates.get(0).time;
@@ -52,23 +52,23 @@ public class PositionLogger {
         PrintStream stream = null;
 
         try {
-            // create the directories containing the file if they don't already exist.
+            // Create the directories containing the file if they don't already exist.
             File parentFile = fileToCreate.getParentFile();
-            if (parentFile == null){
+            if (parentFile == null) {
                 throw new IOException("saveTo() given invalid file. ");
             }
             //noinspection ResultOfMethodCallIgnored
             parentFile.mkdirs();
 
             // create the file
-            if (!fileToCreate.createNewFile()){
+            if (!fileToCreate.createNewFile()) {
                 throw new IOException("Could not create file");
             }
 
             // put the needed data in the file
-            stream = new PrintStream(new FileOutputStream(fileToCreate), true,"utf-8");
+            stream = new PrintStream(new FileOutputStream(fileToCreate), true, "utf-8");
             stream.println("time[sec], x[cm], y[cm], rot[degrees]");
-            if (stream.checkError()){
+            if (stream.checkError()) {
                 throw new IOException("Failed to write to fileToCreate.");
             }
             for (RobotState robotState : robotStates) {
@@ -79,12 +79,13 @@ public class PositionLogger {
                         Math.toDegrees(robotState.pose.angle)
                 );
                 stream.println(lineString);
-                if (stream.checkError()){
+
+                if (stream.checkError()) {
                     throw new IOException("Failed to write to fileToCreate.");
                 }
             }
-        }finally {
-            if (stream != null){
+        } finally {
+            if (stream != null) {
                 stream.close();
             }
         }
@@ -97,9 +98,8 @@ public class PositionLogger {
 
     @NonNull
     public static File generateLogFileName() {
-        File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "everglow_position_logs");
+        File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "Everglow_position_logs");
         String filename = String.format(Locale.US, "positionLog-%s.csv", AndroidUtils.timestampString());
-        File currentLog = new File(positionLogsDir, filename);
-        return currentLog;
+        return /* Current Log: */ new File(positionLogsDir, filename);
     }
 }

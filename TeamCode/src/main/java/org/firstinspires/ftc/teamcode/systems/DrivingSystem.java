@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
+import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
 /**
  * A class for handling the driving of the robot.
@@ -65,6 +67,7 @@ public class DrivingSystem {
 
     private final Pose positionCM = new Pose(0., 0., 0.);
 
+    public PositionLogger positionLogger = new PositionLogger(this);
     private long lastCycleTime; // the time, in nanoseconds since the program began of the last time trackPosition was called.
     private long lastCycleDuration; // the duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
@@ -85,6 +88,7 @@ public class DrivingSystem {
     public DrivingSystem(LinearOpMode opMode) {
         this.opMode = opMode;
         imu = initializeImu(opMode);
+        lastCycleTime = System.nanoTime();
         // Creates objects to control the motors
         frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
         frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
@@ -101,11 +105,8 @@ public class DrivingSystem {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // Reset Distance
+        // Reset the distances measured by the motors
         resetDistance();
-
-        lastCycleTime = System.nanoTime();
-
     }
 
     /**
@@ -379,7 +380,11 @@ public class DrivingSystem {
             double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - getDistancesOld().angle);
             double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
             driveMecanum(new Pose(0, power, rotatePower));
+            positionLogger.update();
+            printPosition();
+            opMode.telemetry.update();
         }
+        stop();
         resetDistance();
     }
 
@@ -406,6 +411,9 @@ public class DrivingSystem {
             sidewaysDistance = getDistancesOld().x;
             double angleDeviation = normalizeAngle(startAngle - getDistancesOld().angle);
             driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
+            positionLogger.update();
+            printPosition();
+            telemetry.update();
         }
         stop();
 
