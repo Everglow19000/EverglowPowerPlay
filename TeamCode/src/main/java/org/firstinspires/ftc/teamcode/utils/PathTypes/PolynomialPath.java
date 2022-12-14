@@ -4,8 +4,8 @@ import org.firstinspires.ftc.teamcode.utils.Path;
 
 public class PolynomialPath extends Path {
 
-    private double aX, bX, cX, dX;
-    private double aY, bY, cY, dY;
+    private final double aX, bX, cX, dX;
+    private final double aY, bY, cY, dY;
 
     /**
      * Creates a polynomial path.
