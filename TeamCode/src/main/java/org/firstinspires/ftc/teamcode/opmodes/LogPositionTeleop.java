@@ -8,6 +8,9 @@ import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
+import java.io.File;
+import java.io.IOException;
+
 @TeleOp(name = "LogPositionTeleop")
 public class LogPositionTeleop extends LinearOpMode {
     @Override
@@ -28,7 +31,18 @@ public class LogPositionTeleop extends LinearOpMode {
             telemetry.update();
             if (gamepad.circle()){
                 drivingSystem.driveMecanum(new Pose(0,0,0)); // stop the robot to prevent it from moving while saving, in case the save takes unreasonably long.
-                positionLogger.save();
+                File fileToCreate = PositionLogger.generateLogFileName();
+                telemetry.addData("Saving File to: ", fileToCreate.getAbsolutePath());
+                telemetry.update();
+                try {
+                    positionLogger.saveTo(fileToCreate);
+                    positionLogger.clear();
+                    telemetry.addData("Successfully saved file to: ", fileToCreate.getAbsolutePath());
+                    telemetry.update();
+                    sleep(1000);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

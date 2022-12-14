@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+import androidx.annotation.NonNull;
+
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 
@@ -39,28 +41,65 @@ public class PositionLogger {
         robotStates.add(robotState);
     }
 
-    public void save(){
+
+
+    public void saveTo(File fileToCreate) throws IOException {
         if (robotStates.isEmpty()){
             return;
         }
-        File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "everglow_position_logs");
-        String filename = String.format(Locale.US, "positionLog-%s.csv", AndroidUtils.timestampString());
-        File currentLog = new File(positionLogsDir, filename);
-        double startTimeMicros = robotStates.get(0).time;
-        try(PrintStream stream = new PrintStream(new FileOutputStream(currentLog), true,"utf-8")) {
+        double startTimeNanos = robotStates.get(0).time;
+
+        PrintStream stream = null;
+
+        try {
+            // create the directories containing the file if they don't already exist.
+            File parentFile = fileToCreate.getParentFile();
+            if (parentFile == null){
+                throw new IOException("saveTo() given invalid file. ");
+            }
+            //noinspection ResultOfMethodCallIgnored
+            parentFile.mkdirs();
+
+            // create the file
+            if (!fileToCreate.createNewFile()){
+                throw new IOException("Could not create file");
+            }
+
+            // put the needed data in the file
+            stream = new PrintStream(new FileOutputStream(fileToCreate), true,"utf-8");
             stream.println("time[sec], x[cm], y[cm], rot[degrees]");
+            if (stream.checkError()){
+                throw new IOException("Failed to write to fileToCreate.");
+            }
             for (RobotState robotState : robotStates) {
                 String lineString = String.format("%s, %s, %s, %s",
-                        (robotState.time - startTimeMicros) / 1000000000.,
+                        (robotState.time - startTimeNanos) / 1e9,
                         robotState.pose.x,
                         robotState.pose.y,
                         Math.toDegrees(robotState.pose.angle)
                 );
                 stream.println(lineString);
+                if (stream.checkError()){
+                    throw new IOException("Failed to write to fileToCreate.");
+                }
             }
-        }catch (IOException e){
-            throw new RuntimeException(e);
+        }finally {
+            if (stream != null){
+                stream.close();
+            }
         }
 
+    }
+
+    public void clear() {
+        robotStates.clear();
+    }
+
+    @NonNull
+    public static File generateLogFileName() {
+        File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "everglow_position_logs");
+        String filename = String.format(Locale.US, "positionLog-%s.csv", AndroidUtils.timestampString());
+        File currentLog = new File(positionLogsDir, filename);
+        return currentLog;
     }
 }

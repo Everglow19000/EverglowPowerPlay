@@ -42,7 +42,7 @@ public class DrivingSystem {
         ARMADILLO, NEW_ROBOT
     }
 
-    private static final Robot robot = Robot.NEW_ROBOT;
+    private static final Robot robot = Robot.ARMADILLO;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -65,8 +65,8 @@ public class DrivingSystem {
 
     private final Pose positionCM = new Pose(0., 0., 0.);
 
-    private long lastCycleTime; // the time, in microseconds since the program began of the last time trackPosition was called.
-    private long lastCycleDuration; // the duration, in microseconds, of the time between when trackPosition was called the last 2 times.
+    private long lastCycleTime; // the time, in nanoseconds since the program began of the last time trackPosition was called.
+    private long lastCycleDuration; // the duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
     public long getLastCycleTime(){
         return lastCycleTime;
@@ -350,7 +350,7 @@ public class DrivingSystem {
         opMode.telemetry.addData("x", positionCM.x);
         opMode.telemetry.addData("y", positionCM.y);
         opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
-        double cycleFrequency = 1000000. / lastCycleDuration;
+        double cycleFrequency = 1e9 / lastCycleDuration;
         opMode.telemetry.addData("Cycle Frequency [Hz]: ", cycleFrequency);
     }
 
