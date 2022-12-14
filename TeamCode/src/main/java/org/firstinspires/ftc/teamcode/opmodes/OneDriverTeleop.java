@@ -17,9 +17,9 @@ public class OneDriverTeleop extends LinearOpMode {
         EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 
         DrivingSystem drivingSystem = new DrivingSystem(this);
-        Claw claw = new Claw(this);
+        //Claw claw = new Claw(this);
         FourBar fourBar = new FourBar(this);
-//        GWheel gWheel = new GWheel(this);
+        GWheel gWheel = new GWheel(this);
 
         Pose actPowers = new Pose(0, 0, 0);
         final int driveTypeCount = 2;
@@ -41,21 +41,21 @@ public class OneDriverTeleop extends LinearOpMode {
             }
             drivingSystem.driveMecanum(actPowers);
 
-//            switch(driveType) {
-//                case 0:
-//                    drivingSystem.driveMecanum(actPowers);
-//                    break;
-//                case 1:
-//                    drivingSystem.driveByAxis(actPowers);
-//                    break;
-//            }
+            switch(driveType) {
+                case 0:
+                    drivingSystem.driveMecanum(actPowers);
+                    break;
+                case 1:
+                    drivingSystem.driveByAxis(actPowers);
+                    break;
+            }
 
-            if (gamepad.rt()) {
-                claw.close();
-            }
-            if (gamepad.lt()) {
-                claw.open();
-            }
+//            if (gamepad.rt()) {
+//                claw.close();
+//            }
+//            if (gamepad.lt()) {
+//                claw.open();
+//            }
 
             if (gamepad.triangle()) {
                 fourBar.goTo(FourBar.Level.PICKUP);
@@ -67,12 +67,16 @@ public class OneDriverTeleop extends LinearOpMode {
                 fourBar.goTo(FourBar.Level.NEUTRAL);
             }
 
-//            if(gamepad.rb()){
-//                gWheel.toggleCollect();
-//            }
-//            if(gamepad.lb()){
-//                gWheel.toggleSpit();
-//            }
+            if (gamepad.triangle()) {
+                telemetry.addData("hello", "triangle");
+                telemetry.update();
+                gWheel.toggleCollect();
+            }
+            if (gamepad.circle()) {
+                telemetry.addData("hello", "circle");
+                telemetry.update();
+                gWheel.toggleSpit();
+            }
 
             drivingSystem.printPosition();
             telemetry.update();

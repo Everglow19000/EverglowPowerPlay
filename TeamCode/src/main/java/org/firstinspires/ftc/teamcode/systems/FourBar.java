@@ -11,6 +11,7 @@ public class FourBar {
      * Enum encapsulating the most common positions for the system to reach
      */
     public enum Level {
+        //PICKUP(-250), DROPOFF(-500), NEUTRAL(-1000);
         PICKUP(-250), DROPOFF(-500), NEUTRAL(-1000);
 
         Level(int position) {

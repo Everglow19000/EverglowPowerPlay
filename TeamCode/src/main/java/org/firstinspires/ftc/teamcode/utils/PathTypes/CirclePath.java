@@ -5,8 +5,8 @@ import org.firstinspires.ftc.teamcode.utils.PointD;
 
 public class CirclePath extends Path {
 
-    private double radius;
-    private PointD startPoint;
+    private final double radius;
+    private final PointD startPoint;
 
     /**
      * Creates a circle path.

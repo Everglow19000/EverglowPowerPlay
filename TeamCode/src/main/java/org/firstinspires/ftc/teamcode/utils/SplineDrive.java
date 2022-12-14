@@ -1,42 +1,40 @@
 package org.firstinspires.ftc.teamcode.utils;
+
 import org.firstinspires.ftc.teamcode.utils.PathTypes.PolynomialPath;
 
 public abstract class SplineDrive {
 
     /**
      * Finds the polynomial between each point.
-     * @param m0 The slope in the initial point.
-     * @param mf The slope in the final point.
+     *
+     * @param m0     The slope in the initial point.
+     * @param mf     The slope in the final point.
      * @param points The points through which the robot drives.
      * @return An array of polynomial paths.
      */
-    public static PolynomialPath[] findMultiplePolynomialsNew(double m0, double mf, PointD[] points){
-
-        final double C = 2;
-
+    public static PolynomialPath[] findMultiplePolynomialsNew(double m0, double mf, PointD[] points) {
         PolynomialPath[] polynomials = new PolynomialPath[points.length - 1];
 
+        final double C = 2;
         double nextM0X = C;
-        double nextM0Y = C*m0;
+        double nextM0Y = C * m0;
+        double m1X, m1Y;
 
-        double maxM = Math.max(Math.abs(nextM0X),Math.abs(nextM0Y));
+        double maxM = Math.max(Math.abs(nextM0X), Math.abs(nextM0Y));
         nextM0X /= maxM * C;
         nextM0Y /= maxM * C;
 
-        double m1X, m1Y;
+        for (int i = 0; i < polynomials.length; i++) {
 
-        for(int i=0; i<polynomials.length; i++) {
-
-            if (i == polynomials.length - 1){
+            if (i == polynomials.length - 1) {
                 m1X = C;
-                m1Y = C*mf;
-            }
-            else {
-                m1Y = ((points[i].y - points[i + 2].y) / -2)*C;
-                m1X = ((points[i].x - points[i + 2].x) / -2)*C;
+                m1Y = C * mf;
+            } else {
+                m1Y = ((points[i].y - points[i + 2].y) / -2) * C;
+                m1X = ((points[i].x - points[i + 2].x) / -2) * C;
             }
 
-            polynomials[i] = findPolynomial(points[i], nextM0X, nextM0Y, points[i+1], m1X, m1Y);
+            polynomials[i] = findPolynomial(points[i], nextM0X, nextM0Y, points[i + 1], m1X, m1Y);
 
             nextM0Y = m1Y;
             nextM0X = m1X;
@@ -47,14 +45,15 @@ public abstract class SplineDrive {
 
     /**
      * Finds the polynomial function between two points, which is a segment of the entire movement.
+     *
      * @param point0 The initial point of the segment.
-     * @param m0X The slope of the X parameter equation in the first point.
-     * @param m1X The slope of the X parameter equation in the first point.
+     * @param m0X    The slope of the X parameter equation in the first point.
+     * @param m1X    The slope of the X parameter equation in the first point.
      * @param point1 The final point of the segment.
-     * @param m0Y The slope of the Y parameter equation in the first point.
-     * @param m1Y The slope of the Y parameter equation in the second point.
+     * @param m0Y    The slope of the Y parameter equation in the first point.
+     * @param m1Y    The slope of the Y parameter equation in the second point.
      */
-    public static PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y, PointD point1, double m1X, double m1Y){
+    public static PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y, PointD point1, double m1X, double m1Y) {
 
         //Declaring the x and y matrices of parameters a and b.
         double[][] yMatrix = new double[2][3];
@@ -62,26 +61,35 @@ public abstract class SplineDrive {
 
         //Assign values to the matrix according to the polynomial ax^3+bx^2+cx+d
         //and the derivative 3ax^2+2bx+C; y(0)=y0; y(1)=y1; y'(0)=m0; y'(1)=m1, and the same for x.
-        yMatrix[0][0] = 1; yMatrix[0][1] = 1; yMatrix[0][2] = point1.y - point0.y - m0Y;
-        yMatrix[1][0] = 3; yMatrix[1][1] = 2; yMatrix[1][2] = m1Y - m0Y;
+        yMatrix[0][0] = 1;
+        yMatrix[0][1] = 1;
+        yMatrix[0][2] = point1.y - point0.y - m0Y;
+        yMatrix[1][0] = 3;
+        yMatrix[1][1] = 2;
+        yMatrix[1][2] = m1Y - m0Y;
 
-        xMatrix[0][0] = 1; xMatrix[0][1] = 1; xMatrix[0][2] = point1.x - point0.x - m0X;
-        xMatrix[1][0] = 3; xMatrix[1][1] = 2; xMatrix[1][2] = m1X - m0X;
+        xMatrix[0][0] = 1;
+        xMatrix[0][1] = 1;
+        xMatrix[0][2] = point1.x - point0.x - m0X;
+        xMatrix[1][0] = 3;
+        xMatrix[1][1] = 2;
+        xMatrix[1][2] = m1X - m0X;
 
         double[] solutionY = solveMatrix(yMatrix);
         double[] solutionX = solveMatrix(xMatrix);
 
         return new PolynomialPath(
-                solutionX[0], solutionX[1], m0X, point0.x,solutionY[0], solutionY[1], m0Y, point0.y
+                solutionX[0], solutionX[1], m0X, point0.x, solutionY[0], solutionY[1], m0Y, point0.y
         ); //parameters a, b, c=m0, and d=y0.
     }
 
     /**
      * Finds the parameters of a given 2x2 matrix.
+     *
      * @param matrix A matrix.
      * @return The parameters of the matrix.
      */
-    public static double[] solveMatrix(double[][] matrix){
+    public static double[] solveMatrix(double[][] matrix) {
 
         double[][] d = {
                 {matrix[0][0], matrix[0][1]},
@@ -102,24 +110,20 @@ public abstract class SplineDrive {
         double Da = findDeterminant(da);
         double Db = findDeterminant(db);
 
-        double ap = Da/D;
-        double bp = Db/D;
+        double ap = Da / D;
+        double bp = Db / D;
 
         return new double[]{ap, bp};
     }
 
     /**
-     * Finds the determinant of a given 2x2 matrix.
+     * Finds the determinant of a given 2x2 matrix in the form of Array_name[y][x] ([rows][columns]).
+     *
      * @param mat A 2x2 matrix.
      * @return The determinant of the given matrix.
      */
-    public static double findDeterminant(double[][] mat){
-
-        //Array_name[y][x] ([rows][columns])
-        double answer;
-        answer = mat[0][0]*mat[1][1] - mat[1][0]*mat[0][1];
-
-        return answer;
+    public static double findDeterminant(double[][] mat) {
+        return mat[0][0] * mat[1][1] - mat[1][0] * mat[0][1];
     }
 }
 
