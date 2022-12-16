@@ -5,14 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
 import java.io.File;
 import java.io.IOException;
 
-@TeleOp(name = "PositionLoggerTeleop")
-public class PositionLoggerTeleop extends LinearOpMode {
+@TeleOp(name = "DriveBackwardsTeleop")
+public class DriveBackwardsTeleop extends LinearOpMode {
     @Override
     public void runOpMode() {
         EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
@@ -34,7 +33,7 @@ public class PositionLoggerTeleop extends LinearOpMode {
             drivingSystem.driveMecanum(actPowers);
 */
 
-            drivingSystem.driveStraight(250, 1);
+            drivingSystem.driveStraight(-250, 1);
             try {
                 File fileToCreate = PositionLogger.generateLogFileName();
                 drivingSystem.positionLogger.saveTo(fileToCreate);
