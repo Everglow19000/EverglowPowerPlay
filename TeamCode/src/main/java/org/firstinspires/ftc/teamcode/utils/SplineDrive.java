@@ -7,34 +7,40 @@ public abstract class SplineDrive {
     /**
      * Finds the polynomial between each point.
      *
-     * @param m0     The slope in the initial point.
-     * @param mf     The slope in the final point.
-     * @param points The points through which the robot drives.
+     * @param points The points through which the robot needs to pass through.
      * @return An array of polynomial paths.
      */
-    public static PolynomialPath[] findMultiplePolynomialsNew(double m0, double mf, PointD[] points) {
+    public static PolynomialPath[] findPath(PointD[] points) {
+
         PolynomialPath[] polynomials = new PolynomialPath[points.length - 1];
 
         final double C = 2;
-        double nextM0X = C;
-        double nextM0Y = C * m0;
-        double m1X, m1Y;
+
+        double m0X = (points[0].x - points[1].x) / -2;
+        double m0Y = (points[0].y - points[1].y) / -2;
+        double mfX = (points[points.length - 2].x - points[points.length - 1].x) / -2;
+        double mfY = (points[points.length - 2].y - points[points.length - 1].y) / -2;
+
+        double nextM0X = C * m0X;
+        double nextM0Y = C * m0Y;
 
         double maxM = Math.max(Math.abs(nextM0X), Math.abs(nextM0Y));
         nextM0X /= maxM * C;
         nextM0Y /= maxM * C;
 
-        for (int i = 0; i < polynomials.length; i++) {
+        double m1X, m1Y;
+        for(int i=0; i<polynomials.length; i++) {
 
-            if (i == polynomials.length - 1) {
-                m1X = C;
-                m1Y = C * mf;
-            } else {
-                m1Y = ((points[i].y - points[i + 2].y) / -2) * C;
-                m1X = ((points[i].x - points[i + 2].x) / -2) * C;
+            if (i == polynomials.length - 1){
+                m1X = C*mfX;
+                m1Y = C*mfY;
+            }
+            else {
+                m1Y = ((points[i].y - points[i + 2].y) / -2)*C;
+                m1X = ((points[i].x - points[i + 2].x) / -2)*C;
             }
 
-            polynomials[i] = findPolynomial(points[i], nextM0X, nextM0Y, points[i + 1], m1X, m1Y);
+            polynomials[i] = findPolynomial(points[i], nextM0X, nextM0Y, points[i+1], m1X, m1Y);
 
             nextM0Y = m1Y;
             nextM0X = m1X;
@@ -61,19 +67,11 @@ public abstract class SplineDrive {
 
         //Assign values to the matrix according to the polynomial ax^3+bx^2+cx+d
         //and the derivative 3ax^2+2bx+C; y(0)=y0; y(1)=y1; y'(0)=m0; y'(1)=m1, and the same for x.
-        yMatrix[0][0] = 1;
-        yMatrix[0][1] = 1;
-        yMatrix[0][2] = point1.y - point0.y - m0Y;
-        yMatrix[1][0] = 3;
-        yMatrix[1][1] = 2;
-        yMatrix[1][2] = m1Y - m0Y;
+        yMatrix[0][0] = 1; yMatrix[0][1] = 1; yMatrix[0][2] = point1.y - point0.y - m0Y;
+        yMatrix[1][0] = 3; yMatrix[1][1] = 2; yMatrix[1][2] = m1Y - m0Y;
 
-        xMatrix[0][0] = 1;
-        xMatrix[0][1] = 1;
-        xMatrix[0][2] = point1.x - point0.x - m0X;
-        xMatrix[1][0] = 3;
-        xMatrix[1][1] = 2;
-        xMatrix[1][2] = m1X - m0X;
+        xMatrix[0][0] = 1; xMatrix[0][1] = 1; xMatrix[0][2] = point1.x - point0.x - m0X;
+        xMatrix[1][0] = 3; xMatrix[1][1] = 2; xMatrix[1][2] = m1X - m0X;
 
         double[] solutionY = solveMatrix(yMatrix);
         double[] solutionX = solveMatrix(xMatrix);
@@ -125,6 +123,24 @@ public abstract class SplineDrive {
     public static double findDeterminant(double[][] mat) {
         return mat[0][0] * mat[1][1] - mat[1][0] * mat[0][1];
     }
+
+    /**
+     * Finds the right path for a provided u and calculates the x and y value of the polynomial.
+     * @param polynomials An array of polynomials.
+     * @param providedU A value ranging from 0 to length of the 'polynomials' array.
+     * @return A pointD object which contains the calculated x and y values.
+     */
+    public static PointD findPath(PolynomialPath[] polynomials, double providedU){
+
+        int intU = (int) providedU;
+
+        double x = polynomials[intU].x(providedU - intU);
+        double y = polynomials[intU].y(providedU - intU);
+
+        return new PointD(x,y);
+    }
+
+
 }
 
 

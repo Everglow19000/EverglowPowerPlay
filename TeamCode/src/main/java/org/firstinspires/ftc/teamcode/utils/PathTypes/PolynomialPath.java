@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils.PathTypes;
 
 import org.firstinspires.ftc.teamcode.utils.Path;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 
 public class PolynomialPath extends Path {
 
@@ -9,7 +10,6 @@ public class PolynomialPath extends Path {
 
     /**
      * Creates a polynomial path.
-     *
      * @param aX The coefficient of the x^3 term.
      * @param bX The coefficient of the x^2 term.
      * @param cX The coefficient of the x^1 term.
