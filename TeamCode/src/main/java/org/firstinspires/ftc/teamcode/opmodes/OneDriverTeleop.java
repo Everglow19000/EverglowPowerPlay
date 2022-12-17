@@ -15,65 +15,20 @@ public class OneDriverTeleop extends LinearOpMode {
     @Override
     public void runOpMode() {
         EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
-
         DrivingSystem drivingSystem = new DrivingSystem(this);
-        Claw claw = new Claw(this);
-        FourBar fourBar = new FourBar(this);
-//        GWheel gWheel = new GWheel(this);
 
         Pose actPowers = new Pose(0, 0, 0);
-        final int driveTypeCount = 2;
 
         waitForStart();
 
         while (opModeIsActive()) {
             gamepad.update();
 
-            int driveType = 0;
-            if (gamepad.triangle()) {
-                driveType = (driveType + 1) % driveTypeCount;
-            }
+            actPowers.x = -gamepad1.left_stick_x;
+            actPowers.y = -gamepad1.left_stick_y;
+            actPowers.angle = -gamepad1.right_stick_x;
 
-            if (gamepad1.left_stick_button) {
-                actPowers.x = -gamepad1.left_stick_x;
-                actPowers.y = -gamepad1.left_stick_y;
-                actPowers.angle = -gamepad1.right_stick_x;
-            }
             drivingSystem.driveMecanum(actPowers);
-
-//            switch(driveType) {
-//                case 0:
-//                    drivingSystem.driveMecanum(actPowers);
-//                    break;
-//                case 1:
-//                    drivingSystem.driveByAxis(actPowers);
-//                    break;
-//            }
-
-            if (gamepad.rt()) {
-                claw.close();
-            }
-            if (gamepad.lt()) {
-                claw.open();
-            }
-
-            if (gamepad.triangle()) {
-                fourBar.goTo(FourBar.Level.PICKUP);
-            }
-            if (gamepad.circle()) {
-                fourBar.goTo(FourBar.Level.DROPOFF);
-            }
-            if (gamepad.cross()) {
-                fourBar.goTo(FourBar.Level.NEUTRAL);
-            }
-
-//            if(gamepad.rb()){
-//                gWheel.toggleCollect();
-//            }
-//            if(gamepad.lb()){
-//                gWheel.toggleSpit();
-//            }
-
             drivingSystem.printPosition();
             telemetry.update();
         }
