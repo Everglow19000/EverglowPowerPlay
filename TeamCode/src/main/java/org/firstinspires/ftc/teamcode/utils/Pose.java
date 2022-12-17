@@ -39,6 +39,12 @@ public class Pose {
         this.angle = angle;
     }
 
+    public Pose(Pose other){
+        this.x = other.x;
+        this.y = other.y;
+        this.angle = other.angle;
+    }
+
     /**
      * @return sqrt(x^2 + y^2).
      */
