@@ -3,9 +3,15 @@ package org.firstinspires.ftc.teamcode.systems;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+/**
+ * A class for handling the elevator.
+ */
 public class ElevatorSystem {
+    /**
+     * Enum encapsulating the most common positions for the system to reach.
+     */
     public enum Level {
-        PICKUP(0), PRE_PICKUP(-600) , LOW(-1000), MID(-1900), HIGH(-2700);
+        PICKUP(0), PRE_PICKUP(-600), LOW(-1000), MID(-1900), HIGH(-2700);
 
         Level(int position) {
             this.position = position;
@@ -14,12 +20,10 @@ public class ElevatorSystem {
         public final int position;
     }
 
-    private final OpMode opMode;
     private final DcMotor left;
     private final DcMotor right;
 
     public ElevatorSystem(OpMode opMode) {
-        this.opMode = opMode;
         left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
         right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
 
@@ -36,10 +40,13 @@ public class ElevatorSystem {
         right.setPower(1);
     }
 
-    public void goTo(Level level){
+    /**
+     * Moves the system to a position from the Level enum.
+     *
+     * @param level Position from the Level enum.
+     */
+    public void goTo(Level level) {
         left.setTargetPosition(level.position);
         right.setTargetPosition(level.position);
     }
-
-
 }

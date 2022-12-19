@@ -7,32 +7,35 @@ import com.qualcomm.robotcore.hardware.Servo;
  * A class for handling the claw.
  */
 public class ClawSystem {
-    public enum ServoPosition {
+    /**
+     * Enum encapsulating the two positions the system should reach.
+     */
+    public enum Level {
         OPEN(0.67), CLOSED(0.15);
 
-        ServoPosition(double position) {
+        Level(double position) {
             this.position = position;
         }
 
         public final double position;
     }
 
-    private final Servo servo1;
+    private final Servo servo;
 
     /**
      * @param opMode The current opMode running on the robot.
      */
     public ClawSystem(LinearOpMode opMode) {
-        servo1 = opMode.hardwareMap.get(Servo.class, "claw");
-        setPosition(ServoPosition.OPEN);
+        servo = opMode.hardwareMap.get(Servo.class, "claw");
+        goTo(Level.OPEN);
     }
 
-    public void setPosition(double position) {
-        servo1.setPosition(position);
+    /**
+     * Moves the system to a position from the Level enum.
+     *
+     * @param level Position from the Level enum.
+     */
+    public void goTo(Level level) {
+        servo.setPosition(level.position);
     }
-
-    public void setPosition(ServoPosition location) {
-        setPosition(location.position);
-    }
-
 }

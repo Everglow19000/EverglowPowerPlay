@@ -3,16 +3,16 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
+import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "NewTwoDriverTeleop")
-public class NewTwoDriverTeleop extends LinearOpMode {
+@TeleOp(name = "TwoDriverTeleop")
+public class TwoDriverTeleop extends LinearOpMode {
     @Override
     public void runOpMode() {
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
@@ -47,18 +47,48 @@ public class NewTwoDriverTeleop extends LinearOpMode {
             drivingSystem.driveMecanum(actPowers);
 
             if (gamepadB.rt()) {
-                claw.setPosition(ClawSystem.ServoPosition.CLOSED);
+                claw.goTo(ClawSystem.Level.CLOSED);
             }
             if (gamepadB.lt()) {
-                claw.setPosition(ClawSystem.ServoPosition.OPEN);
+                claw.goTo(ClawSystem.Level.OPEN);
             }
 
-            if (gamepadB.triangle()) {
+            if (gamepadB.dpad_down()){
+                elevator.goTo(ElevatorSystem.Level.PICKUP);
                 fourBar.goTo(FourBarSystem.Level.PICKUP);
             }
-            if (gamepadB.circle()) {
-                fourBar.goTo(FourBarSystem.Level.DROPOFF);
+
+            if (gamepadB.cross()){
+                new Thread(()->{
+                    sleep(500);
+                    elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
+                }).start();
+                fourBar.goTo(FourBarSystem.Level.PICKUP);
             }
+
+            if (gamepadB.circle()){
+                elevator.goTo(ElevatorSystem.Level.LOW);
+                new Thread(()->{
+                    sleep(500);
+                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
+                }).start();
+            }
+
+            if (gamepadB.triangle()){
+                elevator.goTo(ElevatorSystem.Level.MID);
+                new Thread(()->{
+                    sleep(500);
+                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
+                }).start();
+            }
+
+//            if (gamepad.square()){
+//                elevator.goTo(ElevatorSystem.Level.HIGH);
+//                new Thread(()->{
+//                    sleep(1000);
+//                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
+//                });
+//            }
 
             if (gamepadB.rb()) {
                 gWheel.toggleCollect();

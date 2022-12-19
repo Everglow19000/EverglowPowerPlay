@@ -10,6 +10,7 @@ public class GWheelSystem {
     private final DcMotor motor;
     private final static double POWER = 0.5;
 
+    //These variables control whether the grabbing wheel is running or not.
     private boolean isCollecting = false;
     private boolean isSpitting = false;
 
@@ -21,22 +22,37 @@ public class GWheelSystem {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void collect() {
+    /**
+     * A function which spins te grabbing wheel to inward to collect the cones.
+     * Used in toggleCollecting().
+     */
+    private void collect() {
         motor.setPower(POWER);
         isCollecting = true;
     }
 
-    public void spit() {
+    /**
+     * A function which spins the grabbing wheel outward to spit the cones.
+     * Used in toggleSpitting().
+     */
+    private void spit() {
         motor.setPower(-POWER);
         isSpitting = true;
     }
 
-    public void stop() {
+    /**
+     * A function which stops the grabbing wheel and resets the isCollecting and isSpitting variables.
+     * Used in toggleCollecting() and toggleSpitting().
+     */
+    private void stop() {
         motor.setPower(0);
         isSpitting = false;
         isCollecting = false;
     }
 
+    /**
+     * A function which collects cones using the grabbing wheel.
+     */
     public void toggleCollect() {
         if (isCollecting) {
             stop();
@@ -45,6 +61,9 @@ public class GWheelSystem {
         }
     }
 
+    /**
+     * A function which ejects cones using the grabbing wheel.
+     */
     public void toggleSpit() {
         if (isSpitting) {
             stop();

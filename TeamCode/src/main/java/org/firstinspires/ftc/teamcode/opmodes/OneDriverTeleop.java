@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
+import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
@@ -45,10 +45,10 @@ public class OneDriverTeleop extends LinearOpMode {
             drivingSystem.driveMecanum(actPowers);
 
             if (gamepad.rt()) {
-                claw.setPosition(ClawSystem.ServoPosition.CLOSED);
+                claw.goTo(ClawSystem.Level.CLOSED);
             }
             if (gamepad.lt()) {
-                claw.setPosition(ClawSystem.ServoPosition.OPEN);
+                claw.goTo(ClawSystem.Level.OPEN);
             }
 
             if (gamepad.dpad_down()){
@@ -87,8 +87,6 @@ public class OneDriverTeleop extends LinearOpMode {
 //                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
 //                });
 //            }
-
-
 
             if (gamepad.rb()) {
                 gWheel.toggleCollect();

@@ -5,9 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
-import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "ElevatorTestTeleop")
 public class ElevatorTestTeleop extends LinearOpMode {
@@ -32,10 +30,10 @@ public class ElevatorTestTeleop extends LinearOpMode {
         while (opModeIsActive()) {
             gamepad.update();
             if (gamepad.square()){
-                claw.setPosition(ClawSystem.ServoPosition.CLOSED);
+                claw.goTo(ClawSystem.Level.CLOSED);
             }
             if (gamepad.circle()){
-                claw.setPosition(ClawSystem.ServoPosition.OPEN);
+                claw.goTo(ClawSystem.Level.OPEN);
             }
             leftElevator.setPower(gamepad1.left_stick_y);
             rightElevator.setPower(gamepad1.left_stick_y);

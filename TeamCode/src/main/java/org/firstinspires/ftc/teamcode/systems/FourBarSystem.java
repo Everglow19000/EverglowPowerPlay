@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 public class FourBarSystem {
     /**
-     * Enum encapsulating the most common positions for the system to reach
+     * Enum encapsulating the two positions the system should reach.
      */
     public enum Level {
         PICKUP(0.56), DROPOFF(0.123);
