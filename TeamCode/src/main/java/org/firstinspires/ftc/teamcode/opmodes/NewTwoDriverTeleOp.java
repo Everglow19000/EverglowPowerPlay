@@ -8,13 +8,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.systems.Claw;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
+import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBar;
 import org.firstinspires.ftc.teamcode.systems.GWheel;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "TwoDriverTeleOp")
-public class TwoDriverTeleOp extends LinearOpMode {
+@TeleOp(name = "NewTwoDriverTeleOp")
+public class NewTwoDriverTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() {
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
@@ -23,7 +24,8 @@ public class TwoDriverTeleOp extends LinearOpMode {
         DrivingSystem drivingSystem = new DrivingSystem(this);
         Claw claw = new Claw(this);
         FourBar fourBar = new FourBar(this);
-//        GWheel gWheel = new GWheel(this);
+        GWheel gWheel = new GWheel(this);
+        ElevatorSystem elevator = new ElevatorSystem(this);
 
         Pose actPowers = new Pose(0, 0, 0);
         final int divisorSpeed = 10;
@@ -69,9 +71,6 @@ public class TwoDriverTeleOp extends LinearOpMode {
 //            }
 
             drivingSystem.printPosition();
-            telemetry.addData("Angle 1", (drivingSystem.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle));
-            telemetry.addData("Angle 2", (drivingSystem.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).secondAngle));
-            telemetry.addData("Angle 3", (drivingSystem.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).thirdAngle));
             telemetry.update();
         }
     }

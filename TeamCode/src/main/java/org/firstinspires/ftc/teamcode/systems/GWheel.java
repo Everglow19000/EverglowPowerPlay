@@ -17,7 +17,7 @@ public class GWheel {
      * @param opMode The current opMode running on the robot.
      */
     public GWheel(LinearOpMode opMode) {
-        motor = opMode.hardwareMap.get(DcMotor.class, "gwheel");
+        motor = opMode.hardwareMap.get(DcMotor.class, "tW");
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 

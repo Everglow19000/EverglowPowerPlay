@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.utils;
 
-public class accelerationProfile {
+public class AccelerationProfile {
     private double a;
     private double vMax;
     private double d;
@@ -12,7 +12,7 @@ public class accelerationProfile {
     private boolean isVersion1;// true --> version1 (the robot gets to max speed), false--> version2 (the robot
     // dosn't get to max speed)
 
-    public accelerationProfile(double a, double vMax, double d) {
+    public AccelerationProfile(double a, double vMax, double d) {
         this.a = a;
         this.vMax = vMax;
         this.d = d;
