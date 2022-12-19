@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class ElevatorSystem {
     public enum Level {
-        PICKUP(0), LOW(200), MID(400), HIGH(600);
+        PICKUP(0), PRE_PICKUP(-600) , LOW(-1000), MID(-1900), HIGH(-2700);
 
         Level(int position) {
             this.position = position;
@@ -25,8 +25,13 @@ public class ElevatorSystem {
 
         left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         left.setTargetPosition(0);
         right.setTargetPosition(0);
+
+        left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         left.setPower(1);
         right.setPower(1);
     }

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 public class ClawSystem {
     public enum ServoPosition {
-        OPEN(0.67), CLOSED(0.168);
+        OPEN(0.67), CLOSED(0.15);
 
         ServoPosition(double position) {
             this.position = position;

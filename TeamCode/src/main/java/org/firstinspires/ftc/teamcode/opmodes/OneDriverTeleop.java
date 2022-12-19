@@ -51,25 +51,50 @@ public class OneDriverTeleop extends LinearOpMode {
                 claw.setPosition(ClawSystem.ServoPosition.OPEN);
             }
 
-            if (gamepad.triangle()) {
+            if (gamepad.dpad_down()){
+                elevator.goTo(ElevatorSystem.Level.PICKUP);
                 fourBar.goTo(FourBarSystem.Level.PICKUP);
             }
-            if (gamepad.circle()) {
-                fourBar.goTo(FourBarSystem.Level.DROPOFF);
+
+            if (gamepad.cross()){
+                new Thread(()->{
+                    sleep(500);
+                    elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
+                }).start();
+                fourBar.goTo(FourBarSystem.Level.PICKUP);
             }
+
+            if (gamepad.circle()){
+                elevator.goTo(ElevatorSystem.Level.LOW);
+                new Thread(()->{
+                    sleep(500);
+                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
+                }).start();
+            }
+
+            if (gamepad.triangle()){
+                elevator.goTo(ElevatorSystem.Level.MID);
+                new Thread(()->{
+                    sleep(500);
+                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
+                }).start();
+            }
+
+//            if (gamepad.square()){
+//                elevator.goTo(ElevatorSystem.Level.HIGH);
+//                new Thread(()->{
+//                    sleep(1000);
+//                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
+//                });
+//            }
+
+
 
             if (gamepad.rb()) {
                 gWheel.toggleCollect();
             }
             if (gamepad.lb()) {
                 gWheel.toggleSpit();
-            }
-
-            if (gamepad.square()) {
-                elevator.goTo(ElevatorSystem.Level.PICKUP);
-            }
-            if (gamepad.x()) {
-                elevator.goTo(ElevatorSystem.Level.HIGH);
             }
 
             drivingSystem.printPosition();
