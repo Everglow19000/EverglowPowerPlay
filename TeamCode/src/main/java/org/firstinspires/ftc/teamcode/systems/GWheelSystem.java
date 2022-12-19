@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 /**
  * A class for handling the grabbing wheel.
  */
-public class GWheel {
+public class GWheelSystem {
     private final DcMotor motor;
     private final static double POWER = 0.5;
 
@@ -16,8 +16,8 @@ public class GWheel {
     /**
      * @param opMode The current opMode running on the robot.
      */
-    public GWheel(LinearOpMode opMode) {
-        motor = opMode.hardwareMap.get(DcMotor.class, "tW");
+    public GWheelSystem(LinearOpMode opMode) {
+        motor = opMode.hardwareMap.get(DcMotor.class, "gWheel");
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 

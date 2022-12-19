@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * A class for handling the four bar linkage system.
  */
-public class FourBar {
+public class FourBarSystem {
     /**
      * Enum encapsulating the most common positions for the system to reach
      */
@@ -26,7 +25,7 @@ public class FourBar {
     /**
      * @param opMode The current opMode running on the robot.
      */
-    public FourBar(LinearOpMode opMode) {
+    public FourBarSystem(LinearOpMode opMode) {
         servo = opMode.hardwareMap.get(Servo.class, "4bar");
     }
 

@@ -4,6 +4,16 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class ElevatorSystem {
+    public enum Level {
+        PICKUP(0), LOW(200), MID(400), HIGH(600);
+
+        Level(int position) {
+            this.position = position;
+        }
+
+        public final int position;
+    }
+
     private final OpMode opMode;
     private final DcMotor left;
     private final DcMotor right;
@@ -21,11 +31,10 @@ public class ElevatorSystem {
         right.setPower(1);
     }
 
-    public void goTo(int position){
-        left.setTargetPosition(position);
-        right.setTargetPosition(position);
+    public void goTo(Level level){
+        left.setTargetPosition(level.position);
+        right.setTargetPosition(level.position);
     }
-
 
 
 }

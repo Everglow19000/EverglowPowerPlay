@@ -3,28 +3,25 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.teamcode.systems.Claw;
+import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
-import org.firstinspires.ftc.teamcode.systems.FourBar;
-import org.firstinspires.ftc.teamcode.systems.GWheel;
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
+import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "NewTwoDriverTeleOp")
-public class NewTwoDriverTeleOp extends LinearOpMode {
+@TeleOp(name = "NewTwoDriverTeleop")
+public class NewTwoDriverTeleop extends LinearOpMode {
     @Override
     public void runOpMode() {
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
         EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 
         DrivingSystem drivingSystem = new DrivingSystem(this);
-        Claw claw = new Claw(this);
-        FourBar fourBar = new FourBar(this);
-        GWheel gWheel = new GWheel(this);
+        ClawSystem claw = new ClawSystem(this);
+        FourBarSystem fourBar = new FourBarSystem(this);
+        GWheelSystem gWheel = new GWheelSystem(this);
         ElevatorSystem elevator = new ElevatorSystem(this);
 
         Pose actPowers = new Pose(0, 0, 0);
@@ -50,25 +47,25 @@ public class NewTwoDriverTeleOp extends LinearOpMode {
             drivingSystem.driveMecanum(actPowers);
 
             if (gamepadB.rt()) {
-                claw.setPosition(Claw.ServoPosition.CLOSED);
+                claw.setPosition(ClawSystem.ServoPosition.CLOSED);
             }
             if (gamepadB.lt()) {
-                claw.setPosition(Claw.ServoPosition.OPEN);
+                claw.setPosition(ClawSystem.ServoPosition.OPEN);
             }
 
             if (gamepadB.triangle()) {
-                fourBar.goTo(FourBar.Level.PICKUP);
+                fourBar.goTo(FourBarSystem.Level.PICKUP);
             }
             if (gamepadB.circle()) {
-                fourBar.goTo(FourBar.Level.DROPOFF);
+                fourBar.goTo(FourBarSystem.Level.DROPOFF);
             }
 
-//            if(gamepad.rb()){
-//                gWheel.toggleCollect();
-//            }
-//            if(gamepad.lb()){
-//                gWheel.toggleSpit();
-//            }
+            if (gamepadB.rb()) {
+                gWheel.toggleCollect();
+            }
+            if (gamepadB.lb()) {
+                gWheel.toggleSpit();
+            }
 
             drivingSystem.printPosition();
             telemetry.update();
