@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.utils;
 
 public class PosePIDController {
     private final PIDController x, y, angle;
-    Pose powers = new Pose();
+    private final Pose powers = new Pose();
 
     public PosePIDController(Pose Kp, Pose Ki, Pose Kd) {
         x = new PIDController(Kp.x, Ki.x, Kd.x);

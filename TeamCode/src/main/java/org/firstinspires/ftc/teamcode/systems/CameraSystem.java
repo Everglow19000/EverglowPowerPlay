@@ -39,7 +39,7 @@ public class CameraSystem {
 
     // inline camera pipeline class
     static class CameraPipeline extends OpenCvPipeline {
-        private long nativeApriltagPtr; // a pointer to the JNI AprilTag detector
+        private long nativeAprilTagPtr; // a pointer to the JNI AprilTag detector
         private final Mat grey = new Mat(); // a blank canvas to store the b&w image
 
         private final LinearOpMode opMode; // the OpMode that's currently running
@@ -52,18 +52,18 @@ public class CameraSystem {
             this.opMode = opMode;
 
             // initiate AprilTag detector
-            nativeApriltagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
+            nativeAprilTagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
         }
 
         // runs when class is deleted
         @Override
         protected void finalize() {
             // -- safely delete AprilTag detector from memory -- //
-            // Might be null if createApriltagDetector() threw an exception
-            if (nativeApriltagPtr != 0) {
+            // Might be null if createAprilTagDetector() threw an exception
+            if (nativeAprilTagPtr != 0) {
                 // Delete the native context we created in the constructor
-//                AprilTagDetectorJNI.releaseApriltagDetector(nativeApriltagPtr);
-                nativeApriltagPtr = 0;
+//                AprilTagDetectorJNI.releaseAprilTagDetector(nativeAprilTagPtr);
+                nativeAprilTagPtr = 0;
             } else {
                 // handle exceptions
                 System.out.println("AprilTagDetectionPipeline.finalize(): nativeApriltagPtr was NULL");
@@ -117,7 +117,7 @@ public class CameraSystem {
                     Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
 
                     // call the detector on the image
-                    ArrayList<AprilTagDetection> detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeApriltagPtr, grey, TAG_SIZE, CameraCalibration.FX, CameraCalibration.FY, CameraCalibration.CX, CameraCalibration.CY);
+                    ArrayList<AprilTagDetection> detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeAprilTagPtr, grey, TAG_SIZE, CameraCalibration.FX, CameraCalibration.FY, CameraCalibration.CX, CameraCalibration.CY);
 
                     if (detections.size() > 0) { // detected at least one april tag
                         // assign global variable based on result
@@ -179,8 +179,10 @@ public class CameraSystem {
 
         // block the main loop until an AprilTag is detected
         while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS) {
+            opMode.telemetry.addData("AprilTag", "Detecting AprilTag...");
+            opMode.telemetry.update();
         }
-
+        opMode.telemetry.update();
         // return the id
         return cameraPipeline.aprilTagID;
     }

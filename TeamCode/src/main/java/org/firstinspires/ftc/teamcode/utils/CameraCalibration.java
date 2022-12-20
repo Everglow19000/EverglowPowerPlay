@@ -16,19 +16,19 @@ public class CameraCalibration {
     public static final double P2 = 0.11480806073904032;
 
     public static Mat constructCameraMatrix() {
-        Mat mat = new Mat(3,3, CvType.CV_32FC1);
+        Mat mat = new Mat(3, 3, CvType.CV_32FC1);
 
-        mat.put(0,0, FX);
-        mat.put(0,1,0);
-        mat.put(0,2, CX);
+        mat.put(0, 0, FX);
+        mat.put(0, 1, 0);
+        mat.put(0, 2, CX);
 
-        mat.put(1,0,0);
-        mat.put(1,1,FY);
-        mat.put(1,2,CY);
+        mat.put(1, 0, 0);
+        mat.put(1, 1, FY);
+        mat.put(1, 2, CY);
 
         mat.put(2, 0, 0);
-        mat.put(2,1,0);
-        mat.put(2,2,1);
+        mat.put(2, 1, 0);
+        mat.put(2, 2, 1);
 
         return mat;
     }

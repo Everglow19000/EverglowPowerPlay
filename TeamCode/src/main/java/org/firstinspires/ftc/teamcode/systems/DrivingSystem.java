@@ -44,32 +44,31 @@ public class DrivingSystem {
         ARMADILLO, NEW_ROBOT
     }
 
-    private static final Robot robot = Robot.ARMADILLO;
+    private static final Robot robot = Robot.NEW_ROBOT;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
     private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
+    private static final double ROTATION_EPSILON = toRadians(0.5);
 
     private final LinearOpMode opMode;
 
-    public final BNO055IMU imu;
-    public final DcMotor frontRight;
-    public final DcMotor frontLeft;
-    public final DcMotor backRight;
-    public final DcMotor backLeft;
+    private final BNO055IMU imu;
+    private final DcMotor frontRight;
+    private final DcMotor frontLeft;
+    private final DcMotor backRight;
+    private final DcMotor backLeft;
 
     private double flPreviousTicks = 0;
     private double frPreviousTicks = 0;
     private double blPreviousTicks = 0;
     private double brPreviousTicks = 0;
 
-    private final double ROTATION_EPSILON = toRadians(0.5);
-
     private final Pose positionCM = new Pose(0., 0., 0.);
 
-    public PositionLogger positionLogger = new PositionLogger(this);
-    private long lastCycleTime; // the time, in nanoseconds since the program began of the last time trackPosition was called.
-    private long lastCycleDuration; // the duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
+    public final PositionLogger positionLogger = new PositionLogger(this); // Needs to be public t save the file from the opMode.
+    private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
+    private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
     public long getLastCycleTime(){
         return lastCycleTime;
@@ -77,7 +76,6 @@ public class DrivingSystem {
     public long getLastCycleDuration(){
         return lastCycleDuration;
     }
-
     public Pose getPosition(){
         return new Pose(positionCM);
     }
