@@ -26,10 +26,12 @@ public class ClawSystem {
     public ClawSystem(LinearOpMode opMode) {
         servo1 = opMode.hardwareMap.get(Servo.class, "claw1");
         servo2 = opMode.hardwareMap.get(Servo.class, "claw2");
+        servo2.setDirection(Servo.Direction.REVERSE);
         setPosition(ServoPosition.OPEN);
     }
 
     public void setPosition(double position) {
+        servo1.setPosition(position);
         servo1.setPosition(position);
     }
 
