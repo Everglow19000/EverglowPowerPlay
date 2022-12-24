@@ -1,20 +1,16 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
-import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
-import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "NewTwoDriverTeleop")
-@Disabled
-public class NewTwoDriverTeleop extends LinearOpMode {
+@TeleOp(name = "TwoDriverTeleopV3")
+public class TwoDriverTeleopV3 extends LinearOpMode {
     @Override
     public void runOpMode() {
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
@@ -22,8 +18,6 @@ public class NewTwoDriverTeleop extends LinearOpMode {
 
         DrivingSystem drivingSystem = new DrivingSystem(this);
         ClawSystem claw = new ClawSystem(this);
-        FourBarSystem fourBar = new FourBarSystem(this);
-        GWheelSystem gWheel = new GWheelSystem(this);
         ElevatorSystem elevator = new ElevatorSystem(this);
 
         Pose actPowers = new Pose(0, 0, 0);
@@ -55,18 +49,24 @@ public class NewTwoDriverTeleop extends LinearOpMode {
                 claw.setPosition(ClawSystem.ServoPosition.OPEN);
             }
 
-            if (gamepadB.triangle()) {
-                fourBar.goTo(FourBarSystem.Level.PICKUP);
-            }
-            if (gamepadB.circle()) {
-                fourBar.goTo(FourBarSystem.Level.DROPOFF);
+            if (gamepadB.dpad_down()) {
+                elevator.goTo(ElevatorSystem.Level.PICKUP);
             }
 
-            if (gamepadB.rb()) {
-                gWheel.toggleCollect();
+            if (gamepadB.cross()) {
+                elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
             }
-            if (gamepadB.lb()) {
-                gWheel.toggleSpit();
+
+            if (gamepadB.circle()) {
+                elevator.goTo(ElevatorSystem.Level.LOW);
+            }
+
+            if (gamepadB.triangle()) {
+                elevator.goTo(ElevatorSystem.Level.MID);
+            }
+
+            if (gamepadB.square()){
+                elevator.goTo(ElevatorSystem.Level.HIGH);
             }
 
             drivingSystem.printPosition();

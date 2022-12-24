@@ -6,15 +6,20 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * A class for handling the claw.
  */
+
+
+
 public class ClawSystem {
     public enum ServoPosition {
-        OPEN(0.67), CLOSED(0.15);
+        OPEN(0.36, 0.3), CLOSED(0.29, 0.23);
 
-        ServoPosition(double position) {
-            this.position = position;
+        ServoPosition(double claw1pos, double claw2pos) {
+            this.claw1pos = claw1pos;
+            this.claw2pos = claw2pos;
         }
 
-        public final double position;
+        public final double claw1pos;
+        public final double claw2pos;
     }
 
     private final Servo servo1;
@@ -30,13 +35,9 @@ public class ClawSystem {
         setPosition(ServoPosition.OPEN);
     }
 
-    public void setPosition(double position) {
-        servo1.setPosition(position);
-        servo1.setPosition(position);
-    }
-
     public void setPosition(ServoPosition location) {
-        setPosition(location.position);
+        servo1.setPosition(location.claw1pos);
+        servo2.setPosition(location.claw2pos);
     }
 
 }
