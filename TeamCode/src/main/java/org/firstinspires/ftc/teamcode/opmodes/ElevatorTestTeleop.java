@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
@@ -19,7 +20,7 @@ public class ElevatorTestTeleop extends LinearOpMode {
 
         DcMotor leftElevator = hardwareMap.get(DcMotor.class, "left_elevator");
         DcMotor rightElevator = hardwareMap.get(DcMotor.class, "right_elevator");
-
+        leftElevator.setDirection(DcMotorSimple.Direction.REVERSE);
         leftElevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightElevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftElevator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class ElevatorSystem {
     public enum Level {
@@ -23,6 +24,7 @@ public class ElevatorSystem {
         left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
         right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
 
+        left.setDirection(DcMotorSimple.Direction.REVERSE);
         left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
