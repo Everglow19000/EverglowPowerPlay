@@ -12,13 +12,15 @@ public class ClawTest extends LinearOpMode {
     public void runOpMode() {
         EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 
-        Servo claw = hardwareMap.get(Servo.class, "claw");
+        Servo claw1 = hardwareMap.get(Servo.class, "claw1");
+        Servo cla2 = hardwareMap.get(Servo.class, "claw2");
         double position = 0.5;
         waitForStart();
-        claw.setPosition(position);
+        claw1.setPosition(position);
+        cla2.setPosition(position);
         while (opModeIsActive()) {
             position += gamepad1.left_stick_y * 0.01;
-            claw.setPosition(position);
+            claw1.setPosition(position);
             telemetry.addData("position", position);
             telemetry.update();
             sleep(10);

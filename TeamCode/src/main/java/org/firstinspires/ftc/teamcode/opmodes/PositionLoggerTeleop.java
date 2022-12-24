@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 
 @TeleOp(name = "PositionLoggerTeleop")
+@Disabled
 public class PositionLoggerTeleop extends LinearOpMode {
     @Override
     public void runOpMode() {

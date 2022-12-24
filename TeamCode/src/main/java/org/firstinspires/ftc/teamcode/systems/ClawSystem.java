@@ -18,12 +18,14 @@ public class ClawSystem {
     }
 
     private final Servo servo1;
+    private final Servo servo2;
 
     /**
      * @param opMode The current opMode running on the robot.
      */
     public ClawSystem(LinearOpMode opMode) {
-        servo1 = opMode.hardwareMap.get(Servo.class, "claw");
+        servo1 = opMode.hardwareMap.get(Servo.class, "claw1");
+        servo2 = opMode.hardwareMap.get(Servo.class, "claw2");
         setPosition(ServoPosition.OPEN);
     }
 

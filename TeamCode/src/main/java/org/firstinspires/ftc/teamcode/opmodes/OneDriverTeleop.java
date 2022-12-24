@@ -7,7 +7,6 @@ import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
-import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -19,8 +18,6 @@ public class OneDriverTeleop extends LinearOpMode {
 
         DrivingSystem drivingSystem = new DrivingSystem(this);
         ClawSystem claw = new ClawSystem(this);
-        FourBarSystem fourBar = new FourBarSystem(this);
-        GWheelSystem gWheel = new GWheelSystem(this);
         ElevatorSystem elevator = new ElevatorSystem(this);
 
         Pose actPowers = new Pose(0, 0, 0);
@@ -51,50 +48,24 @@ public class OneDriverTeleop extends LinearOpMode {
                 claw.setPosition(ClawSystem.ServoPosition.OPEN);
             }
 
-            if (gamepad.dpad_down()){
+            if (gamepad.dpad_down()) {
                 elevator.goTo(ElevatorSystem.Level.PICKUP);
-                fourBar.goTo(FourBarSystem.Level.PICKUP);
             }
 
-            if (gamepad.cross()){
-                new Thread(()->{
-                    sleep(500);
-                    elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
-                }).start();
-                fourBar.goTo(FourBarSystem.Level.PICKUP);
+            if (gamepad.cross()) {
+                elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
             }
 
-            if (gamepad.circle()){
+            if (gamepad.circle()) {
                 elevator.goTo(ElevatorSystem.Level.LOW);
-                new Thread(()->{
-                    sleep(500);
-                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
-                }).start();
             }
 
-            if (gamepad.triangle()){
+            if (gamepad.triangle()) {
                 elevator.goTo(ElevatorSystem.Level.MID);
-                new Thread(()->{
-                    sleep(500);
-                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
-                }).start();
             }
 
-//            if (gamepad.square()){
-//                elevator.goTo(ElevatorSystem.Level.HIGH);
-//                new Thread(()->{
-//                    sleep(1000);
-//                    fourBar.goTo(FourBarSystem.Level.DROPOFF);
-//                });
-//            }
-
-
-
-            if (gamepad.rb()) {
-                gWheel.toggleCollect();
-            }
-            if (gamepad.lb()) {
-                gWheel.toggleSpit();
+            if (gamepad.square()){
+                elevator.goTo(ElevatorSystem.Level.HIGH);
             }
 
             drivingSystem.printPosition();
