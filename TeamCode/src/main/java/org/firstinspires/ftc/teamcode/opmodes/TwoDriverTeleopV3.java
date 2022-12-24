@@ -53,10 +53,6 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
                 elevator.goTo(ElevatorSystem.Level.PICKUP);
             }
 
-            if (gamepadB.cross()) {
-                elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
-            }
-
             if (gamepadB.circle()) {
                 elevator.goTo(ElevatorSystem.Level.LOW);
             }
@@ -65,9 +61,6 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
                 elevator.goTo(ElevatorSystem.Level.MID);
             }
 
-            if (gamepadB.square()){
-                elevator.goTo(ElevatorSystem.Level.HIGH);
-            }
 
             drivingSystem.printPosition();
             telemetry.update();

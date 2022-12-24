@@ -52,20 +52,12 @@ public class OneDriverTeleop extends LinearOpMode {
                 elevator.goTo(ElevatorSystem.Level.PICKUP);
             }
 
-            if (gamepad.cross()) {
-                elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
-            }
-
             if (gamepad.circle()) {
                 elevator.goTo(ElevatorSystem.Level.LOW);
             }
 
             if (gamepad.triangle()) {
                 elevator.goTo(ElevatorSystem.Level.MID);
-            }
-
-            if (gamepad.square()){
-                elevator.goTo(ElevatorSystem.Level.HIGH);
             }
 
             drivingSystem.printPosition();

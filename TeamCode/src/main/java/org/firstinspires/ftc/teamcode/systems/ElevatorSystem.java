@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class ElevatorSystem {
     public enum Level {
-        PICKUP(0), PRE_PICKUP(-600) , LOW(-1000), MID(-1900), HIGH(-2600);
+        PICKUP(0), PRE_PICKUP(-1833) , LOW(-1833), MID(-2914), HIGH(-2914);
 
         Level(int position) {
             this.position = position;
