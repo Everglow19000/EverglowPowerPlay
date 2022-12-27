@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
-import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -42,10 +41,10 @@ public class OneDriverTeleop extends LinearOpMode {
             drivingSystem.driveMecanum(actPowers);
 
             if (gamepad.rt()) {
-                claw.setPosition(ClawSystem.ServoPosition.CLOSED);
+                claw.goTo(ClawSystem.ServoPosition.CLOSED);
             }
             if (gamepad.lt()) {
-                claw.setPosition(ClawSystem.ServoPosition.OPEN);
+                claw.goTo(ClawSystem.ServoPosition.OPEN);
             }
 
             if (gamepad.dpad_down()) {

@@ -10,8 +10,4 @@ public class AndroidUtils {
     public static String timestampString() {
         return new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS").format(new Date());
     }
-
-    public static void createFileAndDirectories(){
-
-    }
 }

@@ -26,7 +26,7 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
         Pose actPowers = new Pose(0, 0, 0);
         final double divisorSpeed = 4.5;
 
-        claw.setPosition(clawPosition);
+        claw.goTo(clawPosition);
 
         waitForStart();
 
@@ -49,7 +49,7 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
 
             if (gamepadB.lt()) {
                 clawPosition = clawPosition.flip();
-                claw.setPosition(clawPosition);
+                claw.goTo(clawPosition);
             }
 
             if (gamepadB.dpad_down()) {

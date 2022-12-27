@@ -20,7 +20,7 @@ public class AutonomousRoutes {
     }
 
     public void run(){
-        clawSystem.setPosition(ClawSystem.ServoPosition.CLOSED);
+        clawSystem.goTo(ClawSystem.ServoPosition.CLOSED);
         CameraSystem.AprilTagType tagType = cameraSystem.detectAprilTag();
         opMode.telemetry.addData("tag", tagType.toString());
         opMode.telemetry.update();

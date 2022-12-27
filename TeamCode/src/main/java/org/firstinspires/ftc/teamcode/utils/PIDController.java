@@ -4,8 +4,8 @@ package org.firstinspires.ftc.teamcode.utils;
  * Used to control power activations while in track.
  */
 public class PIDController {
-    private double deviationIntegral = 0;
     private final double Kp, Ki, Kd; // scalars that are all positives
+    private double deviationIntegral = 0;
     private double lastTime, lastDeviation = 0;
 
     public PIDController(double Kp, double Ki, double Kd) {

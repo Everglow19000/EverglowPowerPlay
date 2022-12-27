@@ -48,7 +48,7 @@ public class ClawSystem {
         servo2.setDirection(Servo.Direction.REVERSE);
     }
 
-    public void setPosition(ServoPosition location) {
+    public void goTo(ServoPosition location) {
         servo1.setPosition(location.claw1pos);
         servo2.setPosition(location.claw2pos);
     }
