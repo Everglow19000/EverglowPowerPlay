@@ -12,7 +12,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-@TeleOp(name = "MinCameraTeleop")
+@TeleOp(name = "MinCameraTeleop", group = "Test")
 @Disabled
 public class MinCameraTeleop extends LinearOpMode {
 

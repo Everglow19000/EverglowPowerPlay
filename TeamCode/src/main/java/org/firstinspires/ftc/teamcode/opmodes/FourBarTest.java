@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 
-@TeleOp(name = "FourBarTest")
+@TeleOp(name = "FourBarTest", group = "Test")
 public class FourBarTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {

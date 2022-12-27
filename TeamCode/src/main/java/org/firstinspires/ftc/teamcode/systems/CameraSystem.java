@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * A Class for handling the camera processing.
+ * A Class for handling the image processing for camera.
  */
 public class CameraSystem {
 	private final LinearOpMode opMode;

@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "OneDriverTeleop")
+@TeleOp(name = "OneDriverTeleop", group = ".Main")
 public class OneDriverTeleop extends LinearOpMode {
 	@Override
 	public void runOpMode() {

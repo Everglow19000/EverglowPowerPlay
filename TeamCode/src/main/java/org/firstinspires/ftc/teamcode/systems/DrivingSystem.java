@@ -19,9 +19,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.utils.PIDController;
-import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.PointD;
+import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
@@ -278,8 +278,10 @@ public class DrivingSystem {
 	 * Gets called multiple times per second.
 	 *
 	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
-	 *               x and y are in cm/s, and the angle is in radians.
-	 *               x is sideways, y is forward, and the angle is relative to the robot's starting angle.
+	 *               x is this vertical power, positive is left, negative is right.
+	 *               y is the horizontal power, positive is forward, negative is backwards.
+	 *               angle rotational power, positive is counter clockwise, negative is clockwise.
+	 *               -1 <= x, y, angle <= 1.
 	 */
 	public void driveMecanum(Pose powers) {
 		// Determine how much power each motor should receive.

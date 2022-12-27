@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 import java.io.File;
 import java.io.IOException;
 
-@TeleOp(name = "PositionLoggerTeleop")
+@TeleOp(name = "PositionLoggerTeleop", group = "Test")
 @Disabled
 public class PositionLoggerTeleop extends LinearOpMode {
 	@Override

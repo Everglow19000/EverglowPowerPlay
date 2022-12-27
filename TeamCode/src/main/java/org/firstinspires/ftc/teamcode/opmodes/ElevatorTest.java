@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 
-@TeleOp(name = "ElevatorTest")
+@TeleOp(name = "ElevatorTest", group = "Test")
 public class ElevatorTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {
