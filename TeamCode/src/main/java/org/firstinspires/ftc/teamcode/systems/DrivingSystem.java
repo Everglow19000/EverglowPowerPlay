@@ -15,7 +15,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -278,7 +277,9 @@ public class DrivingSystem {
 	 * Drives the robot and keeps track of it's position.
 	 * Gets called multiple times per second.
 	 *
-	 * @param powers Velocity vector containing elements in x, y, and tangential.
+	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
+	 *               x and y are in cm/s, and the angle is in radians.
+	 *               x is sideways, y is forward, and the angle is relative to the robot's starting angle.
 	 */
 	public void driveMecanum(Pose powers) {
 		// Determine how much power each motor should receive.

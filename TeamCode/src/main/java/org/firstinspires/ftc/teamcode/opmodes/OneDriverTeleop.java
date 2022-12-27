@@ -41,10 +41,10 @@ public class OneDriverTeleop extends LinearOpMode {
 			drivingSystem.driveMecanum(actPowers);
 
 			if (gamepad.rt()) {
-				claw.goTo(ClawSystem.ServoPosition.CLOSED);
+				claw.goTo(ClawSystem.ClawState.CLOSED);
 			}
 			if (gamepad.lt()) {
-				claw.goTo(ClawSystem.ServoPosition.OPEN);
+				claw.goTo(ClawSystem.ClawState.OPEN);
 			}
 
 			if (gamepad.dpad_down()) {

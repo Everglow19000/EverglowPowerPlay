@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+/**
+ * A class that represents a point in 2D space.
+ */
 public class PointD {
 	public double x;
 	public double y;
 
 	/**
-	 * Given no values, sets values to 0.
+	 * Given no values, sets the properties' values to 0.
 	 */
 	public PointD() {
 		this.x = 0;

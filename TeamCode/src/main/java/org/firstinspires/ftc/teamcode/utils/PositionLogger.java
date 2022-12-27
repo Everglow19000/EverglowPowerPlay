@@ -21,8 +21,8 @@ public class PositionLogger {
 	private final List<RobotState> robotStates;
 
 	private static class RobotState {
-		long time;
-		Pose pose;
+		final long time;
+		final Pose pose;
 
 		public RobotState(long time, Pose pose) {
 			this.time = time;

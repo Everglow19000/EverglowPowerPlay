@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.utils;
 import static java.lang.Math.PI;
 
 /**
- * An object encompassing a set of two dimensional position and azimuth.
+ * An object encompassing a set of two dimensional position and an azimuth.
  */
 public class Pose {
 	/**
@@ -20,7 +20,7 @@ public class Pose {
 	public double angle;
 
 	/**
-	 * Given no values, sets all values to 0.
+	 * Given no values, sets the properties' values to 0.
 	 */
 	public Pose() {
 		this.x = 0;
@@ -39,6 +39,9 @@ public class Pose {
 		this.angle = angle;
 	}
 
+	/**
+	 * @param other another Pose object to copy.
+	 */
 	public Pose(Pose other) {
 		this.x = other.x;
 		this.y = other.y;
@@ -117,7 +120,6 @@ public class Pose {
 	 * @return A new pose object containing the differences in values (pose1 - pose2).
 	 */
 	public static Pose difference(Pose pose1, Pose pose2) {
-		return new Pose(pose1.x - pose2.x, pose1.y - pose2.y,
-				pose1.angle - pose2.angle);
+		return new Pose(pose1.x - pose2.x, pose1.y - pose2.y, pose1.angle - pose2.angle);
 	}
 }

@@ -2,29 +2,32 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+/**
+ * A class for handling the elevator system.
+ */
 public class ElevatorSystem {
+	/**
+	 * Enum encapsulating all the positions the system should reach.
+	 */
 	public enum Level {
-		PICKUP(0), PRE_PICKUP(-1833) , LOW(-1833), MID(-2914), HIGH(-2914);
+		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-2914);
 
-		Level(int position) {
-			this.position = position;
+		public final int state;
+
+		Level(int state) {
+			this.state = state;
 		}
-
-		public final int position;
 	}
 
-	private final OpMode opMode;
 	private final DcMotor left;
 	private final DcMotor right;
 
 	public ElevatorSystem(OpMode opMode) {
-		this.opMode = opMode;
 		left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
 		right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
 
-		left.setDirection(DcMotorSimple.Direction.REVERSE);
+		left.setDirection(DcMotor.Direction.REVERSE);
 		left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -38,10 +41,13 @@ public class ElevatorSystem {
 		right.setPower(0.7);
 	}
 
-	public void goTo(Level level){
-		left.setTargetPosition(level.position);
-		right.setTargetPosition(level.position);
+	/**
+	 * Moves the elevator to the specified state.
+	 *
+	 * @param level The level to move the elevator to.
+	 */
+	public void goTo(Level level) {
+		left.setTargetPosition(level.state);
+		right.setTargetPosition(level.state);
 	}
-
-
 }

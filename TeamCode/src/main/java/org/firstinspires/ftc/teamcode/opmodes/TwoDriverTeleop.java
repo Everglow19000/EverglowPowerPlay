@@ -9,13 +9,10 @@ import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "TwoDriverTeleopV3")
-public class TwoDriverTeleopV3 extends LinearOpMode {
+@TeleOp(name = "TwoDriverTeleop")
+public class TwoDriverTeleop extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-
-		ClawSystem.ServoPosition clawPosition = ClawSystem.ServoPosition.OPEN;
-
 		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 
@@ -24,7 +21,8 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
 		ElevatorSystem elevator = new ElevatorSystem(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
-		final double divisorSpeed = 4.5;
+		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
+		final double speedDivisor = 4.5;
 
 		claw.goTo(clawPosition);
 
@@ -36,9 +34,9 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
 
 			// If we want to drive and turn slower, for finer adjustment
 			if (gamepad1.right_trigger > 0.2) {
-				actPowers.x = -gamepad1.left_stick_x / divisorSpeed;
-				actPowers.y = -gamepad1.left_stick_y / divisorSpeed;
-				actPowers.angle = -gamepad1.right_stick_x / divisorSpeed;
+				actPowers.x = -gamepad1.left_stick_x / speedDivisor;
+				actPowers.y = -gamepad1.left_stick_y / speedDivisor;
+				actPowers.angle = -gamepad1.right_stick_x / speedDivisor;
 			} else {
 				actPowers.x = -gamepad1.left_stick_x * 0.75;
 				actPowers.y = -gamepad1.left_stick_y * 0.75;

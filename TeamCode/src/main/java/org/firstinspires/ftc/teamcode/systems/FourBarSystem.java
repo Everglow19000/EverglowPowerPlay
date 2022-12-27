@@ -10,31 +10,31 @@ public class FourBarSystem {
 	/**
 	 * Enum encapsulating the two positions the system should reach.
 	 */
-	public enum Level {
+	public enum FourBarState {
 		PICKUP(0.56), DROPOFF(0.123);
 
-		Level(double position) {
-			this.position = position;
-		}
+		private final double state;
 
-		private final double position;
+		FourBarState(double state) {
+			this.state = state;
+		}
 	}
 
-	private final Servo servo;
+	private final Servo fourBar;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		servo = opMode.hardwareMap.get(Servo.class, "4bar");
+		fourBar = opMode.hardwareMap.get(Servo.class, "4bar");
 	}
 
 	/**
-	 * Moves the system to a position from the Level enum.
+	 * Sets the fourBar to the specified state.
 	 *
-	 * @param level Position from the Level enum.
+	 * @param state The level to move the elevator to.
 	 */
-	public void goTo(Level level) {
-		servo.setPosition(level.position);
+	public void goTo(FourBarState state) {
+		fourBar.setPosition(state.state);
 	}
 }

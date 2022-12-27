@@ -24,12 +24,12 @@ public class CameraTeleop extends LinearOpMode {
 		while (opModeIsActive()) {
 			gamepad.update();
 
-			// assign image capture to the circle button
+			// Assign image capture to the circle button
 			if (gamepad.circle()) {
 				cameraSystem.captureImage();
 			}
 
-			// assign AprilTag detection to cross button
+			// Assign AprilTag detection to cross button
 			if (gamepad.cross()) {
 				telemetry.addLine("Detecting AprilTag...");
 

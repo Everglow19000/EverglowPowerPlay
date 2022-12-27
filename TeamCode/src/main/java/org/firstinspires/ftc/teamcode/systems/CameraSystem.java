@@ -19,15 +19,17 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.io.File;
 import java.util.ArrayList;
 
+/**
+ * A Class for handling the camera processing.
+ */
 public class CameraSystem {
 	private final LinearOpMode opMode;
 	private final CameraPipeline cameraPipeline;
 	private final OpenCvCamera camera;
 
-	// -- AprilTag related variables -- //
 	static final double TAG_SIZE = 0.166; // UNITS ARE METERS
 
-	// types for AprilTag IDs
+	// Types for AprilTag IDs
 	public enum AprilTagType {
 		TAG_1,
 		TAG_2,
@@ -38,36 +40,36 @@ public class CameraSystem {
 		DETECTION_IN_PROGRESS
 	}
 
-	// inline camera pipeline class
+	// Inline camera pipeline class
 	static class CameraPipeline extends OpenCvPipeline {
-		private long nativeApriltagPtr; // a pointer to the JNI AprilTag detector
-		private final Mat grey = new Mat(); // a blank canvas to store the b&w image
+		private long nativeAprilTagPtr; // A pointer to the JNI AprilTag detector
+		private final Mat grey = new Mat(); // A blank canvas to store the b&w image
 
-		private final LinearOpMode opMode; // the OpMode that's currently running
+		private final LinearOpMode opMode; // The OpMode that's currently running
 		private boolean isCapturingImage = false;
 		private boolean isDetectingAprilTag = false;
 
-		public AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED; // last identified AprilTag
+		public AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED; // Last identified AprilTag
 
 		public CameraPipeline(LinearOpMode opMode) {
 			this.opMode = opMode;
 
 			// initiate AprilTag detector
-			nativeApriltagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
+			nativeAprilTagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
 		}
 
 		// runs when class is deleted
 		@Override
 		protected void finalize() {
 			// -- safely delete AprilTag detector from memory -- //
-			// Might be null if createApriltagDetector() threw an exception
-			if (nativeApriltagPtr != 0) {
+			// Might be null if createAprilTagDetector() threw an exception
+			if (nativeAprilTagPtr != 0) {
 				// Delete the native context we created in the constructor
-//                AprilTagDetectorJNI.releaseApriltagDetector(nativeApriltagPtr);
-				nativeApriltagPtr = 0;
+//                AprilTagDetectorJNI.releaseAprilTagDetector(nativeAprilTagPtr);
+				nativeAprilTagPtr = 0;
 			} else {
 				// handle exceptions
-				System.out.println("AprilTagDetectionPipeline.finalize(): nativeApriltagPtr was NULL");
+				System.out.println("AprilTagDetectionPipeline.finalize(): nativeAprilTagPtr was NULL");
 			}
 		}
 
@@ -85,10 +87,10 @@ public class CameraSystem {
 			isDetectingAprilTag = true;
 		}
 
-		// runs automatically every frame
+		// Runs automatically every frame
 		@Override
 		public Mat processFrame(Mat input) {
-			// image capturing is enabled
+			// Image capturing is enabled
 			if (isCapturingImage) {
 				opMode.telemetry.addLine("Capture");
 				opMode.telemetry.update();
@@ -111,14 +113,14 @@ public class CameraSystem {
 
 			// AprilTag detection is enabled
 			if (isDetectingAprilTag) {
-				isDetectingAprilTag = false; // turn off AprilTag detection for the next iteration
+				isDetectingAprilTag = false; // Turn off AprilTag detection for the next iteration
 
 				try {
 					// convert image to grey
 					Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
 
 					// call the detector on the image
-					ArrayList<AprilTagDetection> detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeApriltagPtr, grey, TAG_SIZE, CameraCalibration.FX, CameraCalibration.FY, CameraCalibration.CX, CameraCalibration.CY);
+					ArrayList<AprilTagDetection> detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeAprilTagPtr, grey, TAG_SIZE, CameraCalibration.FX, CameraCalibration.FY, CameraCalibration.CX, CameraCalibration.CY);
 
 					if (detections.size() > 0) { // detected at least one april tag
 						// assign global variable based on result
@@ -146,10 +148,14 @@ public class CameraSystem {
 		}
 	}
 
+	/**
+	 * @param opMode The current opMode running on the robot.
+	 */
 	public CameraSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
 
-		cameraPipeline = new CameraPipeline(opMode); // initiate camera pipeline
+		// Initiate camera pipeline
+		cameraPipeline = new CameraPipeline(opMode);
 		int cameraMonitorViewId =
 				this.opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
 		WebcamName webcamName =
@@ -171,9 +177,6 @@ public class CameraSystem {
 		});
 
 		opMode.sleep(4000);
-
-
-
 	}
 
 	/**
@@ -184,7 +187,9 @@ public class CameraSystem {
 	}
 
 	/**
-	 * Detects AprilTag from camera
+	 * Detects AprilTag from camera.
+	 *
+	 * @return The type of the AprilTag detected.
 	 */
 	public AprilTagType detectAprilTag() {
 		// reset previous april tag id
