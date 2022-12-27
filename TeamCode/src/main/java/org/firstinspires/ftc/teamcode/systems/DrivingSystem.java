@@ -13,6 +13,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -44,7 +45,7 @@ public class DrivingSystem {
         ARMADILLO, NEW_ROBOT
     }
 
-    private static final Robot robot = Robot.ARMADILLO;
+    private static final Robot robot = Robot.NEW_ROBOT;
 
     private static final double WHEEL_RADIUS_CM = 4.8;
     private static final double TICKS_PER_ROTATION = 515;
@@ -151,7 +152,9 @@ public class DrivingSystem {
         imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
         opMode.sleep(100); // Changing modes again requires a delay
 
-        while (!imu.isGyroCalibrated()) {
+        ElapsedTime elapsedTime = new ElapsedTime();
+
+        while (!imu.isGyroCalibrated() && elapsedTime.milliseconds() < 2000) {
             // wait for the gyroscope calibration
             opMode.sleep(10);
         }
@@ -213,7 +216,9 @@ public class DrivingSystem {
 
         Pose movementChange = new Pose();
         movementChange.y = (fL + fR + bL + bR) / 4. * CM_PER_TICK;
-        movementChange.x = (fR - fL + bR - bL) / 4. * CM_PER_TICK;
+//        movementChange.x = (fR - fL + bR - bL) / 4. * CM_PER_TICK;
+        movementChange.x = (fR - fL + bL - bR) / 4. * CM_PER_TICK;
+//        -fLChange + fRChange + bLChange - bRChange
         movementChange.angle = orientation.firstAngle;
 
         return movementChange;
@@ -300,7 +305,7 @@ public class DrivingSystem {
         frontLeft.setPower(frontLeftPower);
         backRight.setPower(backRightPower);
         backLeft.setPower(backLeftPower);
-        trackPosition();
+//        trackPosition();
     }
 
     /**
@@ -375,9 +380,10 @@ public class DrivingSystem {
         double startAngle = getDistancesOld().angle;
         double forwardDistance = getDistancesOld().y;
 
-        while (Math.abs(forwardDistance) < distance) {
-            forwardDistance = getDistancesOld().y;
-            double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - getDistancesOld().angle);
+        while (opMode.opModeIsActive() && Math.abs(forwardDistance) < distance) {
+            Pose pose = getDistancesOld();
+            forwardDistance = pose.y;
+            double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
             double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
             driveMecanum(new Pose(0, power, rotatePower));
             positionLogger.update();
@@ -405,18 +411,16 @@ public class DrivingSystem {
         double ANGLE_DEVIATION_SCALAR = 0.05;
 
         resetDistance();
-        double startAngle = getDistancesOld().angle;
-        double sidewaysDistance = getDistancesOld().x;
-        while (Math.abs(sidewaysDistance) < distance) {
-            sidewaysDistance = getDistancesOld().x;
-            double angleDeviation = normalizeAngle(startAngle - getDistancesOld().angle);
+        Pose pose = getDistancesOld();
+        double startAngle = pose.angle;
+        double sidewaysDistance = pose.x;
+        while (opMode.opModeIsActive() && Math.abs(sidewaysDistance) < distance) {
+            Pose distances = getDistancesOld();
+            sidewaysDistance = distances.x;
+            double angleDeviation = normalizeAngle(startAngle - distances.angle);
             driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
-            positionLogger.update();
-            printPosition();
-            telemetry.update();
         }
         stop();
-
     }
 
     /**

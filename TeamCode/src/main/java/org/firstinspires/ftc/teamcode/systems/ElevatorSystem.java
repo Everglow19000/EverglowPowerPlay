@@ -34,8 +34,8 @@ public class ElevatorSystem {
         left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        left.setPower(1);
-        right.setPower(1);
+        left.setPower(0.7);
+        right.setPower(0.7);
     }
 
     public void goTo(Level level){

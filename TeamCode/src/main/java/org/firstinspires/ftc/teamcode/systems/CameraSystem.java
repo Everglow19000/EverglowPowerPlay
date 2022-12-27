@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
@@ -125,10 +126,10 @@ public class CameraSystem {
                             case 0:
                                 aprilTagID = AprilTagType.TAG_1;
                                 break;
-                            case 2:
+                            case 1:
                                 aprilTagID = AprilTagType.TAG_2;
                                 break;
-                            case 3:
+                            case 2:
                                 aprilTagID = AprilTagType.TAG_3;
                                 break;
                             default:
@@ -156,8 +157,23 @@ public class CameraSystem {
 
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
         camera.setPipeline(cameraPipeline);
-        camera.openCameraDevice();
-        camera.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
+
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                opMode.telemetry.addLine("CAMERA ERROR!!! code: " + errorCode);
+            }
+        });
+
+        opMode.sleep(4000);
+
+
+
     }
 
     /**
@@ -177,8 +193,9 @@ public class CameraSystem {
         // make the processFrame loop try to detect AprilTags
         cameraPipeline.detectAprilTag();
 
+        ElapsedTime elapsedTime = new ElapsedTime();
         // block the main loop until an AprilTag is detected
-        while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS) {
+        while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS && elapsedTime.milliseconds() < 8*1000) {
         }
 
         // return the id

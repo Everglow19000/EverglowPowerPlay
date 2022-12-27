@@ -13,6 +13,9 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 public class TwoDriverTeleopV3 extends LinearOpMode {
     @Override
     public void runOpMode() {
+
+        ClawSystem.ServoPosition clawPosition = ClawSystem.ServoPosition.OPEN;
+
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
         EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 
@@ -21,7 +24,9 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
         ElevatorSystem elevator = new ElevatorSystem(this);
 
         Pose actPowers = new Pose(0, 0, 0);
-        final int divisorSpeed = 10;
+        final double divisorSpeed = 4.5;
+
+        claw.setPosition(clawPosition);
 
         waitForStart();
 
@@ -30,23 +35,21 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
             gamepadB.update();
 
             // If we want to drive and turn slower, for finer adjustment
-            if (gamepad1.left_bumper) {
+            if (gamepad1.right_trigger > 0.2) {
                 actPowers.x = -gamepad1.left_stick_x / divisorSpeed;
                 actPowers.y = -gamepad1.left_stick_y / divisorSpeed;
                 actPowers.angle = -gamepad1.right_stick_x / divisorSpeed;
             } else {
-                actPowers.x = -gamepad1.left_stick_x;
-                actPowers.y = -gamepad1.left_stick_y;
-                actPowers.angle = -gamepad1.right_stick_x;
+                actPowers.x = -gamepad1.left_stick_x * 0.75;
+                actPowers.y = -gamepad1.left_stick_y * 0.75;
+                actPowers.angle = -gamepad1.right_stick_x * 0.5;
             }
 
             drivingSystem.driveMecanum(actPowers);
 
-            if (gamepadB.rt()) {
-                claw.setPosition(ClawSystem.ServoPosition.CLOSED);
-            }
             if (gamepadB.lt()) {
-                claw.setPosition(ClawSystem.ServoPosition.OPEN);
+                clawPosition = clawPosition.flip();
+                claw.setPosition(clawPosition);
             }
 
             if (gamepadB.dpad_down()) {
@@ -60,7 +63,6 @@ public class TwoDriverTeleopV3 extends LinearOpMode {
             if (gamepadB.triangle()) {
                 elevator.goTo(ElevatorSystem.Level.MID);
             }
-
 
             drivingSystem.printPosition();
             telemetry.update();
