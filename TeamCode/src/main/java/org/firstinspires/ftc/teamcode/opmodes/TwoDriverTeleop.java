@@ -9,53 +9,56 @@ import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "OneDriverTeleop", group = ".Main")
-public class OneDriverTeleop extends LinearOpMode {
+@TeleOp(name = "TwoDriverTeleop", group = ".Main")
+public class TwoDriverTeleop extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
+		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
+		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 		ClawSystem claw = new ClawSystem(this);
 		ElevatorSystem elevator = new ElevatorSystem(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
-		final int divisorSpeed = 10;
+		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
+		final double speedDivisor = 4.5;
+
+		claw.goTo(clawPosition);
 
 		waitForStart();
 
 		while (opModeIsActive()) {
-			gamepad.update();
+			gamepadA.update();
+			gamepadB.update();
 
 			// If we want to drive and turn slower, for finer adjustment
-			if (gamepad1.left_bumper) {
-				actPowers.x = -gamepad1.left_stick_x / divisorSpeed;
-				actPowers.y = -gamepad1.left_stick_y / divisorSpeed;
-				actPowers.angle = -gamepad1.right_stick_x / divisorSpeed;
+			if (gamepad1.right_trigger > 0.2) {
+				actPowers.x = -gamepad1.left_stick_x / speedDivisor;
+				actPowers.y = -gamepad1.left_stick_y / speedDivisor;
+				actPowers.angle = -gamepad1.right_stick_x / speedDivisor;
 			} else {
-				actPowers.x = -gamepad1.left_stick_x;
-				actPowers.y = -gamepad1.left_stick_y;
-				actPowers.angle = -gamepad1.right_stick_x;
+				actPowers.x = -gamepad1.left_stick_x * 0.75;
+				actPowers.y = -gamepad1.left_stick_y * 0.75;
+				actPowers.angle = -gamepad1.right_stick_x * 0.5;
 			}
 
 			drivingSystem.driveMecanum(actPowers);
 
-			if (gamepad.rt()) {
-				claw.goTo(ClawSystem.ClawState.CLOSED);
-			}
-			if (gamepad.lt()) {
-				claw.goTo(ClawSystem.ClawState.OPEN);
+			if (gamepadB.lt()) {
+				clawPosition = clawPosition.flip();
+				claw.goTo(clawPosition);
 			}
 
-			if (gamepad.dpad_down()) {
+			if (gamepadB.dpad_down()) {
 				elevator.goTo(ElevatorSystem.Level.PICKUP);
 			}
 
-			if (gamepad.circle()) {
+			if (gamepadB.circle()) {
 				elevator.goTo(ElevatorSystem.Level.LOW);
 			}
 
-			if (gamepad.triangle()) {
+			if (gamepadB.triangle()) {
 				elevator.goTo(ElevatorSystem.Level.MID);
 			}
 
