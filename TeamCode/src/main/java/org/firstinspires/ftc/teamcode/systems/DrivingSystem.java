@@ -20,7 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.Pose;
-import org.firstinspires.ftc.teamcode.utils.PointD;
+import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
@@ -66,7 +66,7 @@ public class DrivingSystem {
 
 	private final Pose positionCM = new Pose(0., 0., 0.);
 
-	public final PositionLogger positionLogger = new PositionLogger(this); // Needs to be public t save the file from the opMode.
+	public final PositionLogger positionLogger = new PositionLogger(this); // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
@@ -87,7 +87,8 @@ public class DrivingSystem {
 		this.opMode = opMode;
 		imu = initializeImu(opMode);
 		lastCycleTime = System.nanoTime();
-		// Creates objects to control the motors
+
+		// Get mecanum wheels interfaces
 		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
 		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
 		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
@@ -226,13 +227,13 @@ public class DrivingSystem {
 	 *
 	 * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
-	public PointD getDistances() {
+	public Point2D getDistances() {
 		final double flChange = frontLeft.getCurrentPosition() - flPreviousTicks;
 		final double frChange = frontRight.getCurrentPosition() - frPreviousTicks;
 		final double blChange = backLeft.getCurrentPosition() - blPreviousTicks;
 		final double brChange = backRight.getCurrentPosition() - brPreviousTicks;
 
-		PointD movementChange = new PointD();
+		Point2D movementChange = new Point2D();
 
 		movementChange.x = (-flChange + frChange + blChange - brChange) / 4. * CM_PER_TICK;
 		movementChange.y = (flChange + frChange + blChange + brChange) / 4. * CM_PER_TICK;
@@ -246,7 +247,7 @@ public class DrivingSystem {
 	 *
 	 * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
-	public PointD updateDistances() {
+	public Point2D updateDistances() {
 		double flTicks = frontLeft.getCurrentPosition();
 		double frTicks = frontRight.getCurrentPosition();
 		double blTicks = backLeft.getCurrentPosition();
@@ -262,7 +263,7 @@ public class DrivingSystem {
 		blPreviousTicks = blTicks;
 		brPreviousTicks = brTicks;
 
-		PointD movementChange = new PointD();
+		Point2D movementChange = new Point2D();
 		movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
 		movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
@@ -339,7 +340,7 @@ public class DrivingSystem {
 	 * Keeps track of robot's position on the field.
 	 */
 	private void trackPosition() {
-		final PointD positionChange = updateDistances();
+		final Point2D positionChange = updateDistances();
 
 		final double currentAngle = getCurrentAngle();
 		final double angleAverage = (currentAngle + positionCM.angle) / 2;

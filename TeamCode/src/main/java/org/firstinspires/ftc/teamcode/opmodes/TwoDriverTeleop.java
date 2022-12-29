@@ -22,8 +22,9 @@ public class TwoDriverTeleop extends LinearOpMode {
 
 		Pose actPowers = new Pose(0, 0, 0);
 		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
-		final double speedDivisor = 4.5;
+		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
+		// reset claw position
 		claw.goTo(clawPosition);
 
 		waitForStart();
@@ -32,24 +33,28 @@ public class TwoDriverTeleop extends LinearOpMode {
 			gamepadA.update();
 			gamepadB.update();
 
-			// If we want to drive and turn slower, for finer adjustment
+			// Calculate desired robot velocity
+			actPowers.x = -gamepad1.left_stick_x * 0.75;
+			actPowers.y = -gamepad1.left_stick_y * 0.75;
+			actPowers.angle = -gamepad1.right_stick_x * 0.5;
+
+			// Activate slower driving and turning, for finer adjustment
 			if (gamepad1.right_trigger > 0.2) {
 				actPowers.x = -gamepad1.left_stick_x / speedDivisor;
 				actPowers.y = -gamepad1.left_stick_y / speedDivisor;
 				actPowers.angle = -gamepad1.right_stick_x / speedDivisor;
-			} else {
-				actPowers.x = -gamepad1.left_stick_x * 0.75;
-				actPowers.y = -gamepad1.left_stick_y * 0.75;
-				actPowers.angle = -gamepad1.right_stick_x * 0.5;
 			}
 
+			// Apply calculated velocity to mecanum wheels
 			drivingSystem.driveMecanum(actPowers);
 
+			// Claw controls
 			if (gamepadB.lt()) {
 				clawPosition = clawPosition.flip();
 				claw.goTo(clawPosition);
 			}
 
+			// Elevator controls
 			if (gamepadB.dpad_down()) {
 				elevator.goTo(ElevatorSystem.Level.PICKUP);
 			}
@@ -62,6 +67,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 				elevator.goTo(ElevatorSystem.Level.MID);
 			}
 
+			// Telemetry
 			drivingSystem.printPosition();
 			telemetry.update();
 		}

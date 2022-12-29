@@ -157,7 +157,8 @@ public class CameraSystem {
 		// Initiate camera pipeline
 		cameraPipeline = new CameraPipeline(opMode);
 		int cameraMonitorViewId =
-				this.opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
+				this.opMode.hardwareMap.appContext.getResources()
+					.getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
 		WebcamName webcamName =
 				this.opMode.hardwareMap.get(WebcamName.class, "webcam");
 
