@@ -7,7 +7,15 @@ public class SplineDrive {
 
     PolynomialPath[] myPath;
 
-    SplineDrive(PointD[] points) {
+    SplineDrive(PointD[] points)
+
+
+
+
+
+    {
+
+
 
 
         myPath = findPath(points);
