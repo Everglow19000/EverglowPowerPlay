@@ -2,27 +2,89 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.utils.State;
 
 /**
  * A class for handling the elevator system.
  */
 public class ElevatorSystem {
+	private final DcMotor left;
+	private final DcMotor right;
+	public State state;
+
+	/**
+	 * A state used when the robot should be moving.
+	 */
+	public class GoToPositionState implements State {
+		private final double totalMovementTime;
+		private final double startPositionLeft;
+		private final double startPositionRight;
+		private final ElapsedTime timer;
+		private final double velocity;
+
+		/**
+		 * @param level             A elevator level to move to (e.g. ElevatorLevel.GROUND).
+		 * @param totalMovementTime The total time the movement should take.
+		 */
+		public GoToPositionState(Level level, double totalMovementTime) {
+			this(level.desiredPosition, totalMovementTime);
+		}
+
+		/**
+		 * @param desiredPosition   The desired position the elevator should move to, in ticks.
+		 * @param totalMovementTime The total time the movement should take.
+		 */
+		public GoToPositionState(double desiredPosition, double totalMovementTime) {
+			this.totalMovementTime = totalMovementTime;
+			this.startPositionLeft = left.getCurrentPosition();
+			this.startPositionRight = right.getCurrentPosition();
+			this.timer = new ElapsedTime();
+			// Calculate position change per tick
+			//TODO: USE ACCELERATION PROFILE - THIS DOES NOT CURRENTLY WORK
+			this.velocity = (desiredPosition - (startPositionLeft + startPositionRight) / 2) / (totalMovementTime);
+		}
+
+		public void tick() {
+			// The claw has reached its desired position
+			if (timer.time() > totalMovementTime) {
+				state = new RestingState();
+				return;
+			}
+
+			// Otherwise, update the claw position
+			left.setPower(velocity);
+			right.setPower(velocity);
+		}
+	}
+
+	/**
+	 * A state used when the robot should not be moving.
+	 */
+	public class RestingState implements State {
+		public void tick() {
+			// Do nothing
+		}
+	}
+
+
 	/**
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Level {
 		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-2914);
 
-		public final int state;
+		public final int desiredPosition;
 
-		Level(int state) {
-			this.state = state;
+		Level(int desiredPosition) {
+			this.desiredPosition = desiredPosition;
 		}
 	}
 
-	private final DcMotor left;
-	private final DcMotor right;
-
+	/**
+	 * @param opMode The current opMode running on the robot.
+	 */
 	public ElevatorSystem(OpMode opMode) {
 		left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
 		right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
@@ -42,12 +104,21 @@ public class ElevatorSystem {
 	}
 
 	/**
-	 * Moves the elevator to the specified state.
+	 * Sets the elevator to the specified level.
 	 *
 	 * @param level The level to move the elevator to.
+	 * @param movementTime The time it should take the elevator to reach the desired position.
+	 */
+	public void goTo(Level level, double movementTime) {
+		this.state = new GoToPositionState(level, movementTime);
+	}
+
+	/**
+	 * Sets the elevator to the specified level, without specifying total movement time.
+	 *
+	 * @param level The level to set the elevator to (e.g. ElevatorLevel.GROUND).
 	 */
 	public void goTo(Level level) {
-		left.setTargetPosition(level.state);
-		right.setTargetPosition(level.state);
+		goTo(level, 0.5);
 	}
 }
