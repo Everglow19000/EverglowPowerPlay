@@ -1,8 +1,17 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 import org.firstinspires.ftc.teamcode.utils.PathTypes.PolynomialPath;
+import java.util.List;
 
-public abstract class SplineDrive {
+public class SplineDrive {
+
+    PolynomialPath[] myPath;
+
+    SplineDrive(PointD[] points) {
+
+
+        myPath = findPath(points);
+    }
 
     /**
      * Finds the polynomial between each point.
@@ -59,7 +68,8 @@ public abstract class SplineDrive {
      * @param m0Y    The slope of the Y parameter equation in the first point.
      * @param m1Y    The slope of the Y parameter equation in the second point.
      */
-    public static PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y, PointD point1, double m1X, double m1Y) {
+    public static PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y,
+                                                PointD point1, double m1X, double m1Y) {
 
         //Declaring the x and y matrices of parameters a and b.
         double[][] yMatrix = new double[2][3];
@@ -117,30 +127,40 @@ public abstract class SplineDrive {
     /**
      * Finds the determinant of a given 2x2 matrix in the form of Array_name[y][x] ([rows][columns]).
      *
-     * @param mat A 2x2 matrix.
+     * @param matrix A 2x2 matrix.
      * @return The determinant of the given matrix.
      */
-    public static double findDeterminant(double[][] mat) {
-        return mat[0][0] * mat[1][1] - mat[1][0] * mat[0][1];
+    public static double findDeterminant(double[][] matrix) {
+        return matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1];
     }
 
     /**
      * Finds the right path for a provided u and calculates the x and y value of the polynomial.
-     * @param polynomials An array of polynomials.
      * @param providedU A value ranging from 0 to length of the 'polynomials' array.
      * @return A pointD object which contains the calculated x and y values.
      */
-    public static PointD findPath(PolynomialPath[] polynomials, double providedU){
+    public PointD getPoint(double providedU) {
 
+        providedU *= myPath.length;
         int intU = (int) providedU;
 
-        double x = polynomials[intU].x(providedU - intU);
-        double y = polynomials[intU].y(providedU - intU);
+        double x = myPath[intU].x(providedU - intU);
+        double y = myPath[intU].y(providedU - intU);
 
         return new PointD(x,y);
     }
 
+    public List<Double> devidePath(PolynomialPath path) {
 
+        double step = 0.01;
+        int xStart = 0;
+        int xEnd = 1;
+
+        OdeSolver.Function f = o -> 1./
+                Math.sqrt(Math.pow(path.xTag(o),2) + Math.sqrt(Math.pow(path.yTag(o),2)));
+
+        return OdeSolver.rungeKutta45(f, step, xStart, xEnd);
+    }
 }
 
 
