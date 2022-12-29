@@ -104,12 +104,12 @@ public class Pose {
 	/**
 	 * Add a given pose's values to the pose's values.
 	 *
-	 * @param pose A given pose.
+	 * @param other A given pose.
 	 */
-	public void addPose(Pose pose) {
-		this.x += pose.x;
-		this.y += pose.y;
-		this.angle += pose.angle;
+	public void add(Pose other) {
+		this.x += other.x;
+		this.y += other.y;
+		this.angle += other.angle;
 	}
 
 	/**

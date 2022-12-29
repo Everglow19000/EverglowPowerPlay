@@ -20,26 +20,29 @@ public class OneDriverTeleop extends LinearOpMode {
 		ElevatorSystem elevator = new ElevatorSystem(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
-		final int divisorSpeed = 10;
+		final int divisorSpeed = 10; // the amount to divide the speed when finner controls are activated
 
 		waitForStart();
 
 		while (opModeIsActive()) {
 			gamepad.update();
 
-			// If we want to drive and turn slower, for finer adjustment
+			// Calculate desired robot velocity
+			actPowers.x = -gamepad1.left_stick_x;
+			actPowers.y = -gamepad1.left_stick_y;
+			actPowers.angle = -gamepad1.right_stick_x;
+
+			// Activate slower driving and turning, for finer adjustment
 			if (gamepad1.left_bumper) {
-				actPowers.x = -gamepad1.left_stick_x / divisorSpeed;
-				actPowers.y = -gamepad1.left_stick_y / divisorSpeed;
-				actPowers.angle = -gamepad1.right_stick_x / divisorSpeed;
-			} else {
-				actPowers.x = -gamepad1.left_stick_x;
-				actPowers.y = -gamepad1.left_stick_y;
-				actPowers.angle = -gamepad1.right_stick_x;
+				actPowers.x /= divisorSpeed;
+				actPowers.y /= divisorSpeed;
+				actPowers.angle /= divisorSpeed;
 			}
 
+			// Apply calculated velocity to mecanum wheels
 			drivingSystem.driveMecanum(actPowers);
 
+			// Claw controls
 			if (gamepad.rt()) {
 				claw.goTo(ClawSystem.ClawState.CLOSED);
 			}
@@ -47,6 +50,7 @@ public class OneDriverTeleop extends LinearOpMode {
 				claw.goTo(ClawSystem.ClawState.OPEN);
 			}
 
+			// Elevator controls
 			if (gamepad.dpad_down()) {
 				elevator.goTo(ElevatorSystem.Level.PICKUP);
 			}
@@ -59,6 +63,7 @@ public class OneDriverTeleop extends LinearOpMode {
 				elevator.goTo(ElevatorSystem.Level.MID);
 			}
 
+			// Telemetry
 			drivingSystem.printPosition();
 			telemetry.update();
 		}
