@@ -16,12 +16,14 @@ public class ControleDriving extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
         DrivingSystem drivingSystem = new DrivingSystem(this);
-        Claw claw = new Claw(this);
-        FourBar fourBar = new FourBar(this);
+        //Claw claw = new Claw(this);
+        //FourBar fourBar = new FourBar(this);
         //GWheel gWheel = new GWheel(this);
 
+        drivingSystem.maxDrivePower = 0.4;
+
         final int driveTypeCount = 3;
-        int driveType = 2;
+        int driveType = 0;
 
         //1drivingSystem.resetStartLocation( new PointD(1.5 * drivingSystem.SQUARE_SIZE_CM, -2.5 * drivingSystem.SQUARE_SIZE_CM));
 
@@ -42,16 +44,16 @@ public class ControleDriving extends LinearOpMode {
 
             switch(driveType) {
                 case 0:
-                    drivingSystem.driveMecanum(actPowers);
-                    break;
-                case 1:
                     drivingSystem.driveByAxis(actPowers);
                     break;
+                case 1:
+                    drivingSystem.controlledDriveByAxis3(actPowers);
+                    break;
                 case 2:
-                    drivingSystem.controlledDriveByAxis(actPowers);
+                    drivingSystem.controlledDriveByAxis2(actPowers);
                     break;
             }
-
+            /*
             if (gamepad.rt()) {
                 claw.close();
             }
@@ -75,6 +77,8 @@ public class ControleDriving extends LinearOpMode {
 //            if(gamepad.lb()){
 //                gWheel.toggleSpit();
 //            }
+
+             */
             drivingSystem.printPosition();
             telemetry.update();
         }

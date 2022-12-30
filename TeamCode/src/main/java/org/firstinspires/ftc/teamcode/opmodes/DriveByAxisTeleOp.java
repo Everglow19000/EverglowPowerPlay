@@ -17,7 +17,7 @@ public class DriveByAxisTeleOp extends LinearOpMode {
             actPowers.x = -gamepad1.left_stick_x;
             actPowers.y = -gamepad1.left_stick_y;
             actPowers.angle = -gamepad1.right_stick_x;
-            drivingSystem.driveByAxis(actPowers);
+            drivingSystem.driveMecanum(actPowers);
 
             //drivingSystem.printPosition();
             //telemetry.update();
