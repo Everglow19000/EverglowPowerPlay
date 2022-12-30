@@ -66,7 +66,7 @@ public class DrivingSystem {
 
 	private final Pose positionCM = new Pose(0., 0., 0.);
 
-	public final PositionLogger positionLogger = new PositionLogger(this); // Needs to be public to save the file from the opMode.
+	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
@@ -105,6 +105,7 @@ public class DrivingSystem {
 		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
 		// Reset the distances measured by the motors
+		positionLogger = new PositionLogger(this, this.opMode);
 		resetDistance();
 	}
 
@@ -307,7 +308,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-//        trackPosition();
+        trackPosition();
 	}
 
 	/**
