@@ -225,7 +225,7 @@ public class DrivingSystem {
 	/**
 	 * Gets the movement of the robot in the robot's axis since the last tracked position.
 	 *
-	 * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
+	 * @return Point2D: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
 	public Point2D getDistances() {
 		final double flChange = frontLeft.getCurrentPosition() - flPreviousTicks;
@@ -245,7 +245,7 @@ public class DrivingSystem {
 	 * Gets the movement of the robot in the robot's axis since the last tracked position and resets it.
 	 * should be called only by trackPosition.
 	 *
-	 * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
+	 * @return Point2D: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
 	public Point2D updateDistances() {
 		double flTicks = frontLeft.getCurrentPosition();
