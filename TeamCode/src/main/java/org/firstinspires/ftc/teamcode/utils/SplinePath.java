@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 import org.firstinspires.ftc.teamcode.utils.PathTypes.PolynomialPath;
-import java.util.List;
 
 public class SplinePath {
 
@@ -67,8 +66,7 @@ public class SplinePath {
      * @param m0Y    The slope of the Y parameter equation in the first point.
      * @param m1Y    The slope of the Y parameter equation in the second point.
      */
-    public PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y,
-                                                PointD point1, double m1X, double m1Y) {
+    public PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y, PointD point1, double m1X, double m1Y) {
 
         //Declaring the x and y matrices of parameters a and b.
         double[][] yMatrix = new double[2][3];

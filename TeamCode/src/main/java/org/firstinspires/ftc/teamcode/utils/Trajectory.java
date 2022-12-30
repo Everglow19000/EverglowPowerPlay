@@ -1,29 +1,26 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 import org.firstinspires.ftc.teamcode.utils.PathTypes.PolynomialPath;
-
 import java.util.List;
 
 public class Trajectory {
 
     SplinePath path;
-    AccelerationProfile profile;
     List<Double> uList;
     final double trajectoryLength;
     final double vMax = 140; // cm/sec
+    final double step = 0.01;
 
-    Trajectory(SplinePath path, AccelerationProfile profile) {
+    Trajectory(SplinePath path) {
 
         this.path = path;
-        this.profile = profile;
-        trajectoryLength = 0.01 * uList.size();
+        trajectoryLength = step * uList.size();
 
         uList = derivePath(path);
     }
 
     public List<Double> derivePath(SplinePath spline) {
 
-        double step = 0.01;
         int xStart = 0;
         int xEnd = 1;
 
@@ -40,7 +37,7 @@ public class Trajectory {
     public PointD getNextPoint(double time){
 
         final double distance = time*vMax;
-        final int index = (int) (distance/0.01);
+        final int index = (int) (distance/step);
 
         if(index >= uList.size()) return null;
         double nextU = uList.get(index);
