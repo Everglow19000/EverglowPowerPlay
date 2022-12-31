@@ -19,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
@@ -52,6 +53,11 @@ public class DrivingSystem {
 	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
 
+	// in order to make the robot drive at an equal velocity for the same power when driving in the x and y directions,
+	// we multiply its speed in the y direction by this constant.
+	private static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X/ RobotParameters.MAX_V_Y;
+
+
 	private final LinearOpMode opMode;
 
 	private final BNO055IMU imu;
@@ -70,6 +76,8 @@ public class DrivingSystem {
 	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
+
+
 
 	public long getLastCycleTime(){
 		return lastCycleTime;
@@ -297,11 +305,17 @@ public class DrivingSystem {
 	 *               -1 <= x, y, angle <= 1.
 	 */
 	public void driveMecanum(Pose powers) {
+
+		// in order to make the driving the same velocity for the same power in the x and y directions,
+		// reduce the y power slightly
+		double y = powers.y * DRIVE_Y_FACTOR;
+		double x = powers.x;
+		double angle = powers.angle;
 		// Determine how much power each motor should receive.
-		double frontRightPower = powers.y + powers.x + powers.angle;
-		double frontLeftPower = powers.y - powers.x - powers.angle;
-		double backRightPower = powers.y - powers.x + powers.angle;
-		double backLeftPower = powers.y + powers.x - powers.angle;
+		double frontRightPower = y + x + angle;
+		double frontLeftPower = y - x - angle;
+		double backRightPower = y - x + angle;
+		double backLeftPower = y + x - angle;
 
 		// The method motor.setPower() only accepts numbers between -1 and 1.
 		// If any number that we want to give it is greater than 1,
