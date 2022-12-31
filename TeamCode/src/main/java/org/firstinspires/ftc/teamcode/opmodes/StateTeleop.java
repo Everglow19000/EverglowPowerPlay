@@ -7,20 +7,18 @@ import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
+import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
-@TeleOp(name = "OneDriverTeleop", group = ".Main")
-public class OneDriverTeleop extends LinearOpMode {
+@TeleOp(name = "StateTeleop", group = ".Main")
+public class StateTeleop extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
-
-		DrivingSystem drivingSystem = new DrivingSystem(this);
-		ClawSystem claw = new ClawSystem(this);
-		ElevatorSystem elevator = new ElevatorSystem(this);
+		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
-		final double speedDivisor = 10; // When finner controls are active the robot's speed is divided by this number
+		final int divisorSpeed = 10; // the amount to divide the speed when finner controls are activated
 
 		waitForStart();
 
@@ -34,33 +32,35 @@ public class OneDriverTeleop extends LinearOpMode {
 
 			// Activate slower driving and turning, for finer adjustment
 			if (gamepad1.left_bumper) {
-				actPowers.x /= speedDivisor;
-				actPowers.y /= speedDivisor;
-				actPowers.angle /= speedDivisor;
+				actPowers.x /= divisorSpeed;
+				actPowers.y /= divisorSpeed;
+				actPowers.angle /= divisorSpeed;
 			}
 
 			// Apply calculated velocity to mecanum wheels
-			drivingSystem.driveMecanum(actPowers);
+			systemCoordinator.drivingSystem.state = new DrivingSystem.GoToPositionState(actPowers, 10);
 
 			// Claw controls
 			if (gamepad.rt()) {
-				claw.goTo(ClawSystem.ClawState.CLOSED);
+				systemCoordinator.clawSystem.state = new ClawSystem.GoToPositionState(ClawSystem.ClawState.OPEN);
 			} else if (gamepad.lt()) {
-				claw.goTo(ClawSystem.ClawState.OPEN);
+				systemCoordinator.clawSystem.state = new ClawSystem.GoToPositionState(ClawSystem.ClawState.CLOSED);
 			}
 
 			// Elevator controls
 			if (gamepad.dpad_down()) {
-				elevator.goTo(ElevatorSystem.Level.PICKUP);
+				systemCoordinator.elevatorSystem.state = new ElevatorSystem.GoToPositionState(ElevatorSystem.Level.PICKUP);
 			} else if (gamepad.circle()) {
-				elevator.goTo(ElevatorSystem.Level.LOW);
+				systemCoordinator.elevatorSystem.state = new ElevatorSystem.GoToPositionState(ElevatorSystem.Level.LOW);
 			} else if (gamepad.triangle()) {
-				elevator.goTo(ElevatorSystem.Level.MID);
+				systemCoordinator.elevatorSystem.state = new ElevatorSystem.GoToPositionState(ElevatorSystem.Level.MID);
 			}
 
 			// Telemetry
-			drivingSystem.printPosition();
+			systemCoordinator.drivingSystem.printPosition();
 			telemetry.update();
+
+			systemCoordinator.tick();
 		}
 	}
 }

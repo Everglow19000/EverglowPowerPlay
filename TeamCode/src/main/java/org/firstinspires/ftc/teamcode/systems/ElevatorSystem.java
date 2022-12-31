@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.State;
+import org.firstinspires.ftc.teamcode.utils.RestingState;
 
 /**
  * A class for handling the elevator system.
@@ -53,18 +54,9 @@ public class ElevatorSystem {
 				return;
 			}
 
-			// Otherwise, update the claw position
+			// Otherwise, update the elevator level
 			left.setPower(velocity);
 			right.setPower(velocity);
-		}
-	}
-
-	/**
-	 * A state used when the robot should not be moving.
-	 */
-	public class RestingState implements State {
-		public void tick() {
-			// Do nothing
 		}
 	}
 

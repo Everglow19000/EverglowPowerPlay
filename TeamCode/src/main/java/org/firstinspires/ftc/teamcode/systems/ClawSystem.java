@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.State;
+import org.firstinspires.ftc.teamcode.utils.RestingState;
 
 /**
  * A Class for handling the claw system.
@@ -51,15 +52,6 @@ public class ClawSystem {
 
 			// Otherwise, update the claw position
 			claw.setPosition(startPosition + velocity * timer.time());
-		}
-	}
-
-	/**
-	 * A state used when the robot should not be moving.
-	 */
-	public class RestingState implements State {
-		public void tick() {
-			// Do nothing
 		}
 	}
 

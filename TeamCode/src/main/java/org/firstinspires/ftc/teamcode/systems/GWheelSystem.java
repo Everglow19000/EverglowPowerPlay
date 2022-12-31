@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * A class for handling the grabbing wheel.
  */
 public class GWheelSystem {
-	private final DcMotor motor;
+	private final DcMotor gWheel;
 	private final static double POWER = 0.5;
 
 	//These variables control whether the grabbing wheel is running or not.
@@ -18,8 +18,8 @@ public class GWheelSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public GWheelSystem(LinearOpMode opMode) {
-		motor = opMode.hardwareMap.get(DcMotor.class, "gWheel");
-		motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		gWheel = opMode.hardwareMap.get(DcMotor.class, "gWheel");
+		gWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 	}
 
 	/**
@@ -27,7 +27,7 @@ public class GWheelSystem {
 	 * Used in toggleCollecting().
 	 */
 	private void collect() {
-		motor.setPower(POWER);
+		gWheel.setPower(POWER);
 		isCollecting = true;
 	}
 
@@ -36,7 +36,7 @@ public class GWheelSystem {
 	 * Used in toggleSpitting().
 	 */
 	private void spit() {
-		motor.setPower(-POWER);
+		gWheel.setPower(-POWER);
 		isSpitting = true;
 	}
 
@@ -45,7 +45,7 @@ public class GWheelSystem {
 	 * Used in toggleCollecting() and toggleSpitting().
 	 */
 	private void stop() {
-		motor.setPower(0);
+		gWheel.setPower(0);
 		isSpitting = false;
 		isCollecting = false;
 	}

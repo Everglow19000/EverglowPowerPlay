@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.State;
+import org.firstinspires.ftc.teamcode.utils.RestingState;
 
 /**
  * A class for handling the four bar linkage system.
@@ -55,15 +56,6 @@ public class FourBarSystem {
 	}
 
 	/**
-	 * A state used when the robot should not be moving.
-	 */
-	public class RestingState implements State {
-		public void tick() {
-			// Do nothing
-		}
-	}
-
-	/**
 	 * Enum encapsulating the two positions the system should reach.
 	 */
 	public enum FourBarState {
@@ -80,7 +72,7 @@ public class FourBarSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		fourBar = opMode.hardwareMap.get(Servo.class, "4bar");
+		fourBar = opMode.hardwareMap.get(Servo.class, "fourBar");
 	}
 
 	/**

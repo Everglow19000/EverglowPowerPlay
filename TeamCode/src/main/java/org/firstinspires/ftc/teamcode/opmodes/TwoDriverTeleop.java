@@ -22,7 +22,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 
 		Pose actPowers = new Pose(0, 0, 0);
 		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
-		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
+		final double speedDivisor = 4.5; // When finner controls are active the robot's speed is divided by this number
 
 		// reset claw position
 		claw.goTo(clawPosition);
@@ -57,13 +57,9 @@ public class TwoDriverTeleop extends LinearOpMode {
 			// Elevator controls
 			if (gamepadB.dpad_down()) {
 				elevator.goTo(ElevatorSystem.Level.PICKUP);
-			}
-
-			if (gamepadB.circle()) {
+			} else if (gamepadB.circle()) {
 				elevator.goTo(ElevatorSystem.Level.LOW);
-			}
-
-			if (gamepadB.triangle()) {
+			} else if (gamepadB.triangle()) {
 				elevator.goTo(ElevatorSystem.Level.MID);
 			}
 

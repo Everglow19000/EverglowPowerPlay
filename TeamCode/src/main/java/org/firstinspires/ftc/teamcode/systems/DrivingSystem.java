@@ -12,7 +12,6 @@ import static java.lang.Math.toRadians;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -21,6 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.State;
+import org.firstinspires.ftc.teamcode.utils.RestingState;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
@@ -58,14 +59,16 @@ public class DrivingSystem {
 	private final DcMotor frontLeft;
 	private final DcMotor backRight;
 	private final DcMotor backLeft;
+	public State state;
 
+	// Keeps the robot's current position and orientation
 	private double flPreviousTicks = 0;
 	private double frPreviousTicks = 0;
 	private double blPreviousTicks = 0;
 	private double brPreviousTicks = 0;
-
 	private final Pose positionCM = new Pose(0., 0., 0.);
 
+	// Variables and methods for measuring the maximum velocity of the robot
 	public final PositionLogger positionLogger = new PositionLogger(this); // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
@@ -78,6 +81,43 @@ public class DrivingSystem {
 	}
 	public Pose getPosition(){
 		return new Pose(positionCM);
+	}
+
+
+	/**
+	 * A state used when the robot should be moving.
+	 */
+	public class GoToPositionState implements State {
+		private final double totalMovementTime;
+		private final ElapsedTime timer;
+		private final double velocityX;
+		private final double velocityY;
+		private final double angle;
+
+		/**
+		 * @param desiredPosition   The desired position the robot should move to, Pose.
+		 * @param totalMovementTime The total time the movement should take.
+		 */
+		public GoToPositionState(Pose desiredPosition, double totalMovementTime) {
+			this.totalMovementTime = totalMovementTime;
+			this.timer = new ElapsedTime();
+			// Calculate position change per tick
+			//TODO: USE ACCELERATION PROFILE - THIS DOES NOT CURRENTLY WORK
+			this.velocityX = (desiredPosition.x - getDistances().x) / (totalMovementTime);
+			this.velocityY = (desiredPosition.y - getDistances().y) / (totalMovementTime);
+			this.angle = (desiredPosition.angle - getCurrentAngle()) / (totalMovementTime);
+		}
+
+		public void tick() {
+			// The claw has reached its desired position
+			if (timer.time() > totalMovementTime) {
+				state = new RestingState();
+				return;
+			}
+
+			// Otherwise, update the robot position
+			driveMecanum(new Pose(velocityX, velocityY, angle));
+		}
 	}
 
 	/**
@@ -101,8 +141,8 @@ public class DrivingSystem {
 		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 		// Some motors are wired in reverse, so we must reverse them back.
-		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+		frontLeft.setDirection(DcMotor.Direction.REVERSE);
+		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
 		// Reset the distances measured by the motors
 		resetDistance();
@@ -344,8 +384,8 @@ public class DrivingSystem {
 
 		final double currentAngle = getCurrentAngle();
 		final double angleAverage = (currentAngle + positionCM.angle) / 2;
-		positionCM.angle = currentAngle;
 
+		positionCM.angle = currentAngle;
 		positionCM.x += positionChange.y * sin(angleAverage) + positionChange.x * cos(angleAverage);
 		positionCM.y += positionChange.y * cos(angleAverage) - positionChange.x * sin(angleAverage);
 	}
