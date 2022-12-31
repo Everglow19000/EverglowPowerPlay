@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
@@ -62,9 +63,12 @@ public class OneDriverTeleop extends LinearOpMode {
 			if (gamepad.triangle()) {
 				elevator.goTo(ElevatorSystem.Level.MID);
 			}
-
+			Orientation orientation = drivingSystem.getOrientation();
+			telemetry.addData("z:", orientation.firstAngle);
+			telemetry.addData("x: ", orientation.secondAngle);
+			telemetry.addData("y: ", orientation.thirdAngle);
 			// Telemetry
-			drivingSystem.printPosition();
+//			drivingSystem.printPosition();
 			telemetry.update();
 		}
 	}

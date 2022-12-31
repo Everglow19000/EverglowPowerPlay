@@ -19,6 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
@@ -66,7 +67,7 @@ public class DrivingSystem {
 
 	private final Pose positionCM = new Pose(0., 0., 0.);
 
-	public final PositionLogger positionLogger = new PositionLogger(this); // Needs to be public to save the file from the opMode.
+	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
@@ -105,6 +106,7 @@ public class DrivingSystem {
 		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
 		// Reset the distances measured by the motors
+		positionLogger = new PositionLogger(this, this.opMode);
 		resetDistance();
 	}
 
@@ -132,22 +134,28 @@ public class DrivingSystem {
 
 		byte axisMapConfigByte; //This is what to write to the AXIS_MAP_CONFIG register to swap the needed axis
 
+		byte X_AXIS = 0b0;
+		byte Y_AXIS = 0b01;
+		byte Z_AXIS = 0b10;
+
+		// IMU configuration explained in: https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf, page 24
+
 		if (robot == Robot.ARMADILLO) {
 			axisMapConfigByte = 0x6; // swap x and z axis
 		} else {
-			axisMapConfigByte = 0x18; // swap x and y axis
+			axisMapConfigByte = (byte) (X_AXIS | Z_AXIS << 2 | Y_AXIS << 4); // swap z and y axis
 		}
 
-		byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
+		byte AXIS_MAP_SIGN_BYTE = 0x0; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
 		// Need to be in CONFIG mode to write to registers
-		imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal & 0b1111);
+		imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal);
 		opMode.sleep(100); //Changing modes requires a delay before doing anything else
 		//Write to the AXIS_MAP_CONFIG register
-		imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, axisMapConfigByte & 0b111111);
+		imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, axisMapConfigByte);
 		//Write to the AXIS_MAP_SIGN register
-		imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE & 0b111);
+		imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE);
 		//Need to change back into the IMU mode to use the gyro
-		imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
+		imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal);
 		opMode.sleep(100); // Changing modes again requires a delay
 
 		ElapsedTime elapsedTime = new ElapsedTime();
@@ -197,6 +205,10 @@ public class DrivingSystem {
 	public double getCurrentAngle() {
 		Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
 		return orientation.firstAngle;
+	}
+
+	public Orientation getOrientation(){
+		return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
 	}
 
 	/**
@@ -307,7 +319,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-//        trackPosition();
+        trackPosition();
 	}
 
 	/**
@@ -393,7 +405,6 @@ public class DrivingSystem {
 			opMode.telemetry.update();
 		}
 		stop();
-		resetDistance();
 	}
 
 	/**
@@ -421,6 +432,7 @@ public class DrivingSystem {
 			sidewaysDistance = distances.x;
 			double angleDeviation = normalizeAngle(startAngle - distances.angle);
 			driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
+			positionLogger.update();
 		}
 		stop();
 	}
@@ -432,7 +444,7 @@ public class DrivingSystem {
 	 * @param angle Angle (in radians) to rotate the robot.
 	 */
 	public void rotate(double angle) {
-		final double powerScalar = 0.007;
+		final double powerScalar = 0.007 * 180/ PI;
 		final double minPower = 0.2;
 
 		double currentAngle = getCurrentAngle();
@@ -450,6 +462,7 @@ public class DrivingSystem {
 			// the power is proportional to the deviation, but may not go below minPower.
 			double rotatePower = deviation * powerScalar + minPower * signum(deviation);
 			driveMecanum(new Pose(0, 0, rotatePower));
+			positionLogger.update();
 		}
 		stop();
 	}
@@ -618,5 +631,12 @@ public class DrivingSystem {
 		targetLocation.angle = normalizeAngle(positionCM.angle + distances.angle);
 
 		move2(targetLocation);
+	}
+
+
+	public void driveForwardByProfile(AccelerationProfile accelerationProfile){
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+
 	}
 }

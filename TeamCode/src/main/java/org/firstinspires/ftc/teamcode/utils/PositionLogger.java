@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.utils;
 
 import androidx.annotation.NonNull;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 
@@ -20,6 +22,8 @@ public class PositionLogger {
 	private final DrivingSystem drivingSystem;
 	private final List<RobotState> robotStates;
 
+	private final LinearOpMode opMode;
+
 	private static class RobotState {
 		final long time;
 		final Pose pose;
@@ -30,8 +34,9 @@ public class PositionLogger {
 		}
 	}
 
-	public PositionLogger(DrivingSystem drivingSystem) {
+	public PositionLogger(DrivingSystem drivingSystem, LinearOpMode opMode) {
 		this.drivingSystem = drivingSystem;
+		this.opMode = opMode;
 		robotStates = new ArrayList<>();
 	}
 
@@ -43,7 +48,7 @@ public class PositionLogger {
 	}
 
 
-	public void saveTo(File fileToCreate) throws IOException {
+	public void saveTo(File fileToCreate)  {
 		if (robotStates.isEmpty()) {
 			return;
 		}
@@ -59,18 +64,17 @@ public class PositionLogger {
 			}
 			//noinspection ResultOfMethodCallIgnored
 			parentFile.mkdirs();
-
 			// create the file
 			if (!fileToCreate.createNewFile()) {
 				throw new IOException("Could not create file");
 			}
-
 			// put the needed data in the file
 			stream = new PrintStream(new FileOutputStream(fileToCreate), true, "utf-8");
 			stream.println("time[sec], x[cm], y[cm], rot[degrees]");
 			if (stream.checkError()) {
 				throw new IOException("Failed to write to fileToCreate.");
 			}
+			int i = 0;
 			for (RobotState robotState : robotStates) {
 				String lineString = String.format("%s, %s, %s, %s",
 						(robotState.time - startTimeNanos) / 1e9,
@@ -79,12 +83,14 @@ public class PositionLogger {
 						Math.toDegrees(robotState.pose.angle)
 				);
 				stream.println(lineString);
-
 				if (stream.checkError()) {
 					throw new IOException("Failed to write to fileToCreate.");
 				}
 			}
-		} finally {
+		} catch (IOException e){
+			throw new RuntimeException(e);
+		}
+		finally {
 			if (stream != null) {
 				stream.close();
 			}
@@ -97,9 +103,9 @@ public class PositionLogger {
 	}
 
 	@NonNull
-	public static File generateLogFileName() {
+	public static File generateLogFileName(String baseName) {
 		File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "Everglow_position_logs");
-		String filename = String.format(Locale.US, "positionLog-%s.csv", AndroidUtils.timestampString());
+		String filename = String.format(Locale.US, "%s-%s.csv", AndroidUtils.timestampString(), baseName);
 		return /* Current Log: */ new File(positionLogsDir, filename);
 	}
 }

@@ -9,22 +9,21 @@ import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
 import java.io.File;
-import java.io.IOException;
 
 @TeleOp(name = "PositionLoggerTeleop", group = "Test")
 @Disabled
 public class PositionLoggerTeleop extends LinearOpMode {
-	@Override
-	public void runOpMode() {
-		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
+    @Override
+    public void runOpMode() {
+        EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 
-		DrivingSystem drivingSystem = new DrivingSystem(this);
-		//Pose actPowers = new Pose(0, 0, 0);
+        DrivingSystem drivingSystem = new DrivingSystem(this);
+        //Pose actPowers = new Pose(0, 0, 0);
 
-		waitForStart();
+        waitForStart();
 
-		if (opModeIsActive()) {
-			gamepad.update();
+        if (opModeIsActive()) {
+            gamepad.update();
 
 /*
             if (gamepad1.left_stick_button) {
@@ -35,16 +34,10 @@ public class PositionLoggerTeleop extends LinearOpMode {
             drivingSystem.driveMecanum(actPowers);
 */
 
-			drivingSystem.driveStraight(250, 1);
-			try {
-				File fileToCreate = PositionLogger.generateLogFileName();
-				drivingSystem.positionLogger.saveTo(fileToCreate);
-			} catch (IOException e) {
-				telemetry.addData("Error", e.getMessage());
-				telemetry.update();
-				throw new RuntimeException("ERROR SAVING FILE: " + e);
-			}
+            drivingSystem.driveStraight(250, 1);
+            File fileToCreate = PositionLogger.generateLogFileName("positionLog");
+            drivingSystem.positionLogger.saveTo(fileToCreate);
 
-		}
-	}
+        }
+    }
 }
