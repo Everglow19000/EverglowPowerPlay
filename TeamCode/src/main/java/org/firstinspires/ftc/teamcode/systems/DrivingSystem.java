@@ -22,7 +22,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.Pose;
-import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
@@ -247,13 +247,13 @@ public class DrivingSystem {
 	 *
 	 * @return Point2D: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
-	public Point2D getDistances() {
+	public PointD getDistances() {
 		final double flChange = frontLeft.getCurrentPosition() - flPreviousTicks;
 		final double frChange = frontRight.getCurrentPosition() - frPreviousTicks;
 		final double blChange = backLeft.getCurrentPosition() - blPreviousTicks;
 		final double brChange = backRight.getCurrentPosition() - brPreviousTicks;
 
-		Point2D movementChange = new Point2D();
+		PointD movementChange = new PointD();
 
 		movementChange.x = (-flChange + frChange + blChange - brChange) / 4. * CM_PER_TICK;
 		movementChange.y = (flChange + frChange + blChange + brChange) / 4. * CM_PER_TICK;
@@ -267,7 +267,7 @@ public class DrivingSystem {
 	 *
 	 * @return Point2D: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
-	public Point2D updateDistances() {
+	public PointD updateDistances() {
 		double flTicks = frontLeft.getCurrentPosition();
 		double frTicks = frontRight.getCurrentPosition();
 		double blTicks = backLeft.getCurrentPosition();
@@ -283,7 +283,7 @@ public class DrivingSystem {
 		blPreviousTicks = blTicks;
 		brPreviousTicks = brTicks;
 
-		Point2D movementChange = new Point2D();
+		PointD movementChange = new PointD();
 		movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
 		movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
@@ -366,7 +366,7 @@ public class DrivingSystem {
 	 * Keeps track of robot's position on the field.
 	 */
 	private void trackPosition() {
-		final Point2D positionChange = updateDistances();
+		final PointD positionChange = updateDistances();
 
 		final double currentAngle = getCurrentAngle();
 		final double angleAverage = (currentAngle + positionCM.angle) / 2;

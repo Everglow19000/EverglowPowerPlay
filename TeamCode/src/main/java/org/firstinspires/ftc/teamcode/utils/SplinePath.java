@@ -4,9 +4,9 @@ import org.firstinspires.ftc.teamcode.utils.PathTypes.PolynomialPath;
 
 public class SplinePath {
 
-    PolynomialPath[] myPath;
+    public PolynomialPath[] myPath;
 
-    SplinePath(Point2D[] points) {
+    public SplinePath(PointD[] points) {
 
         myPath = findPath(points);
     }
@@ -17,7 +17,7 @@ public class SplinePath {
      * @param points The points through which the robot needs to pass through.
      * @return An array of polynomial paths.
      */
-    public PolynomialPath[] findPath(Point2D[] points) {
+    public PolynomialPath[] findPath(PointD[] points) {
 
         PolynomialPath[] polynomials = new PolynomialPath[points.length - 1];
 
@@ -66,7 +66,7 @@ public class SplinePath {
      * @param m0Y    The slope of the Y parameter equation in the first point.
      * @param m1Y    The slope of the Y parameter equation in the second point.
      */
-    public PolynomialPath findPolynomial(Point2D point0, double m0X, double m0Y, Point2D point1, double m1X, double m1Y) {
+    public PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y, PointD point1, double m1X, double m1Y) {
 
         //Declaring the x and y matrices of parameters a and b.
         double[][] yMatrix = new double[2][3];
@@ -136,26 +136,40 @@ public class SplinePath {
      * @param providedU A value ranging from 0 to length of the 'polynomials' array.
      * @return A Point2D object which contains the calculated x and y values.
      */
-    public Point2D getPoint(double providedU) {
+    public PointD getPoint(double providedU) {
 
         providedU *= myPath.length;
-        int intU = (int) providedU;
+        int indexU = (int) providedU;
 
-        double x = myPath[intU].x(providedU - intU);
-        double y = myPath[intU].y(providedU - intU);
+        if(indexU > 1){
+            indexU = myPath.length - 1;
+        }
+        else if(indexU < 0){
+            indexU = 0;
+        }
 
-        return new Point2D(x,y);
+        double x = myPath[indexU].x(providedU - indexU);
+        double y = myPath[indexU].y(providedU - indexU);
+
+        return new PointD(x,y);
     }
 
-    public Point2D getDerivative(double providedU) {
+    public PointD getDerivative(double providedU) {
 
         providedU *= myPath.length;
-        int intU = (int) providedU;
+        int indexU = (int) providedU;
 
-        double xTag = myPath[intU].xTag(providedU - intU);
-        double yTag = myPath[intU].yTag(providedU - intU);
+        if(indexU > 1){
+            indexU = myPath.length - 1;
+        }
+        else if(indexU < 0){
+            indexU = 0;
+        }
 
-        return new Point2D(xTag,yTag);
+        double xTag = myPath[indexU].xTag(providedU - indexU);
+        double yTag = myPath[indexU].yTag(providedU - indexU);
+
+        return new PointD(xTag,yTag);
     }
 }
 

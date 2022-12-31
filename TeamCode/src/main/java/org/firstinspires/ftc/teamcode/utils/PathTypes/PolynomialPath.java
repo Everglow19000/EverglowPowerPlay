@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.utils.PathTypes;
 
 import org.firstinspires.ftc.teamcode.utils.Path;
-import org.firstinspires.ftc.teamcode.utils.Point2D;
 
 public class PolynomialPath extends Path {
 
-    private final double aX, bX, cX, dX;
-    private final double aY, bY, cY, dY;
+    public final double aX, bX, cX, dX;
+    public final double aY, bY, cY, dY;
 
     /**
      * Creates a polynomial path.
