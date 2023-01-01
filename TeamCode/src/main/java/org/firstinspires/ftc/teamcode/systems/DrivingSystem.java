@@ -73,13 +73,15 @@ public class DrivingSystem {
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
-	public long getLastCycleTime(){
+	public long getLastCycleTime() {
 		return lastCycleTime;
 	}
-	public long getLastCycleDuration(){
+
+	public long getLastCycleDuration() {
 		return lastCycleDuration;
 	}
-	public Pose getPosition(){
+
+	public Pose getPosition() {
 		return new Pose(positionCM);
 	}
 
@@ -355,6 +357,26 @@ public class DrivingSystem {
 	 */
 	public void stop() {
 		driveMecanum(new Pose());
+	}
+
+	/**
+	 * Changes the robot's state to make it go to a given position.
+	 *
+	 * @param powers       Velocity vector containing elements: x, y, and an azimuth angle.
+	 * @param movementTime The time it should take the robot to reach the desired position.
+	 */
+	public void goTo(Pose powers, double movementTime) {
+		state = new GoToPositionState(powers, movementTime);
+	}
+
+	/**
+	 * Changes the robot's state to make it go to a given position.
+	 * The time to reach the position is static at 10 seconds.
+	 *
+	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
+	 */
+	public void goTo(Pose powers) {
+		goTo(powers, 10);
 	}
 
 	/**

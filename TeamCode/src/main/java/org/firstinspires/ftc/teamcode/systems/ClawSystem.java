@@ -24,7 +24,7 @@ public class ClawSystem {
 		private final double velocity;
 
 		/**
-		 * @param state A claw state to move to (ClawState.OPEN or ClawState.CLOSED)
+		 * @param state             A claw state to move to (ClawState.OPEN or ClawState.CLOSED)
 		 * @param totalMovementTime The total time the movement should take.
 		 */
 		public GoToPositionState(ClawState state, double totalMovementTime) {
@@ -32,7 +32,7 @@ public class ClawSystem {
 		}
 
 		/**
-		 * @param desiredPosition The desired position the claw should move to, between 0 and 1.
+		 * @param desiredPosition   The desired position the claw should move to, between 0 and 1.
 		 * @param totalMovementTime The total time the movement should take.
 		 */
 		public GoToPositionState(double desiredPosition, double totalMovementTime) {
@@ -93,7 +93,7 @@ public class ClawSystem {
 	/**
 	 * Sets the claw to the specified state.
 	 *
-	 * @param state The state to set the claw to (open or closed).
+	 * @param state        The state to set the claw to (open or closed).
 	 * @param movementTime The time it should take the claw to reach the desired position.
 	 */
 	public void goTo(ClawState state, double movementTime) {
@@ -101,7 +101,8 @@ public class ClawSystem {
 	}
 
 	/**
-	 * Sets the claw to the specified state, without specifying total movement time.
+	 * Sets the claw to the specified state.
+	 * The time to reach the position is static at 0.5 seconds.
 	 *
 	 * @param state The state to set the claw to (ClaState.OPEN or ClawState.CLOSED).
 	 */

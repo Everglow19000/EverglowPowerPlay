@@ -98,7 +98,7 @@ public class ElevatorSystem {
 	/**
 	 * Sets the elevator to the specified level.
 	 *
-	 * @param level The level to move the elevator to.
+	 * @param level        The level to move the elevator to.
 	 * @param movementTime The time it should take the elevator to reach the desired position.
 	 */
 	public void goTo(Level level, double movementTime) {
@@ -106,11 +106,12 @@ public class ElevatorSystem {
 	}
 
 	/**
-	 * Sets the elevator to the specified level, without specifying total movement time.
+	 * Sets the elevator to the specified level.
+	 * The time to reach the position is static at 2 seconds.
 	 *
 	 * @param level The level to set the elevator to (e.g. ElevatorLevel.GROUND).
 	 */
 	public void goTo(Level level) {
-		goTo(level, 0.5);
+		goTo(level, 2);
 	}
 }

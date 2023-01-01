@@ -3,11 +3,11 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.systems.ClawSystem;
-import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
-import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
+import org.firstinspires.ftc.teamcode.systems.ClawSystem;
+import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "StateTeleop", group = ".Main")
@@ -18,7 +18,7 @@ public class StateTeleop extends LinearOpMode {
 		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
-		final int divisorSpeed = 10; // the amount to divide the speed when finner controls are activated
+		final int divisorSpeed = 10; // The amount to divide the speed when finner controls are activated
 
 		waitForStart();
 
@@ -38,22 +38,29 @@ public class StateTeleop extends LinearOpMode {
 			}
 
 			// Apply calculated velocity to mecanum wheels
-			systemCoordinator.drivingSystem.state = new DrivingSystem.GoToPositionState(actPowers, 10);
+			systemCoordinator.drivingSystem.goTo(actPowers);
 
 			// Claw controls
 			if (gamepad.rt()) {
-				systemCoordinator.clawSystem.state = new ClawSystem.GoToPositionState(ClawSystem.ClawState.OPEN);
+				systemCoordinator.clawSystem.goTo(ClawSystem.ClawState.OPEN);
 			} else if (gamepad.lt()) {
-				systemCoordinator.clawSystem.state = new ClawSystem.GoToPositionState(ClawSystem.ClawState.CLOSED);
+				systemCoordinator.clawSystem.goTo(ClawSystem.ClawState.OPEN);
+			}
+
+			// FourBar controls
+			if (gamepad.rb()) {
+				systemCoordinator.fourBarSystem.goTo(FourBarSystem.FourBarState.PICKUP);
+			} else if (gamepad.lb()) {
+				systemCoordinator.fourBarSystem.goTo(FourBarSystem.FourBarState.DROPOFF);
 			}
 
 			// Elevator controls
 			if (gamepad.dpad_down()) {
-				systemCoordinator.elevatorSystem.state = new ElevatorSystem.GoToPositionState(ElevatorSystem.Level.PICKUP);
+				systemCoordinator.elevatorSystem.goTo(ElevatorSystem.Level.PICKUP);
 			} else if (gamepad.circle()) {
-				systemCoordinator.elevatorSystem.state = new ElevatorSystem.GoToPositionState(ElevatorSystem.Level.LOW);
+				systemCoordinator.elevatorSystem.goTo(ElevatorSystem.Level.LOW);
 			} else if (gamepad.triangle()) {
-				systemCoordinator.elevatorSystem.state = new ElevatorSystem.GoToPositionState(ElevatorSystem.Level.MID);
+				systemCoordinator.elevatorSystem.goTo(ElevatorSystem.Level.MID);
 			}
 
 			// Telemetry

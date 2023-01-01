@@ -24,7 +24,7 @@ public class FourBarSystem {
 		private final double velocity;
 
 		/**
-		 * @param state A fourBar state to move to (FourBarState.OPEN or FourBarState.CLOSED).
+		 * @param state             A fourBar state to move to (FourBarState.OPEN or FourBarState.CLOSED).
 		 * @param totalMovementTime The total time the movement should take.
 		 */
 		public GoToPositionState(FourBarState state, double totalMovementTime) {
@@ -32,7 +32,7 @@ public class FourBarSystem {
 		}
 
 		/**
-		 * @param desiredPosition The desired position the fourBar should move to, between 0 and 1.
+		 * @param desiredPosition   The desired position the fourBar should move to, between 0 and 1.
 		 * @param totalMovementTime The total time the movement should take.
 		 */
 		public GoToPositionState(double desiredPosition, double totalMovementTime) {
@@ -78,7 +78,7 @@ public class FourBarSystem {
 	/**
 	 * Sets the fourBar to the specified state.
 	 *
-	 * @param state The level to move the fourBar to.
+	 * @param state        The state to set the claw to (pickup or dropoff).
 	 * @param movementTime The time it should take the fourBar to reach the desired position.
 	 */
 	public void goTo(FourBarState state, double movementTime) {
@@ -86,7 +86,8 @@ public class FourBarSystem {
 	}
 
 	/**
-	 * Sets the fourBar to the specified state, without specifying total movement time.
+	 * Sets the fourBar to the specified state.
+	 * The time to reach the position is static at 0.5 seconds.
 	 *
 	 * @param state The state to set the fourBar to (FourBarState.PICKUP or FourBarState.DROPOFF).
 	 */
