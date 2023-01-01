@@ -59,7 +59,8 @@ public class DrivingSystem {
 	private final DcMotor frontLeft;
 	private final DcMotor backRight;
 	private final DcMotor backLeft;
-	public State state;
+
+	private State state;
 
 	// Keeps the robot's current position and orientation
 	private double flPreviousTicks = 0;
@@ -84,7 +85,6 @@ public class DrivingSystem {
 	public Pose getPosition() {
 		return new Pose(positionCM);
 	}
-
 
 	/**
 	 * A state used when the robot should be moving.
@@ -119,6 +119,10 @@ public class DrivingSystem {
 
 			// Otherwise, update the robot position
 			driveMecanum(new Pose(velocityX, velocityY, angle));
+		}
+
+		public void onReceiveMessage(State.Message message) {
+			// Do nothing
 		}
 	}
 
@@ -377,6 +381,20 @@ public class DrivingSystem {
 	 */
 	public void goTo(Pose powers) {
 		goTo(powers, 10);
+	}
+
+	/**
+	 * Ticks the driving system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
+	/**
+	 * Receives a message from all the other classes.
+	 */
+	public void receiveMessage() {
+		state.onReceiveMessage();
 	}
 
 	/**

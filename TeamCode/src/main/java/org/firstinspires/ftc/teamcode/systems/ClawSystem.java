@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  */
 public class ClawSystem {
 	private final Servo claw;
-	public State state;
+	private State state;
 
 	/**
 	 * A state used when the robot should be moving.
@@ -52,6 +52,10 @@ public class ClawSystem {
 
 			// Otherwise, update the claw position
 			claw.setPosition(startPosition + velocity * timer.time());
+		}
+
+		public void onReceiveMessage(State.Message message) {
+			// Do nothing
 		}
 	}
 
@@ -108,5 +112,19 @@ public class ClawSystem {
 	 */
 	public void goTo(ClawState state) {
 		goTo(state, 0.5);
+	}
+
+	/**
+	 * Ticks the claw system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
+	/**
+	 * Receives a message from all the other classes.
+	 */
+	public void receiveMessage() {
+		state.onReceiveMessage();
 	}
 }

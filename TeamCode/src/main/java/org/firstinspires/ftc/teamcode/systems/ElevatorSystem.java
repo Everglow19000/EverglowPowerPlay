@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
 public class ElevatorSystem {
 	private final DcMotor left;
 	private final DcMotor right;
-	public State state;
+	private State state;
 
 	/**
 	 * A state used when the robot should be moving.
@@ -57,6 +57,10 @@ public class ElevatorSystem {
 			// Otherwise, update the elevator level
 			left.setPower(velocity);
 			right.setPower(velocity);
+		}
+
+		public void onReceiveMessage(State.Message message) {
+			// Do nothing
 		}
 	}
 
@@ -113,5 +117,19 @@ public class ElevatorSystem {
 	 */
 	public void goTo(Level level) {
 		goTo(level, 2);
+	}
+
+	/**
+	 * Ticks the elevator system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
+	/**
+	 * Receives a message from all the other classes.
+	 */
+	public void receiveMessage() {
+		state.onReceiveMessage();
 	}
 }

@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  */
 public class FourBarSystem {
 	private final Servo fourBar;
-	public State state;
+	private State state;
 
 	/**
 	 * A state used when the robot should be moving.
@@ -52,6 +52,10 @@ public class FourBarSystem {
 
 			// Otherwise, update the claw position
 			fourBar.setPosition(startPosition + velocity * timer.time());
+		}
+
+		public void onReceiveMessage(State.Message message) {
+			// Do nothing
 		}
 	}
 
@@ -93,5 +97,19 @@ public class FourBarSystem {
 	 */
 	public void goTo(FourBarState state) {
 		goTo(state, 0.5);
+	}
+
+	/**
+	 * Ticks the fourBar system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
+	/**
+	 * Receives a message from all the other classes.
+	 */
+	public void receiveMessage() {
+		state.onReceiveMessage();
 	}
 }

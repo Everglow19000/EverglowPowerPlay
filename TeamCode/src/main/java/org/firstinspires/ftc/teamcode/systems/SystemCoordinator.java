@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.utils.State;
+
 /**
  * A class for coordinating the all systems on the robot in a state machine.
  */
@@ -27,9 +29,21 @@ public class SystemCoordinator {
 	 */
 	public void tick() {
 		//Tick each system
-		elevatorSystem.state.tick();
-		clawSystem.state.tick();
-		drivingSystem.state.tick();
-		fourBarSystem.state.tick();
+		clawSystem.tick();
+		drivingSystem.tick();
+		elevatorSystem.tick();
+		fourBarSystem.tick();
+	}
+
+	/**
+	 * Broadcasts a message from one system to all of them.
+	 *
+	 * @param message The message to be broadcasted.
+	 */
+	public void sendMessage(State.Message message) {
+		clawSystem.receiveMessage();
+		drivingSystem.receiveMessage();
+		elevatorSystem.receiveMessage();
+		fourBarSystem.receiveMessage();
 	}
 }
