@@ -7,7 +7,7 @@ public class Trajectory {
     SplinePath path;
     List<Double> uList;
 
-    final double maxVelocity = 40; //Temporary value for tests (vMax = 130-140 cm/sec)
+    final double maxVelocity = 140*0.4; //Temporary value for tests (vMax = 130-140 cm/sec)
     final double step = 0.01;
     final double totalLength;
     final double totalTime; //In seconds
