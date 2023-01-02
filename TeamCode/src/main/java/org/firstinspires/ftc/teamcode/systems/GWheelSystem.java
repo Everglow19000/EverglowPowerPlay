@@ -1,14 +1,16 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * A class for handling the grabbing wheel.
  */
+@Config
 public class GWheelSystem {
 	private final DcMotor motor;
-	private final static double POWER = 0.5;
+	public final static double GWHEEL_POWER = 1;
 
 	//These variables control whether the grabbing wheel is running or not.
 	private boolean isCollecting = false;
@@ -27,7 +29,7 @@ public class GWheelSystem {
 	 * Used in toggleCollecting().
 	 */
 	private void collect() {
-		motor.setPower(POWER);
+		motor.setPower(GWHEEL_POWER);
 		isCollecting = true;
 	}
 
@@ -36,7 +38,7 @@ public class GWheelSystem {
 	 * Used in toggleSpitting().
 	 */
 	private void spit() {
-		motor.setPower(-POWER);
+		motor.setPower(-GWHEEL_POWER);
 		isSpitting = true;
 	}
 
@@ -70,5 +72,9 @@ public class GWheelSystem {
 		} else {
 			spit();
 		}
+	}
+
+	public void setPower(double power){
+		motor.setPower(power);
 	}
 }

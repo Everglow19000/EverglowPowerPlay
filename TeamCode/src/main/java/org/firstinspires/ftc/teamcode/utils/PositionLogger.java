@@ -41,8 +41,6 @@ public class PositionLogger {
 	}
 
 	public void update() {
-//        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
-
 		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition());
 		robotStates.add(robotState);
 	}
