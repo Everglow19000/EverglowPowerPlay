@@ -9,6 +9,8 @@ import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
+import android.graphics.Point;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,6 +28,11 @@ import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
+import org.firstinspires.ftc.teamcode.utils.SplinePath;
+import org.firstinspires.ftc.teamcode.utils.Trajectory;
+import org.junit.rules.Stopwatch;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class for handling the driving of the robot.
@@ -76,8 +83,6 @@ public class DrivingSystem {
 	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
-
-
 
 	public long getLastCycleTime(){
 		return lastCycleTime;
@@ -406,7 +411,7 @@ public class DrivingSystem {
 
 		resetDistance();
 		double startAngle = getDistancesOld().angle;
-		double forwardDistance = getDistancesOld().y;
+		double forwardDistance = getDistances().y;
 
 		while (opMode.opModeIsActive() && Math.abs(forwardDistance) < distance) {
 			Pose pose = getDistancesOld();
@@ -441,6 +446,7 @@ public class DrivingSystem {
 		Pose pose = getDistancesOld();
 		double startAngle = pose.angle;
 		double sidewaysDistance = pose.x;
+
 		while (opMode.opModeIsActive() && Math.abs(sidewaysDistance) < distance) {
 			Pose distances = getDistancesOld();
 			sidewaysDistance = distances.x;
@@ -647,10 +653,30 @@ public class DrivingSystem {
 		move2(targetLocation);
 	}
 
-
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile){
 		ElapsedTime elapsedTime = new ElapsedTime();
-
-
 	}
+
+	public void driveByPath(Trajectory traj){
+
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
+
+			PointD velocity = traj.getVelocity(elapsedTime.seconds());
+			double xPower = velocity.x;
+			double yPower = velocity.y;
+
+			double maxPower = Math.max(Math.abs(xPower), Math.abs(yPower));
+			xPower /= maxPower;
+			yPower /= maxPower;
+
+			driveMecanum(new Pose(xPower*0.4, yPower*0.4, 0));
+			positionLogger.update();
+			printPosition();
+			opMode.telemetry.update();
+		}
+		stop();
+	}
+
 }

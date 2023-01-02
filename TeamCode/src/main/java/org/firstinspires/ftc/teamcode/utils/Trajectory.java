@@ -5,16 +5,19 @@ import java.util.List;
 public class Trajectory {
 
     SplinePath path;
-    public List<Double> uList;
-    final double trajectoryLength;
-    final double vMax = 40; //Temporary value for tests (vMax = 140 cm/sec)
+    List<Double> uList;
+
+    final double maxVelocity = 40; //Temporary value for tests (vMax = 130-140 cm/sec)
     final double step = 0.01;
+    final double totalLength;
+    final double totalTime; //In seconds
 
     public Trajectory(SplinePath path) {
 
         this.path = path;
         uList = derivePath(path);
-        trajectoryLength = step * uList.size();
+        totalLength = step * uList.size();
+        totalTime = totalLength / maxVelocity;
     }
 
     /**
@@ -40,14 +43,37 @@ public class Trajectory {
      * @param time The real time of the robot.
      * @return A pointD object.
      */
+    public PointD getVelocity(double time){
+
+        final double distance = time* maxVelocity;
+        final int ptIndex = (int) (distance/step);
+
+        if(ptIndex >= uList.size()) return null;
+        double nextU = uList.get(ptIndex);
+
+        return path.getDerivative(nextU);
+    }
+
     public PointD getPoint(double time){
 
-        final double distance = time*vMax;
+        final double distance = time* maxVelocity;
         final int ptIndex = (int) (distance/step);
 
         if(ptIndex >= uList.size()) return null;
         double nextU = uList.get(ptIndex);
 
         return path.getPoint(nextU);
+    }
+
+    public double getTotalTime() {
+        return totalTime;
+    }
+
+    public double getTotalLength() {
+        return totalLength;
+    }
+
+    public double getMaxVelocity(){
+        return maxVelocity;
     }
 }

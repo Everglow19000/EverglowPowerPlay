@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.test;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.SplinePath;
 import org.firstinspires.ftc.teamcode.utils.Trajectory;
@@ -17,7 +19,7 @@ public class RunTests {
 
         SplinePath path = new SplinePath(points);
         Trajectory traj = new Trajectory(path);
-/*
+
         for(int i=0; i<path.myPath.length; i++) {
             System.out.println("a_" + i + "(t)= " + path.myPath[i].aX + "(t" + "-" + i + ")^3+" +
                     path.myPath[i].bX + "(t" + "-" + i + ")^2+" +
@@ -31,9 +33,13 @@ public class RunTests {
 
             System.out.println("(a_" + i + "(t),b_" + i + "(t))\n");
         }
-*/
-        PointD pt = traj.getPoint(3);
-        System.out.println("(" + pt.x + "," + pt.y + ")");
+
+        for(int i =1 ; i < 30 ; i++){
+            PointD p = traj.getPoint(i*0.2);
+            System.out.println("(" + p.x + "," + p.y + ")");
+        }
+
+
 
     }
 }
