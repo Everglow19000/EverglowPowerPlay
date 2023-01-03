@@ -22,8 +22,6 @@ public class GWheeloTeleop extends LinearOpMode {
 		waitForStart();
 
 		while (opModeIsActive()) {
-			TelemetryPacket packet = new TelemetryPacket();
-
 			gamepadA.update();
 			Pose actPowers = new Pose();
 			actPowers.x = -gamepad1.left_stick_x * 0.75;

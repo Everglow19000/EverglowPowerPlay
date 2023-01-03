@@ -14,6 +14,8 @@ import static java.lang.Math.toRadians;
 
 import android.util.Pair;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,9 +28,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
-import org.firstinspires.ftc.teamcode.utils.Pose;
-import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
+import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
@@ -54,19 +56,19 @@ public class DrivingSystem {
 	private static final Robot robot = Robot.NEW_ROBOT;
 
 
-    public static final double SQUARE_SIZE_CM = 60.5;
-    private static final double WHEEL_RADIUS_CM = 4.8;
+	public static final double SQUARE_SIZE_CM = 60.5;
+	private static final double WHEEL_RADIUS_CM = 4.8;
 	private static final double TICKS_PER_ROTATION = 515;
 	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
 
 	// in order to make the robot drive at an equal velocity for the same power when driving in the x and y directions,
 	// we multiply its speed in the y direction by this constant.
-	private static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X/ RobotParameters.MAX_V_Y;
+	private static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X / RobotParameters.MAX_V_Y;
 
-    private static final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
+	private static final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
 
-    private final LinearOpMode opMode;
+	private final LinearOpMode opMode;
 
 	private final BNO055IMU imu;
 	private final DcMotor frontRight;
@@ -79,10 +81,10 @@ public class DrivingSystem {
 	private double blPreviousTicks = 0;
 	private double brPreviousTicks = 0;
 
-    private double ROBOT_LENGTH_CM;
-    private double ROBOT_WIDTH_CM;
+	private double ROBOT_LENGTH_CM;
+	private double ROBOT_WIDTH_CM;
 
-    private final Pose positionCM = new Pose(0., 0., 0.);
+	private final Pose positionCM = new Pose(0., 0., 0.);
 
 	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
@@ -90,13 +92,15 @@ public class DrivingSystem {
 
 	public double maxDrivePower = 1;
 
-	public long getLastCycleTime(){
+	public long getLastCycleTime() {
 		return lastCycleTime;
 	}
-	public long getLastCycleDuration(){
+
+	public long getLastCycleDuration() {
 		return lastCycleDuration;
 	}
-	public Pose getPosition(){
+
+	public Pose getPosition() {
 		return new Pose(positionCM);
 	}
 
@@ -124,17 +128,15 @@ public class DrivingSystem {
 		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        if(robot == Robot.ARMADILLO) {
-            ROBOT_LENGTH_CM = 44.;
-            ROBOT_WIDTH_CM = 31.;
-        }
+		if (robot == Robot.ARMADILLO) {
+			ROBOT_LENGTH_CM = 44.;
+			ROBOT_WIDTH_CM = 31.;
+		} else if (robot == Robot.NEW_ROBOT) {
+			ROBOT_LENGTH_CM = 44.;
+			ROBOT_WIDTH_CM = 35.;
+		}
 
-        else if(robot == Robot.NEW_ROBOT) {
-            ROBOT_LENGTH_CM = 44.;
-            ROBOT_WIDTH_CM = 35.;
-        }
-
-        // Reset the distances measured by the motors
+		// Reset the distances measured by the motors
 		positionLogger = new PositionLogger(this, this.opMode);
 		resetDistance();
 	}
@@ -212,37 +214,39 @@ public class DrivingSystem {
 		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 	}
 
-    /**
-     * resets the Position of the robot to another value
-     * @program realLocation the new and correct location of the robot in the Board
-     */
-    public void resetStartLocation(Point2D realLocation) {
-        positionCM.x = realLocation.x;
-        positionCM.y = realLocation.y;
-    }
+	/**
+	 * resets the Position of the robot to another value
+	 *
+	 * @program realLocation the new and correct location of the robot in the Board
+	 */
+	public void resetStartLocation(Point2D realLocation) {
+		positionCM.x = realLocation.x;
+		positionCM.y = realLocation.y;
+	}
 
-    /**
-     * convert the robot Location to be in squares and gives the deviation from the the center of the square that the robot is on
-     * @program The Robot's Location in squares, the deviation of the robot from the center of the square it's on between 0 and 1
-     */
-    public Pair<Pose, Point2D> getSquareInformation() {
-        Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
-        SquareInformation.first.x = positionCM.x / SQUARE_SIZE_CM;
-        SquareInformation.first.y = positionCM.y / SQUARE_SIZE_CM;
-        SquareInformation.first.angle = positionCM.angle;
+	/**
+	 * convert the robot Location to be in squares and gives the deviation from the the center of the square that the robot is on
+	 *
+	 * @program The Robot's Location in squares, the deviation of the robot from the center of the square it's on between 0 and 1
+	 */
+	public Pair<Pose, Point2D> getSquareInformation() {
+		Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
+		SquareInformation.first.x = positionCM.x / SQUARE_SIZE_CM;
+		SquareInformation.first.y = positionCM.y / SQUARE_SIZE_CM;
+		SquareInformation.first.angle = positionCM.angle;
 
-        SquareInformation.second.x = SquareInformation.first.x % 1;
-        SquareInformation.second.x -= signum(SquareInformation.second.x) / 2;
-        SquareInformation.second.x *= 2;
+		SquareInformation.second.x = SquareInformation.first.x % 1;
+		SquareInformation.second.x -= signum(SquareInformation.second.x) / 2;
+		SquareInformation.second.x *= 2;
 
-        SquareInformation.second.y = SquareInformation.first.y % 1;
-        SquareInformation.second.y -= signum(SquareInformation.second.y) / 2;
-        SquareInformation.second.y *= 2;
+		SquareInformation.second.y = SquareInformation.first.y % 1;
+		SquareInformation.second.y -= signum(SquareInformation.second.y) / 2;
+		SquareInformation.second.y *= 2;
 
-        return SquareInformation;
-    }
+		return SquareInformation;
+	}
 
-    /**
+	/**
 	 * Given any angle, normalizes it such that it is between PI and PI radians,
 	 * increasing or decreasing by 2PI radians to make it so.
 	 *
@@ -266,7 +270,7 @@ public class DrivingSystem {
 		return orientation.firstAngle;
 	}
 
-	public Orientation getOrientation(){
+	public Orientation getOrientation() {
 		return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
 	}
 
@@ -384,7 +388,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-        trackPosition();
+		trackPosition();
 	}
 
 	/**
@@ -413,153 +417,150 @@ public class DrivingSystem {
 		driveMecanum(mecanumPowers);
 	}
 
-    /**
-     * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
-     */
-    public void controlledDriveByAxis(Pose Powers) {
-        final double K = 0.03;
+	/**
+	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 */
+	public void controlledDriveByAxis(Pose Powers) {
+		final double K = 0.03;
 
-        Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        Point2D squareDeviation = mySquareInformation.second;
+		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pose SquareLocation = mySquareInformation.first;
+		Point2D squareDeviation = mySquareInformation.second;
 
-        if(abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
-            Powers.x = 0;
-        }
-        if(abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
-            Powers.y = 0;
-        }
+		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
+			Powers.x = 0;
+		}
+		if (abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
+			Powers.y = 0;
+		}
 
-        if(abs(Powers.x) > abs(Powers.y)) {
-            Powers.x *= 1 - abs(squareDeviation.y);
-            Powers.y = -abs(squareDeviation.y) * squareDeviation.y * abs(Powers.x) * K;
-        }
-        else {
-            Powers.y *= 1 - abs(squareDeviation.x);
-            Powers.x = -abs(squareDeviation.x) * squareDeviation.x * abs(Powers.y) * K;;
-        }
+		if (abs(Powers.x) > abs(Powers.y)) {
+			Powers.x *= 1 - abs(squareDeviation.y);
+			Powers.y = -abs(squareDeviation.y) * squareDeviation.y * abs(Powers.x) * K;
+		} else {
+			Powers.y *= 1 - abs(squareDeviation.x);
+			Powers.x = -abs(squareDeviation.x) * squareDeviation.x * abs(Powers.y) * K;
+			;
+		}
 
-        opMode.telemetry.addData("xPos", squareDeviation.x);
-        opMode.telemetry.addData("yPos", squareDeviation.y);
-        opMode.telemetry.addData("Powers.x", Powers.x);
-        opMode.telemetry.addData("Powers.y", Powers.y);
-        opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
+		opMode.telemetry.addData("xPos", squareDeviation.x);
+		opMode.telemetry.addData("yPos", squareDeviation.y);
+		opMode.telemetry.addData("Powers.x", Powers.x);
+		opMode.telemetry.addData("Powers.y", Powers.y);
+		opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
 
-        driveByAxis(Powers);
-    }
-
-
-    /**
-     * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
-     */
-    public void controlledDriveByAxis2(Pose Powers) {
-        final double K = 50.;
-
-        Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        Point2D squareDeviation = mySquareInformation.second;
-
-        if(abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
-            Powers.x = 0;
-        }
-        if(abs(SquareLocation.y) >= 3 && signum(SquareLocation.y) == signum(Powers.y)) {
-            Powers.y = 0;
-        }
-
-        if(abs(Powers.x) > abs(Powers.y)) {
-            Powers.x *= 1 - abs(squareDeviation.y);
-            double xPartChange = squareDeviation.y * squareDeviation.y;
-            double xChange =  (1 - signum(Powers.x) * squareDeviation.x) / 2;
-            Powers.x += Powers.x * xPartChange * (xChange - 1);
-            Powers.y = -squareDeviation.y * abs(squareDeviation.y) * abs(Powers.x) * K;
-        }
-
-        else {
-            Powers.y *= 1 - abs(squareDeviation.x);
-            double yPartChange = squareDeviation.x * squareDeviation.x;
-            double yChange =  (1 - signum(Powers.y) * squareDeviation.y) / 2;
-            Powers.y += Powers.y * yPartChange * (yChange - 1);
-            Powers.x = -squareDeviation.x * abs(squareDeviation.x) * abs(Powers.y) * K;
-        }
-
-        opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
-        opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
-        opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
-        opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
+		driveByAxis(Powers);
+	}
 
 
-        driveByAxis(Powers);
-    }
+	/**
+	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 */
+	public void controlledDriveByAxis2(Pose Powers) {
+		final double K = 50.;
+
+		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pose SquareLocation = mySquareInformation.first;
+		Point2D squareDeviation = mySquareInformation.second;
+
+		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
+			Powers.x = 0;
+		}
+		if (abs(SquareLocation.y) >= 3 && signum(SquareLocation.y) == signum(Powers.y)) {
+			Powers.y = 0;
+		}
+
+		if (abs(Powers.x) > abs(Powers.y)) {
+			Powers.x *= 1 - abs(squareDeviation.y);
+			double xPartChange = squareDeviation.y * squareDeviation.y;
+			double xChange = (1 - signum(Powers.x) * squareDeviation.x) / 2;
+			Powers.x += Powers.x * xPartChange * (xChange - 1);
+			Powers.y = -squareDeviation.y * abs(squareDeviation.y) * abs(Powers.x) * K;
+		} else {
+			Powers.y *= 1 - abs(squareDeviation.x);
+			double yPartChange = squareDeviation.x * squareDeviation.x;
+			double yChange = (1 - signum(Powers.y) * squareDeviation.y) / 2;
+			Powers.y += Powers.y * yPartChange * (yChange - 1);
+			Powers.x = -squareDeviation.x * abs(squareDeviation.x) * abs(Powers.y) * K;
+		}
+
+		opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
+		opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
+		opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
+		opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
 
 
-    /**
-     * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
-     */
-    public void controlledDriveByAxis3(Pose Powers) {
-        Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        Point2D squareDeviation = mySquareInformation.second;
-
-        if(abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
-            Powers.x = 0;
-        }
-        if(abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
-            Powers.y = 0;
-        }
-
-        if(abs(Powers.x) > abs(Powers.y)) {
-            Powers.y = signum(squareDeviation.y) * abs(Powers.x) * (1 - abs(squareDeviation.x)) / (1 - abs(squareDeviation.y));
-        }
-        else {
-            Powers.x = signum(squareDeviation.x) * abs(Powers.y) * (1 - abs(squareDeviation.y)) / (1 - abs(squareDeviation.x));
-        }
-
-        opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
-        opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
-        opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
-        opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
-
-        driveByAxis(Powers);
-    }
-
-    public Point2D closestJunctionLocation() {
-        Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        Point2D squareDeviation = mySquareInformation.second;
-        Point2D squareCenter = new Point2D(SquareLocation.x - squareDeviation.x, SquareLocation.y - squareDeviation.y);
-
-        Point2D bestCornerPosition = new Point2D();
-        double bestRating = 0;
-        for(int corner = 0; corner < 4; corner++) {
-            Point2D cornerSquarePosition = new Point2D();
-            cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
-            cornerSquarePosition.x = round(cornerSquarePosition.x);
-            cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
-            cornerSquarePosition.y = round(cornerSquarePosition.y);
+		driveByAxis(Powers);
+	}
 
 
-            if(abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2) {
-                continue;
-            }
+	/**
+	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 */
+	public void controlledDriveByAxis3(Pose Powers) {
+		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pose SquareLocation = mySquareInformation.first;
+		Point2D squareDeviation = mySquareInformation.second;
 
-            Point2D cornerDistance = new Point2D();
-            cornerDistance.x = cornerSquarePosition.x - SquareLocation.x;
-            cornerDistance.y = cornerSquarePosition.y - SquareLocation.y;
+		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
+			Powers.x = 0;
+		}
+		if (abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
+			Powers.y = 0;
+		}
 
-            double rating = sqrt(cornerDistance.x * cornerDistance.x + cornerDistance.y * cornerDistance.y); // distance to the Pole
-            rating *= (PI - normalizeAngle(SquareLocation.angle - atan(cornerDistance.x / cornerDistance.y))) / PI; // how much the robot is facing the Pole
+		if (abs(Powers.x) > abs(Powers.y)) {
+			Powers.y = signum(squareDeviation.y) * abs(Powers.x) * (1 - abs(squareDeviation.x)) / (1 - abs(squareDeviation.y));
+		} else {
+			Powers.x = signum(squareDeviation.x) * abs(Powers.y) * (1 - abs(squareDeviation.y)) / (1 - abs(squareDeviation.x));
+		}
 
-            if(rating > bestRating) {
-                cornerSquarePosition.x *= SQUARE_SIZE_CM;
-                cornerSquarePosition.y *= SQUARE_SIZE_CM;
-                bestCornerPosition = cornerSquarePosition;
-            }
-        }
+		opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
+		opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
+		opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
+		opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
 
-        return bestCornerPosition;
-    }
+		driveByAxis(Powers);
+	}
 
-    /**
+	public Point2D closestJunctionLocation() {
+		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pose SquareLocation = mySquareInformation.first;
+		Point2D squareDeviation = mySquareInformation.second;
+		Point2D squareCenter = new Point2D(SquareLocation.x - squareDeviation.x, SquareLocation.y - squareDeviation.y);
+
+		Point2D bestCornerPosition = new Point2D();
+		double bestRating = 0;
+		for (int corner = 0; corner < 4; corner++) {
+			Point2D cornerSquarePosition = new Point2D();
+			cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
+			cornerSquarePosition.x = round(cornerSquarePosition.x);
+			cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
+			cornerSquarePosition.y = round(cornerSquarePosition.y);
+
+
+			if (abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2) {
+				continue;
+			}
+
+			Point2D cornerDistance = new Point2D();
+			cornerDistance.x = cornerSquarePosition.x - SquareLocation.x;
+			cornerDistance.y = cornerSquarePosition.y - SquareLocation.y;
+
+			double rating = sqrt(cornerDistance.x * cornerDistance.x + cornerDistance.y * cornerDistance.y); // distance to the Pole
+			rating *= (PI - normalizeAngle(SquareLocation.angle - atan(cornerDistance.x / cornerDistance.y))) / PI; // how much the robot is facing the Pole
+
+			if (rating > bestRating) {
+				cornerSquarePosition.x *= SQUARE_SIZE_CM;
+				cornerSquarePosition.y *= SQUARE_SIZE_CM;
+				bestCornerPosition = cornerSquarePosition;
+			}
+		}
+
+		return bestCornerPosition;
+	}
+
+	/**
 	 * Keeps track of robot's position on the field.
 	 */
 	private void trackPosition() {
@@ -578,6 +579,15 @@ public class DrivingSystem {
 	 * Must call telemetry.update() after using this method.
 	 */
 	public void printPosition() {
+		double CM_TO_INCH = 0.393701;
+		FtcDashboard ftcDashboard = FtcDashboard.getInstance();
+		TelemetryPacket packet = new TelemetryPacket();
+		packet.fieldOverlay()
+				.setFill("blue")
+				.fillCircle(positionCM.x * CM_TO_INCH, positionCM.y * CM_TO_INCH, 5);
+		packet.put("Is Alive", 1);
+		ftcDashboard.sendTelemetryPacket(packet);
+
 		opMode.telemetry.addData("x", positionCM.x);
 		opMode.telemetry.addData("y", positionCM.y);
 		opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
@@ -655,7 +665,7 @@ public class DrivingSystem {
 	 * @param angle Angle (in radians) to rotate the robot.
 	 */
 	public void rotate(double angle) {
-		final double powerScalar = 0.007 * 180/ PI;
+		final double powerScalar = 0.007 * 180 / PI;
 		final double minPower = 0.2;
 
 		double currentAngle = getCurrentAngle();
@@ -845,7 +855,7 @@ public class DrivingSystem {
 	}
 
 
-	public void driveForwardByProfile(AccelerationProfile accelerationProfile){
+	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
 		ElapsedTime elapsedTime = new ElapsedTime();
 
 

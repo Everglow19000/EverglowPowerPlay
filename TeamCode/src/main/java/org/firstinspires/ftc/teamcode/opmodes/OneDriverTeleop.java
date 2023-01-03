@@ -68,7 +68,7 @@ public class OneDriverTeleop extends LinearOpMode {
 			telemetry.addData("x: ", orientation.secondAngle);
 			telemetry.addData("y: ", orientation.thirdAngle);
 			// Telemetry
-//			drivingSystem.printPosition();
+			drivingSystem.printPosition();
 			telemetry.update();
 		}
 	}
