@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.SplinePath;
 import org.firstinspires.ftc.teamcode.utils.Trajectory;
@@ -18,6 +19,7 @@ public class RunTests {
         PointD[] points = {p1,p2,p3};
 
         SplinePath path = new SplinePath(points);
+        //AccelerationProfile profile = new AccelerationProfile(3,140,);
         Trajectory traj = new Trajectory(path);
 
         for(int i=0; i<path.myPath.length; i++) {

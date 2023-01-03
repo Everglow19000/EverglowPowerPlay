@@ -15,6 +15,7 @@ public class Trajectory {
     public Trajectory(SplinePath path) {
 
         this.path = path;
+
         uList = derivePath(path);
         totalLength = step * uList.size();
         totalTime = totalLength / maxVelocity;
@@ -64,6 +65,8 @@ public class Trajectory {
 
         return path.getPoint(nextU);
     }
+
+//  Getters & Setters:
 
     public double getTotalTime() {
         return totalTime;
