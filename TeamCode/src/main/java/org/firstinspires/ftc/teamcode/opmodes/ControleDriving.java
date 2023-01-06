@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
+import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "ControleDriving")
@@ -17,7 +18,8 @@ public class ControleDriving extends LinearOpMode {
         //FourBar fourBar = new FourBar(this);
         //GWheel gWheel = new GWheel(this);
 
-        drivingSystem.maxDrivePower = 0.4;
+        drivingSystem.maxDrivePower = 0.2;
+        drivingSystem.resetStartLocation(new Point2D(71 / 2, 71 / 2));
 
         final int driveTypeCount = 3;
         int driveType = 0;
@@ -41,7 +43,7 @@ public class ControleDriving extends LinearOpMode {
 
             switch(driveType) {
                 case 0:
-                    drivingSystem.driveByAxis(actPowers);
+                    drivingSystem.controlledDriveByAxis2(actPowers);
                     break;
                 case 1:
                     drivingSystem.controlledDriveByAxis3(actPowers);

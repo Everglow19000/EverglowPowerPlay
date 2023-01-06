@@ -54,7 +54,7 @@ public class DrivingSystem {
 	private static final Robot robot = Robot.NEW_ROBOT;
 
 
-    public static final double SQUARE_SIZE_CM = 60.5;
+    public static final double SQUARE_SIZE_CM = 71; // 60.5
     private static final double WHEEL_RADIUS_CM = 4.8;
 	private static final double TICKS_PER_ROTATION = 515;
 	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
@@ -284,7 +284,7 @@ public class DrivingSystem {
 		final double bR = backRight.getCurrentPosition();
 
 		Pose movementChange = new Pose();
-		movementChange.y = (fL + fR + bL + bR) / 4. * CM_PER_TICK;
+		movementChange.y = (fL + fR + bL + bR) / 4. * CM_PER_TICK ;
 //        movementChange.x = (fR - fL + bR - bL) / 4. * CM_PER_TICK;
 		movementChange.x = (fR - fL + bL - bR) / 4. * CM_PER_TICK;
 //        -fLChange + fRChange + bLChange - bRChange
@@ -372,7 +372,7 @@ public class DrivingSystem {
 		// If any number that we want to give it is greater than 1,
 		// we must divide all the numbers equally so the maximum is 1
 		// and the proportions are preserved.
-		double norm = max(max(frontRightPower, frontLeftPower), max(backRightPower, backLeftPower)) / maxDrivePower;
+		double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower))) / maxDrivePower;
 		if (norm > 1) {
 			frontRightPower /= norm;
 			frontLeftPower /= norm;
