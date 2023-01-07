@@ -35,6 +35,7 @@ public class GWheeloTeleop extends LinearOpMode {
 			if(gamepadA.square()){
 				gWheelSystem.toggleSpit();
 			}
+			drivingSystem.printPosition();
 		}
 	}
 }
