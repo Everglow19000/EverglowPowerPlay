@@ -62,14 +62,13 @@ public class AccelerationProfile {
 				return 0.5 * a * Math.pow(t, 2);
 			else if (t > t1 && t < t2)
 				return vMax * (t - t1) + x1;
-			return -0.5 * a * Math.pow(t - t1, 1) + x2 + x1;
+			return -0.5 * a * Math.pow(t - t1, 2) + x2 + x1;
 		}
 		if (t < t1)
 			return 0.5 * a * Math.pow(t, 2);
-		return 0.5 * a * Math.pow(t1, 2) - 0.5 * a * Math.pow(t - t1, 2);
+		//return 0.5 * a * Math.pow(t1, 2) - 0.5 * a * Math.pow(t - t1, 2);
+		return x1  + a * t1 * (t - t1) - 0.5 * a * Math.pow(t - t1, 2);
 	}
 
-	public double finalTime() {
-		return tEnd;
-	}
+	public double finalTime() { return tEnd; }
 }
