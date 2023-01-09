@@ -15,15 +15,16 @@ public class AccelerationProfile {
 
 		this.reachMaxSpeedEh = (d / 2 > Math.pow(vMax, 2) / a);
 		if (reachMaxSpeedEh) {
-			this.t1 = d / vMax;
-			this.t2 = (d / vMax) - vMax / (2 * a);
+			this.t1 =  vMax/a;
+			this.x1 = 0.5 * a * Math.pow(t1, 2);
+			this.x2 = d - 2 * x1;
+			this.t2 = x2 / vMax;
 			this.tEnd = 2 * t1 + t2;
-			this.x1 = Math.pow(vMax, 2) / a;
-			this.x2 = vMax * (t2 - vMax / a);
+
 		} else {
 			this.t1 = Math.sqrt(d / a);
 			this.t2 = t1;
-			this.tEnd = t1 + t2;
+			this.tEnd = 2 * t1;
 			this.x1 = d / 2;
 			this.x2 = x1;
 		}
@@ -34,7 +35,7 @@ public class AccelerationProfile {
 		if (reachMaxSpeedEh) {
 			if (t < t1)
 				return a;
-			else if (t > t1 && t < t2)
+			else if (t >= t1 && t < t1 + t2)
 				return 0;
 			return -a;
 		}
@@ -47,9 +48,9 @@ public class AccelerationProfile {
 		if (reachMaxSpeedEh) {
 			if (t < t1)
 				return a * t;
-			else if (t > t1 && t < t2)
+			else if (t >= t1 && t < t1 + t2)
 				return vMax;
-			return vMax - a * (t - t2);
+			return vMax - a * (t - t2 - t1);
 		}
 		if (t < t1)
 			return a * t;
@@ -60,9 +61,9 @@ public class AccelerationProfile {
 		if (reachMaxSpeedEh) {
 			if (t < t1)
 				return 0.5 * a * Math.pow(t, 2);
-			else if (t > t1 && t < t2)
+			else if (t >= t1 && t < t1 + t2)
 				return vMax * (t - t1) + x1;
-			return -0.5 * a * Math.pow(t - t1, 2) + x2 + x1;
+			return -0.5 * a * Math.pow(t - t2 - t1, 2) + vMax * (t - t2 - t1) + x1 + x2;
 		}
 		if (t < t1)
 			return 0.5 * a * Math.pow(t, 2);
