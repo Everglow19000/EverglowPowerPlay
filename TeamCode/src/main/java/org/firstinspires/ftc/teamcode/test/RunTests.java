@@ -1,25 +1,25 @@
 package org.firstinspires.ftc.teamcode.test;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
-import org.firstinspires.ftc.teamcode.utils.PointD;
-import org.firstinspires.ftc.teamcode.utils.SplinePath;
-import org.firstinspires.ftc.teamcode.utils.Trajectory;
 import org.junit.Test;
 
 public class RunTests {
     @Test
     public void test() {
 
-        PointD p1 = new PointD(0,0);
+        AccelerationProfile profile = new AccelerationProfile(10,50,100);
+        double velocity = profile.getVelocity(4);
+        System.out.println(velocity);
+
+        /*PointD p1 = new PointD(0,0);
         PointD p2 = new PointD(0,240);
         PointD p3 = new PointD(240,240);
+        PointD p4 = new PointD(360, 360);
+        PointD p5 = new PointD(400, 460);
 
-        PointD[] points = {p1,p2,p3};
 
+        PointD[] points = {p1,p2,p3,p4,p5};
         SplinePath path = new SplinePath(points);
-        //AccelerationProfile profile = new AccelerationProfile(3,140,);
         Trajectory traj = new Trajectory(path);
 
         for(int i=0; i<path.myPath.length; i++) {
@@ -34,14 +34,6 @@ public class RunTests {
                     path.myPath[i].dY + "\n");
 
             System.out.println("(a_" + i + "(t),b_" + i + "(t))\n");
-        }
-
-        for(int i =1 ; i < 30 ; i++){
-            PointD p = traj.getPoint(i*0.2);
-            System.out.println("(" + p.x + "," + p.y + ")");
-        }
-
-
-
+        }*/
     }
 }

@@ -662,21 +662,27 @@ public class DrivingSystem {
 		ElapsedTime elapsedTime = new ElapsedTime();
 
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
+			final double currentTime = elapsedTime.seconds();
+			final double k_pointDeviation = 0.5;
+			final double k_angleDeviation = 0.1;
+//			Vectors:
+			Pose realPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
+			Pose targetPose = traj.getPose(currentTime);
 
-			PointD velocity = traj.getVelocity(elapsedTime.seconds());
-			double xPower = velocity.x;
-			double yPower = velocity.y;
+			Pose deviation = new Pose(
+					(targetPose.x - realPose.x)*k_pointDeviation,
+					(targetPose.y - realPose.y)*k_pointDeviation,
+					(realPose.angle - normalizeAngle(targetPose.angle))*k_angleDeviation
+			);
 
-			double maxPower = Math.max(Math.abs(xPower), Math.abs(yPower));
-			xPower /= maxPower;
-			yPower /= maxPower;
-
-			driveMecanum(new Pose(xPower*0.4, yPower*0.4, 0));
+			Pose powers = traj.getPowers(elapsedTime.seconds());
+			driveMecanum(new Pose(powers.x+deviation.x, powers.y+deviation.y, powers.angle+deviation.angle)
+			);
 			positionLogger.update();
 			printPosition();
+			opMode.telemetry.addData("track position", positionCM.x + "," + positionCM.y);
 			opMode.telemetry.update();
 		}
 		stop();
 	}
-
 }

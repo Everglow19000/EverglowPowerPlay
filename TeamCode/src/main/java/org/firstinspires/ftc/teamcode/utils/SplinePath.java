@@ -19,16 +19,10 @@ public class SplinePath {
      * @return A Point2D object which contains the calculated x and y values.
      */
     public PointD getPoint(double providedU) {
-
         providedU *= myPath.length;
         int indexU = (int) providedU;
-
-        if(indexU > 1){
-            indexU = myPath.length - 1;
-        }
-        else if(indexU < 0){
-            indexU = 0;
-        }
+        if(indexU > 1) indexU = myPath.length - 1;
+        else if(indexU < 0) indexU = 0;
 
         double x = myPath[indexU].x(providedU - indexU);
         double y = myPath[indexU].y(providedU - indexU);
@@ -37,16 +31,10 @@ public class SplinePath {
     }
 
     public PointD getDerivative(double providedU) {
-
         providedU *= myPath.length;
         int indexU = (int) providedU;
-
-        if(indexU > 1){
-            indexU = myPath.length - 1;
-        }
-        else if(indexU < 0){
-            indexU = 0;
-        }
+        if(indexU > 1) indexU = myPath.length - 1;
+        else if(indexU < 0) indexU = 0;
 
         double xTag = myPath[indexU].xTag(providedU - indexU);
         double yTag = myPath[indexU].yTag(providedU - indexU);

@@ -1,20 +1,21 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 public class AccelerationProfile {
+
 	private final double a;
 	private final double vMax;
 	private final double t1, t2; // The end time of the first & second section, respectively.
 	private final double tEnd; // The total end time
 	private final double x1, x2; // The end position of the first & second section, respectively.
-	// true --> the robot gets to max speed); false --> the robot doesn't get to max speed.
-	private final boolean reachMaxSpeedEh;
+	private final boolean reachMaxVelocityEh;
+	// true --> the robot gets to max speed;
+	// false --> the robot doesn't get to max speed.
 
 	public AccelerationProfile(double a, double vMax, double d) {
 		this.a = a;
 		this.vMax = vMax;
-
-		this.reachMaxSpeedEh = (d / 2 > Math.pow(vMax, 2) / a);
-		if (reachMaxSpeedEh) {
+		this.reachMaxVelocityEh = (d > Math.pow(vMax, 2) / a); //?
+		if (reachMaxVelocityEh) {
 			this.t1 = d / vMax;
 			this.t2 = (d / vMax) - vMax / (2 * a);
 			this.tEnd = 2 * t1 + t2;
@@ -27,11 +28,10 @@ public class AccelerationProfile {
 			this.x1 = d / 2;
 			this.x2 = x1;
 		}
-
 	}
 
 	public double acceleration(double t) {
-		if (reachMaxSpeedEh) {
+		if (reachMaxVelocityEh) {
 			if (t < t1)
 				return a;
 			else if (t > t1 && t < t2)
@@ -43,12 +43,10 @@ public class AccelerationProfile {
 		return -a;
 	}
 
-	public double velocity(double t) {
-		if (reachMaxSpeedEh) {
-			if (t < t1)
-				return a * t;
-			else if (t > t1 && t < t2)
-				return vMax;
+	public double getVelocity(double t) {
+		if (reachMaxVelocityEh) {
+			if (t < t1) return a * t;
+			else if (t > t1 && t < t2) return vMax;
 			return vMax - a * (t - t2);
 		}
 		if (t < t1)
@@ -56,8 +54,8 @@ public class AccelerationProfile {
 		return a * t1 - a * (t - t1);
 	}
 
-	public double position(double t) {
-		if (reachMaxSpeedEh) {
+	public double getPosition(double t) {
+		if (reachMaxVelocityEh) {
 			if (t < t1)
 				return 0.5 * a * Math.pow(t, 2);
 			else if (t > t1 && t < t2)
