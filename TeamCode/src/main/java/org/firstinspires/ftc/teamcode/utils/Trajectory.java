@@ -13,12 +13,14 @@ public class Trajectory {
     final double step = 0.01;
     final double pathLength;
     final double totalTime; //In seconds
+    final double startAngle;
 
     public Trajectory(SplinePath path, double startAngle, double endAngle) {
         this.path = path;
         uList = getUList(path);
         pathLength = step * uList.size();
         totalTime = pathLength / maxVelocity;
+        this.startAngle = startAngle;
 
         profile = new AccelerationProfile(RobotParameters.MAX_A_X, maxVelocity, pathLength);
         rotationProfile = new AccelerationProfile(RobotParameters.MAX_A_ROT,
@@ -83,7 +85,7 @@ public class Trajectory {
         PointD position = path.getPoint(nextU);
         double angle = rotationProfile.getPosition(time);
 
-        return new Pose(position.x,position.y,angle);
+        return new Pose(position.x,position.y,angle + startAngle);
     }
 
 //  Getters & Setters:

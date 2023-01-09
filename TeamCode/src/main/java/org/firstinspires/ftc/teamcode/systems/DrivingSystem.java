@@ -666,18 +666,16 @@ public class DrivingSystem {
 			final double k_pointDeviation = 0.5;
 			final double k_angleDeviation = 0.1;
 //			Vectors:
-			Pose realPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
+			Pose currentPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
 			Pose targetPose = traj.getPose(currentTime);
-
 			Pose deviation = new Pose(
-					(targetPose.x - realPose.x)*k_pointDeviation,
-					(targetPose.y - realPose.y)*k_pointDeviation,
-					(realPose.angle - normalizeAngle(targetPose.angle))*k_angleDeviation
+					(targetPose.x - currentPose.x)*k_pointDeviation,
+					(targetPose.y - currentPose.y)*k_pointDeviation,
+					normalizeAngle(currentPose.angle - targetPose.angle)*k_angleDeviation
 			);
 
 			Pose powers = traj.getPowers(elapsedTime.seconds());
-			driveMecanum(new Pose(powers.x+deviation.x, powers.y+deviation.y, powers.angle+deviation.angle)
-			);
+			driveMecanum(new Pose(powers.x+deviation.x, powers.y+deviation.y, powers.angle+deviation.angle));
 			positionLogger.update();
 			printPosition();
 			opMode.telemetry.addData("track position", positionCM.x + "," + positionCM.y);
