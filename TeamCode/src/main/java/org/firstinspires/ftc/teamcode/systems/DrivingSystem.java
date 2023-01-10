@@ -663,8 +663,8 @@ public class DrivingSystem {
 
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
 			final double currentTime = elapsedTime.seconds();
-			final double k_pointDeviation = 1;
-			final double k_angleDeviation = 1;
+			final double k_pointDeviation = 0.5;
+			final double k_angleDeviation = 0.5;
 
 			Pose currentPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
 			Pose targetPose = traj.getPose(currentTime);
@@ -675,7 +675,7 @@ public class DrivingSystem {
 			);
 
 			Pose powers = traj.getPowers(elapsedTime.seconds());
-			driveMecanum(new Pose(powers.x+deviation.x, powers.y+deviation.y, powers.angle+deviation.angle));
+			driveMecanum(new Pose((powers.x+deviation.x)*0.5, (powers.y+deviation.y)*0.5, (powers.angle+deviation.angle)*0.5));
 			positionLogger.update();
 			printPosition();
 			opMode.telemetry.addData("track position", positionCM.x + "," + positionCM.y);
