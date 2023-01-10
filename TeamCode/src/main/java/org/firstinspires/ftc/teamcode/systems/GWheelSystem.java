@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Config
 public class GWheelSystem {
 	private final DcMotor motor;
-	public static double GWHEEL_POWER = 1;
+	public static double GWHEEL_POWER = 0.65;
 
 	//These variables control whether the grabbing wheel is running or not.
 	private boolean isCollecting = false;
