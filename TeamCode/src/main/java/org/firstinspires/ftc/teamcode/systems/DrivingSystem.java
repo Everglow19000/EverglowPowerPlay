@@ -64,7 +64,6 @@ public class DrivingSystem {
 	// we multiply its speed in the y direction by this constant.
 	private static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X/ RobotParameters.MAX_V_Y;
 
-
 	private final LinearOpMode opMode;
 
 	private final BNO055IMU imu;
@@ -79,6 +78,7 @@ public class DrivingSystem {
 	private double brPreviousTicks = 0;
 
 	private final Pose positionCM = new Pose(0., 0., 0.);
+	private Pose expectedPosition = new Pose(0., 0., 0.);
 
 	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
@@ -93,6 +93,7 @@ public class DrivingSystem {
 	public Pose getPosition(){
 		return new Pose(positionCM);
 	}
+	public Pose getTargetPosition() { return new Pose(expectedPosition); }
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -672,6 +673,8 @@ public class DrivingSystem {
 					(targetPose.y - currentPose.y)*k_pointDeviation,
 					normalizeAngle(0 - currentPose.angle)*k_angleDeviation
 			);
+
+			expectedPosition = targetPose;
 
 			Pose powers = traj.getPowers(elapsedTime.seconds());
 			driveByAxis(new Pose(

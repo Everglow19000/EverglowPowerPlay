@@ -44,7 +44,7 @@ public class PositionLogger {
 	public void update() {
 //        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
 		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(),
-				drivingSystem.getPosition());
+				drivingSystem.getTargetPosition());
 		robotStates.add(robotState);
 	}
 
@@ -71,17 +71,21 @@ public class PositionLogger {
 			}
 			// put the needed data in the file
 			stream = new PrintStream(new FileOutputStream(fileToCreate), true, "utf-8");
-			stream.println("time[sec], x[cm], y[cm], rot[degrees]");
+			stream.println("time[sec], currentX[cm], currentY[cm], currentRot[degrees], " +
+					"expectedX[cm], expectedY[cm], expectedRot[degrees]");
 			if (stream.checkError()) {
 				throw new IOException("Failed to write to fileToCreate.");
 			}
-			int i = 0;
+
 			for (RobotState robotState : robotStates) {
-				String lineString = String.format("%s, %s, %s, %s",
+				String lineString = String.format("%s, %s, %s, %s, %s, %s, %s",
 						(robotState.time - startTimeNanos) / 1e9,
 						robotState.currentPose.x,
 						robotState.currentPose.y,
-						Math.toDegrees(robotState.currentPose.angle)
+						Math.toDegrees(robotState.currentPose.angle),
+						robotState.expectedPose.x,
+						robotState.expectedPose.y,
+						Math.toDegrees(robotState.expectedPose.angle)
 				);
 				stream.println(lineString);
 				if (stream.checkError()) {
@@ -96,7 +100,6 @@ public class PositionLogger {
 				stream.close();
 			}
 		}
-
 	}
 
 	public void clear() {
