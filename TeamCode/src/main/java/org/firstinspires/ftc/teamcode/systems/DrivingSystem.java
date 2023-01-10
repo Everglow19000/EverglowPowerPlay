@@ -663,9 +663,9 @@ public class DrivingSystem {
 
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
 			final double currentTime = elapsedTime.seconds();
-			final double k_pointDeviation = 0.5;
-			final double k_angleDeviation = 0.1;
-//			Vectors:
+			final double k_pointDeviation = 1;
+			final double k_angleDeviation = 1;
+
 			Pose currentPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
 			Pose targetPose = traj.getPose(currentTime);
 			Pose deviation = new Pose(
