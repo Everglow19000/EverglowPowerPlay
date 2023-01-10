@@ -9,7 +9,7 @@ public class Trajectory {
     AccelerationProfile rotationProfile;
     List<Double> uList;
 
-    final double maxVelocity = RobotParameters.MAX_V_X; //Temporary value for tests (vMax = 130-140 cm/sec)
+    final double maxVelocity = RobotParameters.MAX_V_X*0.5; //Temporary value for tests (vMax = 130-140 cm/sec)
     final double step = 0.01;
     final double pathLength;
     final double totalTime; //In seconds
@@ -17,19 +17,19 @@ public class Trajectory {
 
     public Trajectory(SplinePath path, double startAngle, double endAngle) {
         this.path = path;
+        this.startAngle = startAngle;
         uList = getUList(path);
         pathLength = step * uList.size();
-        totalTime = pathLength / maxVelocity;
-        this.startAngle = startAngle;
 
         profile = new AccelerationProfile(RobotParameters.MAX_A_X, maxVelocity, pathLength);
         rotationProfile = new AccelerationProfile(RobotParameters.MAX_A_ROT,
                 RobotParameters.MAX_V_ROT, endAngle-startAngle);
+
+        totalTime = profile.finalTime();
     }
 
     /**
      * Uses the Runge-Kutta Methods to create a list of u values on the spline path
-     * @param spline A spline path
      * @return A list of u values ranging from 0 to 1
      */
     public List<Double> getUList(SplinePath spline) {
@@ -37,7 +37,7 @@ public class Trajectory {
         int xEnd = 1;
 
         OdeSolver.Function f = (o) ->{
-            PointD p = path.getDerivative(o);
+            PointD p = spline.getDerivative(o);
             return 1. / Math.sqrt(Math.pow(p.x, 2) + Math.pow(p.y, 2));
         };
 
@@ -65,7 +65,7 @@ public class Trajectory {
         yPower /= maxPower;
 
 //      Finds the size of the vector:
-        final double velocityPower = profile.getVelocity(time) / maxVelocity;
+        final double velocityPower = profile.getVelocity(time) / RobotParameters.MAX_V_X;
         xPower *= velocityPower;
         yPower *= velocityPower;
 
@@ -73,7 +73,7 @@ public class Trajectory {
         final double angularVelocity = rotationProfile.getVelocity(time);
         final double rotationPower = angularVelocity/RobotParameters.MAX_V_ROT;
 
-        return new Pose(xPower, yPower, rotationPower);
+        return new Pose(xPower, yPower, 0);
     }
 
     public Pose getPose(double time){
@@ -85,7 +85,8 @@ public class Trajectory {
         PointD position = path.getPoint(nextU);
         double angle = rotationProfile.getPosition(time);
 
-        return new Pose(position.x,position.y,angle + startAngle);
+//      return new Pose(position.x,position.y,angle + startAngle);
+        return new Pose(position.x,position.y,0);
     }
 
 //  Getters & Setters:

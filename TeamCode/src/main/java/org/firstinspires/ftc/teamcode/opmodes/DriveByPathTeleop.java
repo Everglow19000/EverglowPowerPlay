@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import static java.lang.Math.toRadians;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -15,17 +17,16 @@ public class DriveByPathTeleop extends LinearOpMode {
 
 		PointD[] pts = {
 				new PointD(0,0),
-				new PointD(0,150),
-				new PointD(-150,-150),
+				new PointD(0,100),
+				new PointD(100,100),
 		};
 
 		SplinePath spline = new SplinePath(pts);
-		Trajectory traj = new Trajectory(spline, 0 , 90);
+		Trajectory traj = new Trajectory(spline, 0 , toRadians(45));
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 
 		waitForStart();
 
 		drivingSystem.driveByPath(traj);
-
 	}
 }

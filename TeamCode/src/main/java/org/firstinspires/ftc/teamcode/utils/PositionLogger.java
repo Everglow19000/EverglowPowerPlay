@@ -21,16 +21,17 @@ import java.util.Locale;
 public class PositionLogger {
 	private final DrivingSystem drivingSystem;
 	private final List<RobotState> robotStates;
-
 	private final LinearOpMode opMode;
 
 	private static class RobotState {
 		final long time;
-		final Pose pose;
+		final Pose currentPose;
+		final Pose expectedPose;
 
-		public RobotState(long time, Pose pose) {
+		public RobotState(long time, Pose currentPose, Pose expectedPose) {
 			this.time = time;
-			this.pose = pose;
+			this.currentPose = currentPose;
+			this.expectedPose = expectedPose;
 		}
 	}
 
@@ -42,7 +43,8 @@ public class PositionLogger {
 
 	public void update() {
 //        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
-		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition());
+		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(),
+				drivingSystem.getPosition());
 		robotStates.add(robotState);
 	}
 
@@ -77,9 +79,9 @@ public class PositionLogger {
 			for (RobotState robotState : robotStates) {
 				String lineString = String.format("%s, %s, %s, %s",
 						(robotState.time - startTimeNanos) / 1e9,
-						robotState.pose.x,
-						robotState.pose.y,
-						Math.toDegrees(robotState.pose.angle)
+						robotState.currentPose.x,
+						robotState.currentPose.y,
+						Math.toDegrees(robotState.currentPose.angle)
 				);
 				stream.println(lineString);
 				if (stream.checkError()) {
