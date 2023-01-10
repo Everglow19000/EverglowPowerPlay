@@ -110,10 +110,10 @@ public class DrivingSystem {
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
 		// Makes the motors break when their power is set to zero, so they can better stop in place.
-		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -663,7 +663,7 @@ public class DrivingSystem {
 
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
 			final double currentTime = elapsedTime.seconds();
-			final double k_pointDeviation = 0.5;
+			final double k_pointDeviation = 0;
 			final double k_angleDeviation = 1/toRadians(5);
 
 			Pose currentPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
