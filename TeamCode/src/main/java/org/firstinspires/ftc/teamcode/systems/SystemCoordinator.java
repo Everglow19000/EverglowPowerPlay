@@ -11,8 +11,9 @@ public class SystemCoordinator {
 	//Create a new instance of each system
 	public final ElevatorSystem elevatorSystem;
 	public final ClawSystem clawSystem;
-	public final DrivingSystem drivingSystem;
+	public final DrivingSystemNew drivingSystem;
 	public final FourBarSystem fourBarSystem;
+	public final TrackingSystem trackingSystem;
 	//There is no gWheel system because is has only two states: running or not. There might be in the future.
 	//There is no camera system because it runs in a separate thread.
 
@@ -20,8 +21,9 @@ public class SystemCoordinator {
 		//Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
 		clawSystem = new ClawSystem(opMode);
-		drivingSystem = new DrivingSystem(opMode);
+		drivingSystem = new DrivingSystemNew(opMode, this);
 		fourBarSystem = new FourBarSystem(opMode);
+		trackingSystem = new TrackingSystem(opMode, this);
 	}
 
 	/**

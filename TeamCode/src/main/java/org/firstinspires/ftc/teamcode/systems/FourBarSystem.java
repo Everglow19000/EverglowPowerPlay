@@ -17,7 +17,7 @@ public class FourBarSystem {
 	/**
 	 * A state used when the robot should be moving.
 	 */
-	public class GoToPositionState implements State {
+	public class ActingState implements State {
 		private final double totalMovementTime;
 		private final double startPosition;
 		private final ElapsedTime timer;
@@ -27,7 +27,7 @@ public class FourBarSystem {
 		 * @param state             A fourBar state to move to (FourBarState.OPEN or FourBarState.CLOSED).
 		 * @param totalMovementTime The total time the movement should take.
 		 */
-		public GoToPositionState(FourBarState state, double totalMovementTime) {
+		public ActingState(FourBarState state, double totalMovementTime) {
 			this(state.desiredPosition, totalMovementTime);
 		}
 
@@ -35,7 +35,7 @@ public class FourBarSystem {
 		 * @param desiredPosition   The desired position the fourBar should move to, between 0 and 1.
 		 * @param totalMovementTime The total time the movement should take.
 		 */
-		public GoToPositionState(double desiredPosition, double totalMovementTime) {
+		public ActingState(double desiredPosition, double totalMovementTime) {
 			this.totalMovementTime = totalMovementTime;
 			this.startPosition = fourBar.getPosition();
 			this.timer = new ElapsedTime();
@@ -86,7 +86,7 @@ public class FourBarSystem {
 	 * @param movementTime The time it should take the fourBar to reach the desired position.
 	 */
 	public void goTo(FourBarState state, double movementTime) {
-		this.state = new GoToPositionState(state, movementTime);
+		this.state = new ActingState(state, movementTime);
 	}
 
 	/**

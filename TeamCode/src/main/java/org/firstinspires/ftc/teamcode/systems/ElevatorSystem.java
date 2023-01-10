@@ -18,7 +18,7 @@ public class ElevatorSystem {
 	/**
 	 * A state used when the robot should be moving.
 	 */
-	public class GoToPositionState implements State {
+	public class ActingState implements State {
 		private final double totalMovementTime;
 		private final double startPositionLeft;
 		private final double startPositionRight;
@@ -29,7 +29,7 @@ public class ElevatorSystem {
 		 * @param level             A elevator level to move to (e.g. ElevatorLevel.GROUND).
 		 * @param totalMovementTime The total time the movement should take.
 		 */
-		public GoToPositionState(Level level, double totalMovementTime) {
+		public ActingState(Level level, double totalMovementTime) {
 			this(level.desiredPosition, totalMovementTime);
 		}
 
@@ -37,7 +37,7 @@ public class ElevatorSystem {
 		 * @param desiredPosition   The desired position the elevator should move to, in ticks.
 		 * @param totalMovementTime The total time the movement should take.
 		 */
-		public GoToPositionState(double desiredPosition, double totalMovementTime) {
+		public ActingState(double desiredPosition, double totalMovementTime) {
 			this.totalMovementTime = totalMovementTime;
 			this.startPositionLeft = left.getCurrentPosition();
 			this.startPositionRight = right.getCurrentPosition();
@@ -106,7 +106,7 @@ public class ElevatorSystem {
 	 * @param movementTime The time it should take the elevator to reach the desired position.
 	 */
 	public void goTo(Level level, double movementTime) {
-		this.state = new GoToPositionState(level, movementTime);
+		this.state = new ActingState(level, movementTime);
 	}
 
 	/**

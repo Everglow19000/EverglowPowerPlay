@@ -23,7 +23,7 @@ public class GWheelSystem {
 	}
 
 	/**
-	 * A function which spins te grabbing wheel to inward to collect the cones.
+	 * A function which spins the grabbing wheel inward to collect the cones.
 	 * Used in toggleCollecting().
 	 */
 	private void collect() {

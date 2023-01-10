@@ -99,7 +99,7 @@ public class PositionLogger {
 	@NonNull
 	public static File generateLogFileName() {
 		File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "Everglow_position_logs");
-		String filename = String.format(Locale.US, "positionLog-%s.csv", AndroidUtils.timestampString());
+		String filename = String.format(Locale.US, "positionLog-%s.csv", Utils.timestampString());
 		return /* Current Log: */ new File(positionLogsDir, filename);
 	}
 }

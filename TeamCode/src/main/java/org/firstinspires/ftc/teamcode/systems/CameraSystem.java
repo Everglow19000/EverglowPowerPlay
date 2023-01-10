@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.utils.AndroidUtils;
+import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.firstinspires.ftc.teamcode.utils.CameraCalibration;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
@@ -98,7 +98,7 @@ public class CameraSystem {
 				isCapturingImage = false; // turn off capturing an image for the next iteration
 
 				try {
-					String timeStamp = AndroidUtils.timestampString(); // get current time
+					String timeStamp = Utils.timestampString(); // get current time
 					String filepath = // target path for the image capture
 							new File(AppUtil.ROBOT_DATA_DIR, String.format("img_%s.png", timeStamp)).getAbsolutePath();
 					// save capture to disk

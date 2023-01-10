@@ -64,7 +64,7 @@ public class StateTeleop extends LinearOpMode {
 			}
 
 			// Telemetry
-			systemCoordinator.drivingSystem.printPosition();
+			systemCoordinator.trackingSystem.printPosition();
 			telemetry.update();
 
 			systemCoordinator.tick();

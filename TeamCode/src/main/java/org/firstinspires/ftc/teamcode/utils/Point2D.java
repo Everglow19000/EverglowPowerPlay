@@ -4,7 +4,13 @@ package org.firstinspires.ftc.teamcode.utils;
  * A class that represents a point in 2D space.
  */
 public class Point2D {
+	/**
+	 * Position on the sideways-axis.
+	 */
 	public double x;
+	/**
+	 * Position on the forward-axis.
+	 */
 	public double y;
 
 	/**
@@ -15,15 +21,12 @@ public class Point2D {
 		this.y = 0;
 	}
 
+	/**
+	 * @param x position on the sideways-axis.
+	 * @param y position on the forward-axis.
+	 */
 	public Point2D(double x, double y) {
 		this.x = x;
 		this.y = y;
-	}
-
-	/**
-	 * @return sqrt(x ^ 2 + y ^ 2).
-	 */
-	public double hyp() {
-		return Math.hypot(x, y);
 	}
 }

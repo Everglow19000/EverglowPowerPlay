@@ -49,35 +49,6 @@ public class Pose {
 	}
 
 	/**
-	 * @return sqrt(x ^ 2 + y ^ 2).
-	 */
-	public double hyp() {
-		return Math.hypot(x, y);
-	}
-
-	/**
-	 * Given any angle, normalizes it such that it is between -PI and PI radians,
-	 * increasing or decreasing by 2PI radians to make it so.
-	 */
-	public void normalizeAngle() {
-		while (angle >= PI) angle -= 2.0 * PI;
-		while (angle < -PI) angle += 2.0 * PI;
-	}
-
-	/**
-	 * Given any angle, normalizes it such that it is between -PI and PI radians,
-	 * increasing or decreasing by 2PI radians to make it so.
-	 *
-	 * @param angle Given angle in radians.
-	 * @return The angle normalized (-PI < angle < PI).
-	 */
-	public static double normalizeAngle(double angle) {
-		while (angle >= PI) angle -= 2.0 * PI;
-		while (angle < -PI) angle += 2.0 * PI;
-		return angle;
-	}
-
-	/**
 	 * Sets the pose's values to the given pose's values.
 	 *
 	 * @param pose A given pose.
