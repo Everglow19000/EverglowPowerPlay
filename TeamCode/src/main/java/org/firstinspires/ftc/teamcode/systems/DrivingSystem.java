@@ -5,6 +5,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.atan;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;
+import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
@@ -89,6 +90,8 @@ public class DrivingSystem {
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
 	public double maxDrivePower = 1;
+
+	public double wantedPositon;
 
 	public long getLastCycleTime(){
 		return lastCycleTime;
@@ -847,6 +850,28 @@ public class DrivingSystem {
 
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile){
 		ElapsedTime elapsedTime = new ElapsedTime();
+		double power;
+
+		final double ANGLE_DEVIATION_SCALAR = 0.05;
+
+		resetDistance();
+		double startAngle = getDistancesOld().angle;
+		double forwardDistance = getDistancesOld().y;
+
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+			Pose pose = getDistancesOld();
+			forwardDistance = pose.y;
+			power = accelerationProfile.velocity(elapsedTime.seconds()) / RobotParameters.MAX_V_X;
+			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
+			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
+			driveMecanum(new Pose(0, power, rotatePower));
+			positionLogger.update();
+			printPosition();
+			wantedPositon = accelerationProfile.position(elapsedTime.seconds());
+			opMode.telemetry.update();
+			positionLogger.update();
+		}
+		stop();
 
 
 	}
