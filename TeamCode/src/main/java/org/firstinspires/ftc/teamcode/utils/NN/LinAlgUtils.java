@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.utils.NN;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,6 +77,7 @@ public class LinAlgUtils {
 	 * @return 2D array (matrix) representation of the contents of the csv file
 	 * @throws IOException
 	 */
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	public static double[][] readMatrixFromFile(Path path, int[] shape) throws IOException {
 		List<String> arr = Files.readAllLines(path);
 		String[] arr2;
@@ -92,12 +97,14 @@ public class LinAlgUtils {
 	 * @return 1D array (vector) representation of the contents of the txt file
 	 * @throws IOException
 	 */
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	public static double[] readVectorFromFile(Path path, int size) throws IOException {
-		String[] arr = Files.readString(path).split(",");
-		double[] arr2 = new double[size];
-		for (int i = 0; i < size; i++) {
-			arr2[i] = Double.parseDouble(arr[i]);
-		}
-		return arr2;
+//		String[] arr = Files.readAllLines(path).toString().split(",");
+//		double[] arr2 = new double[size];
+//		for (int i = 0; i < size; i++) {
+//			arr2[i] = Double.parseDouble(arr[i]);
+//		}
+//		return arr2;
+		return null;
 	}
 }

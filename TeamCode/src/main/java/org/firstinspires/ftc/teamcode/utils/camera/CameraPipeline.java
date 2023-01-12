@@ -50,7 +50,7 @@ public class CameraPipeline extends OpenCvPipeline {
 	public final static double F1 = 1385.92, F2 = 1385.92;
 	public final static double CX = 951.982, CY = 534.084;
 
-	private ConeDetector coneDetector;
+	private final ConeDetector coneDetector;
 
 	// mats used for image detection
 	private static final Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
@@ -83,7 +83,7 @@ public class CameraPipeline extends OpenCvPipeline {
 				0, 1, 0, Math.sin(CAM_ANGLE), 0, Math.cos(CAM_ANGLE)};
 		rotateMatrix.put(0, 0, rmtx);
 
-		coneDetector = new ConeDetector();
+		coneDetector = new ConeDetector(opMode);
 
 		// initiate AprilTag detector
 		nativeAprilTagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);

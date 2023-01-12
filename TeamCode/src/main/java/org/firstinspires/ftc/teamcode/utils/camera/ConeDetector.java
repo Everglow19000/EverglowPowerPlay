@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.utils.camera;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.opencv.core.Core;
@@ -15,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ConeDetector {
+	private OpMode opmode;
 	private Mat hsv;
 	private Mat redMask1;
 	private Mat redMask2;
@@ -26,8 +30,8 @@ public class ConeDetector {
 	private static final Scalar RED_THRESHOLD_2_LOWER = new Scalar(160, 100, 20);
 	private static final Scalar RED_THRESHOLD_2_UPPER = new Scalar(180, 255, 255);
 
-	public ConeDetector() {
-
+	public ConeDetector(OpMode opmode) {
+		this.opmode = opmode;
 	}
 
 	public void init(Mat mat) {
@@ -44,8 +48,13 @@ public class ConeDetector {
 		MatOfPoint largestContour = largestContour(contours);
 		Point lowestPoint = getLowestPointOfContour(largestContour);
 
-		Imgproc.drawContours(mat, Collections.singletonList(largestContour), 0, new Scalar(255, 255, 255), 20);
+		opmode.telemetry.addData("Num of contours:", contours.size());
+		opmode.telemetry.addData("Contour Area:", Imgproc.contourArea(largestContour));
+		Imgproc.drawContours(mat, Collections.singletonList(largestContour), 0, new Scalar(30, 255, 30), 20);
 
+		Point2D pos = CameraPipeline.pointToPosition(lowestPoint);
+		opmode.telemetry.addData("Cone Position:", "(" + pos.x+ ", " +pos.y + ")");
+		opmode.telemetry.update();
 		return CameraPipeline.pointToPosition(lowestPoint);
 	}
 
