@@ -63,10 +63,6 @@ public class StateTeleop extends LinearOpMode {
 				systemCoordinator.elevatorSystem.goTo(ElevatorSystem.Level.MID);
 			}
 
-			// Telemetry
-			systemCoordinator.trackingSystem.printPosition();
-			telemetry.update();
-
 			systemCoordinator.tick();
 		}
 	}

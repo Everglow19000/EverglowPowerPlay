@@ -35,6 +35,7 @@ public class SystemCoordinator {
 		drivingSystem.tick();
 		elevatorSystem.tick();
 		fourBarSystem.tick();
+		trackingSystem.tick();
 	}
 
 	/**
