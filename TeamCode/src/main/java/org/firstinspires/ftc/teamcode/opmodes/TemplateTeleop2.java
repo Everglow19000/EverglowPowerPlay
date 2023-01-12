@@ -13,10 +13,10 @@ public class TemplateTeleop2 extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		waitForStart();
-		double d = 100;
-		AccelerationProfile accelerationProfile = new AccelerationProfile(RobotParameters.MAX_A_Y, RobotParameters.MAX_V_Y, d);
+		double d = 150;
+		AccelerationProfile accelerationProfile = new AccelerationProfile(RobotParameters.MAX_A_X, RobotParameters.MAX_V_X, d);
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 		drivingSystem.driveForwardByProfile(accelerationProfile);
-		drivingSystem.positionLogger.saveTo(PositionLogger.generateLogFileName("driveByProfile"));
+		drivingSystem.positionLogger.saveTo(PositionLogger.generateLogFileName("updated_profile"));
 	}
 }

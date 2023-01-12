@@ -861,7 +861,7 @@ public class DrivingSystem {
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			Pose pose = getDistancesOld();
 			forwardDistance = pose.y;
-			power = accelerationProfile.velocity(elapsedTime.seconds()) / RobotParameters.MAX_V_Y;
+			power = accelerationProfile.velocity(elapsedTime.seconds()) / RobotParameters.MAX_V_X;
 			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
 			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
 			driveMecanum(new Pose(0, power, rotatePower));
