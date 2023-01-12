@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -168,6 +169,8 @@ public class CameraSystem {
 		camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
 			@Override
 			public void onOpened() {
+				FtcDashboard dashboard = FtcDashboard.getInstance();
+				dashboard.startCameraStream(camera, 24);
 				camera.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
 			}
 
