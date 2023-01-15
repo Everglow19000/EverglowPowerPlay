@@ -5,7 +5,6 @@ import static java.lang.Math.abs;
 import static java.lang.Math.atan;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;
-import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
@@ -16,8 +15,10 @@ import static java.lang.Math.toRadians;
 import android.util.Pair;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -34,6 +35,8 @@ import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
+
+import java.util.List;
 
 /**
  * A class for handling the driving of the robot.
@@ -56,8 +59,15 @@ public class DrivingSystem {
 
 	private static final Robot robot = Robot.NEW_ROBOT;
 
+	private static final double k_a_accelerating = 1./500.;
+	private static final double k_a_decelerating = 1./1000.;
+//	private static final double k_error = 1./5.;
+	private static final double k_error = 1/10.;
+	private static final double k_v = 1 / RobotParameters.MAX_V_X;
+//	private static final double k_d_error = 1./200;
+	private static final double k_d_error = 0;
 
-    public static final double SQUARE_SIZE_CM = 71; // 60.5
+	public static final double SQUARE_SIZE_CM = 71; // 60.5
     private static final double WHEEL_RADIUS_CM = 4.8;
 	private static final double TICKS_PER_ROTATION = 515;
 	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
@@ -95,6 +105,8 @@ public class DrivingSystem {
 
 	public double wantedPositon;
 
+	private final MultipleTelemetry multipleTelemetry;
+
 	public long getLastCycleTime(){
 		return lastCycleTime;
 	}
@@ -114,6 +126,14 @@ public class DrivingSystem {
 		this.opMode = opMode;
 		imu = initializeImu(opMode);
 		lastCycleTime = System.nanoTime();
+		multipleTelemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
+
+
+		//enable bulk reads
+		List<LynxModule> allHubs = opMode.hardwareMap.getAll(LynxModule.class);
+		for (LynxModule hub : allHubs) {
+			hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+		}
 
 		// Get mecanum wheels interfaces
 		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
@@ -121,11 +141,12 @@ public class DrivingSystem {
 		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
+
 		// Makes the motors break when their power is set to zero, so they can better stop in place.
-		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -211,10 +232,10 @@ public class DrivingSystem {
 		backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 	}
 
 	/**
@@ -391,7 +412,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-		trackPosition();
+//		trackPosition();
 	}
 
 	/**
@@ -446,15 +467,14 @@ public class DrivingSystem {
 			;
 		}
 
-		opMode.telemetry.addData("xPos", squareDeviation.x);
-		opMode.telemetry.addData("yPos", squareDeviation.y);
-		opMode.telemetry.addData("Powers.x", Powers.x);
-		opMode.telemetry.addData("Powers.y", Powers.y);
-		opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
+		multipleTelemetry.addData("xPos", squareDeviation.x);
+		multipleTelemetry.addData("yPos", squareDeviation.y);
+		multipleTelemetry.addData("Powers.x", Powers.x);
+		multipleTelemetry.addData("Powers.y", Powers.y);
+		multipleTelemetry.addData("rot", toDegrees(positionCM.angle));
 
 		driveByAxis(Powers);
 	}
-
 
 	/**
 	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
@@ -487,15 +507,14 @@ public class DrivingSystem {
 			Powers.x = -squareDeviation.x * abs(squareDeviation.x) * abs(Powers.y) * K;
 		}
 
-		opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
-		opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
-		opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
-		opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
+		multipleTelemetry.addData("squarePosition.x", SquareLocation.x);
+		multipleTelemetry.addData("squarePosition.y", SquareLocation.y);
+		multipleTelemetry.addData("squareDeviation.x", squareDeviation.x);
+		multipleTelemetry.addData("squareDeviation.y", squareDeviation.y);
 
 
 		driveByAxis(Powers);
 	}
-
 
 	/**
 	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
@@ -518,10 +537,10 @@ public class DrivingSystem {
 			Powers.x = signum(squareDeviation.x) * abs(Powers.y) * (1 - abs(squareDeviation.y)) / (1 - abs(squareDeviation.x));
 		}
 
-		opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
-		opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
-		opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
-		opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
+		multipleTelemetry.addData("squarePosition.x", SquareLocation.x);
+		multipleTelemetry.addData("squarePosition.y", SquareLocation.y);
+		multipleTelemetry.addData("squareDeviation.x", squareDeviation.x);
+		multipleTelemetry.addData("squareDeviation.y", squareDeviation.y);
 
 		driveByAxis(Powers);
 	}
@@ -582,6 +601,9 @@ public class DrivingSystem {
 	 * Must call telemetry.update() after using this method.
 	 */
 	public void printPosition() {
+
+
+
 		double CM_TO_INCH = 0.393701;
 		FtcDashboard ftcDashboard = FtcDashboard.getInstance();
 		TelemetryPacket packet = new TelemetryPacket();
@@ -591,11 +613,11 @@ public class DrivingSystem {
 		packet.put("Is Alive", 1);
 		ftcDashboard.sendTelemetryPacket(packet);
 
-		opMode.telemetry.addData("x", positionCM.x);
-		opMode.telemetry.addData("y", positionCM.y);
-		opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
+		multipleTelemetry.addData("x", positionCM.x);
+		multipleTelemetry.addData("y", positionCM.y);
+		multipleTelemetry.addData("rot", toDegrees(positionCM.angle));
 		double cycleFrequency = 1e9 / lastCycleDuration;
-		opMode.telemetry.addData("Cycle Frequency [Hz]: ", cycleFrequency);
+		multipleTelemetry.addData("Cycle Frequency [Hz]: ", cycleFrequency);
 	}
 
 	/**
@@ -626,7 +648,7 @@ public class DrivingSystem {
 			driveMecanum(new Pose(0, power, rotatePower));
 			positionLogger.update();
 			printPosition();
-			opMode.telemetry.update();
+			multipleTelemetry.update();
 		}
 		stop();
 	}
@@ -831,7 +853,7 @@ public class DrivingSystem {
 
 			driveByAxis(actPowers.powerByDeviation(Deviation));
 			printPosition();
-			opMode.telemetry.update();
+			multipleTelemetry.update();
 			Deviation = Pose.difference(targetLocation, positionCM);
 			Deviation.normalizeAngle();
 		}
@@ -857,32 +879,43 @@ public class DrivingSystem {
 		move2(targetLocation);
 	}
 
-
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
-		ElapsedTime elapsedTime = new ElapsedTime();
-		double power;
-
-		final double ANGLE_DEVIATION_SCALAR = 0.05;
-
+		final double ANGLE_DEVIATION_SCALAR = 0.;
+//		final double ANGLE_DEVIATION_SCALAR = 0.05;
 		resetDistance();
 		double startAngle = getDistancesOld().angle;
-		double forwardDistance = getDistancesOld().y;
 
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		double prevError = 0;
+		double prevTime = 0;
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			Pose pose = getDistancesOld();
-			forwardDistance = pose.y;
-			power = accelerationProfile.velocity(elapsedTime.seconds()) / RobotParameters.MAX_V_X;
+			final double currentTime = elapsedTime.seconds();
+			final double dt = currentTime - prevTime;
+			lastCycleTime = elapsedTime.nanoseconds();
 			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
 			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
-			driveMecanum(new Pose(0, power, rotatePower));
+
+			double targetPosition = accelerationProfile.position(currentTime);
+			double targetVelocity = accelerationProfile.velocity(currentTime);
+			double targetAcceleration = accelerationProfile.acceleration(currentTime);
+			double error = targetPosition - pose.y;
+			double d_error_dt = (error - prevError)/dt;
+			double k_a = targetAcceleration > 0 ? k_a_accelerating : k_a_decelerating;
+
+			double forwardPower = k_v * targetVelocity + k_a * targetAcceleration + k_error * error - k_d_error * d_error_dt;
+			driveMecanum(new Pose(0, forwardPower, rotatePower));
+			positionCM.y = pose.y;
+			wantedPositon = targetPosition;
 			positionLogger.update();
 			printPosition();
-			wantedPositon = accelerationProfile.position(elapsedTime.seconds());
-			opMode.telemetry.update();
-			positionLogger.update();
+			multipleTelemetry.addData("wantedPosition: ", wantedPositon);
+			multipleTelemetry.update();
+
+			prevError = error;
+			prevTime = currentTime;
 		}
 		stop();
-
-
 	}
 }

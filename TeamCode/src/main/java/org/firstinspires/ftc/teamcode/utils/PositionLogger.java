@@ -32,6 +32,7 @@ public class PositionLogger {
 			this.time = time;
 			this.pose = pose;
 			this.wantedPosition = wantedPosition;
+
 		}
 	}
 

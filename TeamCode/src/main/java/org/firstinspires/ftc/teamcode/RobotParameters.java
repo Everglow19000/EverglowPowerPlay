@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 public class RobotParameters {
 
-    public static double V_SCALE = 120./150;
+        public static double V_SCALE = 120./150 * 4/3 * 1.09 * 1.2;
 
     public static double MAX_V_Y = 135 * V_SCALE; // [cm/s]
     public static double MAX_A_Y = 100; // [cm/s^2]
