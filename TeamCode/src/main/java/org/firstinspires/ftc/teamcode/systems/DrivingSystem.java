@@ -62,10 +62,10 @@ public class DrivingSystem {
 	private static final double k_a_accelerating = 1./500.;
 	private static final double k_a_decelerating = 1./1000.;
 //	private static final double k_error = 1./5.;
-	private static final double k_error = 1/10.;
+	private static final double k_error = 1/5.;
 	private static final double k_v = 1 / RobotParameters.MAX_V_X;
-//	private static final double k_d_error = 1./200;
-	private static final double k_d_error = 0;
+	private static final double k_d_error = 1./400;
+//	private static final double k_d_error = 0;
 
 	public static final double SQUARE_SIZE_CM = 71; // 60.5
     private static final double WHEEL_RADIUS_CM = 4.8;
@@ -143,10 +143,10 @@ public class DrivingSystem {
 
 
 		// Makes the motors break when their power is set to zero, so they can better stop in place.
-		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -232,10 +232,14 @@ public class DrivingSystem {
 		backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-		backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-		backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//		frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//		frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//		backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//		backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 	}
 
 	/**
@@ -304,7 +308,7 @@ public class DrivingSystem {
 	 * Assumes the robot hasn't moved in any other directions.
 	 */
 	public Pose getDistancesOld() {
-		Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);
+		Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);// TODO: bring back to previous version. This is just a test for performance to see the angle.
 
 		final double fL = frontLeft.getCurrentPosition();
 		final double fR = frontRight.getCurrentPosition();
@@ -317,7 +321,6 @@ public class DrivingSystem {
 		movementChange.x = (fR - fL + bL - bR) / 4. * CM_PER_TICK;
 //        -fLChange + fRChange + bLChange - bRChange
 		movementChange.angle = orientation.firstAngle;
-
 		return movementChange;
 	}
 
