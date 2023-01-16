@@ -20,13 +20,15 @@ public class FourBarSystem {
 		}
 	}
 
-	private final Servo fourBar;
+	private final Servo servo1;
+	private final Servo servo2;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		fourBar = opMode.hardwareMap.get(Servo.class, "4bar");
+		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_right");
+		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_left");
 	}
 
 	/**
@@ -35,6 +37,7 @@ public class FourBarSystem {
 	 * @param state The level to move the elevator to.
 	 */
 	public void goTo(FourBarState state) {
-		fourBar.setPosition(state.state);
+		servo1.setPosition(state.state);
+		servo2.setPosition(state.state);
 	}
 }

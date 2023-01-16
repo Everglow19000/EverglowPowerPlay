@@ -8,19 +8,30 @@ import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 
 @TeleOp(name = "FourBarTest", group = "Test")
 public class FourBarTest extends LinearOpMode {
+	Servo servo1;
+	Servo servo2;
+
 	@Override
 	public void runOpMode() {
+		servo1 = hardwareMap.get(Servo.class, "4bar_right");
+		servo2 = hardwareMap.get(Servo.class, "4bar_left");
+
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
-		Servo fourBar = hardwareMap.get(Servo.class, "4bar");
-		double position = 0.5;
+		double position = 0.3;
 		waitForStart();
-		fourBar.setPosition(position);
+		goTo(position);
 		while (opModeIsActive()) {
 			position += gamepad1.left_stick_y * 0.01;
-			fourBar.setPosition(position);
+			goTo(position);
 			telemetry.addData("position", position);
 			telemetry.update();
 			sleep(10);
+			gamepad.update();
 		}
+	}
+
+	private void goTo(double state) {
+		servo1.setPosition(state);
+		servo2.setPosition(state);
 	}
 }
