@@ -18,6 +18,20 @@ public class FourBarSystem {
 		FourBarState(double state) {
 			this.state = state;
 		}
+
+		/*
+		 * Toggles the state of the fourbar
+		 */
+		public FourBarState toggle() {
+			switch (this) {
+				case PICKUP:
+					return DROPOFF;
+				case DROPOFF:
+					return PICKUP;
+				default:
+					throw new IllegalStateException();
+			}
+		}
 	}
 
 	private final Servo servo1;
@@ -29,6 +43,7 @@ public class FourBarSystem {
 	public FourBarSystem(LinearOpMode opMode) {
 		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_right");
 		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_left");
+		servo2.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**
@@ -37,7 +52,14 @@ public class FourBarSystem {
 	 * @param state The level to move the elevator to.
 	 */
 	public void goTo(FourBarState state) {
+		double factor = 0.85;
 		servo1.setPosition(state.state);
-		servo2.setPosition(state.state);
+		servo2.setPosition(state.state*factor);
+	}
+
+	public void goTo(double state) {
+		double factor = 0.85;
+		servo1.setPosition(state);
+		servo2.setPosition(factor*state);
 	}
 }

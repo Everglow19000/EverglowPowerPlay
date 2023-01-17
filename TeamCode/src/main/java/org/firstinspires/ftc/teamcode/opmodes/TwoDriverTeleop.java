@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -19,13 +20,16 @@ public class TwoDriverTeleop extends LinearOpMode {
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 		ClawSystem claw = new ClawSystem(this);
 		ElevatorSystem elevator = new ElevatorSystem(this);
+		FourBarSystem fourBar = new FourBarSystem(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
 		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
+		FourBarSystem.FourBarState fourBarPosition = FourBarSystem.FourBarState.DROPOFF;
 		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
 		// reset claw position
 		claw.goTo(clawPosition);
+		fourBar.goTo(0.3);
 
 		waitForStart();
 
@@ -54,17 +58,27 @@ public class TwoDriverTeleop extends LinearOpMode {
 				claw.goTo(clawPosition);
 			}
 
+			// Fourbar controls
+			if (gamepadB.lb()) {
+				fourBarPosition = fourBarPosition.toggle();
+				fourBar.goTo(fourBarPosition);
+			}
+
 			// Elevator controls
 			if (gamepadB.dpad_down()) {
 				elevator.goTo(ElevatorSystem.Level.PICKUP);
 			}
 
-			if (gamepadB.circle()) {
+			if (gamepadB.cross()) {
 				elevator.goTo(ElevatorSystem.Level.LOW);
 			}
 
-			if (gamepadB.triangle()) {
+			if (gamepadB.circle()) {
 				elevator.goTo(ElevatorSystem.Level.MID);
+			}
+
+			if (gamepadB.triangle()) {
+				elevator.goTo(ElevatorSystem.Level.HIGH);
 			}
 
 			// Telemetry
