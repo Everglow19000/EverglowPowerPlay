@@ -49,5 +49,7 @@ public class ElevatorSystem {
 	public void goTo(Level level) {
 		left.setTargetPosition(level.state);
 		right.setTargetPosition(level.state);
+
+//		opMode.telemetry.addData("Elevator:", level.state);
 	}
 }

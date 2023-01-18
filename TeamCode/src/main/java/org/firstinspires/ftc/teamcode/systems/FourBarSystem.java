@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -11,7 +12,7 @@ public class FourBarSystem {
 	 * Enum encapsulating the two positions the system should reach.
 	 */
 	public enum FourBarState {
-		PICKUP(0.29), DROPOFF(0.95);
+		PICKUP(0.56), DROPOFF(0.46);
 
 		private final double state;
 
@@ -37,14 +38,13 @@ public class FourBarSystem {
 	private final Servo servo1;
 	private final Servo servo2;
 
-
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
 		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_right");
 		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_left");
-		servo2.setDirection(Servo.Direction.REVERSE);
+		servo1.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**
@@ -53,14 +53,13 @@ public class FourBarSystem {
 	 * @param state The level to move the elevator to.
 	 */
 	public void goTo(FourBarState state) {
-		double factor = 0.85;
-		servo1.setPosition(state.state);
-		servo2.setPosition(state.state*factor);
+		goTo(state.state);
 	}
 
 	public void goTo(double state) {
 		double factor = 0.85;
 		servo1.setPosition(state);
 		servo2.setPosition(factor*state);
+//		opMode.telemetry.addData("Fourbar:", state);
 	}
 }

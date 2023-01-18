@@ -9,7 +9,7 @@ public class Autonomous extends LinearOpMode {
 		AutonomousRoutes autonomous = new AutonomousRoutes(this);
 		waitForStart();
 		if (opModeIsActive()) {
-			autonomous.run();
+			autonomous.run(1);
 		}
 	}
 }
