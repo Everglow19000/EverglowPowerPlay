@@ -12,7 +12,7 @@ public class ClawTest extends LinearOpMode {
 	public void runOpMode() {
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 
-		Servo claw1 = hardwareMap.get(Servo.class, "claw1");
+		Servo claw1 = hardwareMap.get(Servo.class, "claw");
 //		Servo claw2 = hardwareMap.get(Servo.class, "claw2");
 //		claw2.setDirection(Servo.Direction.REVERSE);
 		double position1 = 0.5;

@@ -7,35 +7,102 @@ import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
+import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "TwoDriverTeleop", group = ".Main")
-public class TwoDriverTeleop extends LinearOpMode {
-	@Override
-	public void runOpMode() {
-		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
+public class TwoDriverTeleop extends LinearOpMode implements Runnable {
+
+	DrivingSystem drivingSystem;
+	ClawSystem claw;
+	ElevatorSystem elevator;
+	FourBarSystem fourBar;
+	GWheelSystem gWheel;
+
+
+	public void pickUp(ElevatorSystem.Level level) {
+		elevator.goTo(ElevatorSystem.Level.PICKUP);
+		claw.goTo(ClawSystem.ClawState.CLOSED);
+
+		elevator.goTo(level);
+		fourBar.goTo(FourBarSystem.FourBarState.DROPOFF);
+	}
+
+
+	public void drop() {
+		claw.goTo(ClawSystem.ClawState.OPEN);
+		elevator.goTo(ElevatorSystem.Level.PRE_PICKUP);
+		fourBar.goTo(FourBarSystem.FourBarState.PICKUP);
+	}
+
+
+	public void run() {
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 
-		DrivingSystem drivingSystem = new DrivingSystem(this);
-		ClawSystem claw = new ClawSystem(this);
-		ElevatorSystem elevator = new ElevatorSystem(this);
-		FourBarSystem fourBar = new FourBarSystem(this);
-
-		Pose actPowers = new Pose(0, 0, 0);
 		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
 		FourBarSystem.FourBarState fourBarPosition = FourBarSystem.FourBarState.DROPOFF;
-		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
 		// reset claw position
 		claw.goTo(clawPosition);
 		fourBar.goTo(0.3);
 
+		while (opModeIsActive()) {
+			gamepadB.update();
+
+			if(gamepadB.triangle()) {
+				pickUp(ElevatorSystem.Level.HIGH);
+			}
+
+			if(gamepadB.circle()) {
+				pickUp(ElevatorSystem.Level.MID);
+			}
+
+			if(gamepadB.x()) {
+				pickUp(ElevatorSystem.Level.LOW);
+			}
+
+
+			if(gamepadB.dpad_up() || gamepadB.dpad_down() || gamepadB.dpad_right() || gamepadB.dpad_left()) {
+				drop();
+			}
+
+
+			if(gamepadB.lt()){
+				gWheel.toggleSpit();
+			}
+			if(gamepadB.rt()){
+				gWheel.toggleCollect();
+			}
+
+			telemetry.addData("0:",  0);
+		}
+	}
+
+	@Override
+	public void runOpMode() {
+
+		drivingSystem = new DrivingSystem(this);
+		claw = new ClawSystem(this);
+		elevator = new ElevatorSystem(this);
+		fourBar = new FourBarSystem(this);
+		gWheel = new GWheelSystem(this);
+
+		Thread thread1 = new Thread(this);
+
+		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
+		Pose actPowers = new Pose(0, 0, 0);
+
+		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
+
+
+
 		waitForStart();
+
+		thread1.start();
 
 		while (opModeIsActive()) {
 			gamepadA.update();
-			gamepadB.update();
 
 			// Calculate desired robot velocity
 			actPowers.x = -gamepad1.left_stick_x * 0.75;
@@ -52,38 +119,15 @@ public class TwoDriverTeleop extends LinearOpMode {
 			// Apply calculated velocity to mecanum wheels
 			drivingSystem.driveMecanum(actPowers);
 
-			// Claw controls
-			if (gamepadB.lt()) {
-				clawPosition = clawPosition.flip();
-				claw.goTo(clawPosition);
-			}
-
-			// Fourbar controls
-			if (gamepadB.lb()) {
-				fourBarPosition = fourBarPosition.toggle();
-				fourBar.goTo(fourBarPosition);
-			}
-
-			// Elevator controls
-			if (gamepadB.dpad_down()) {
-				elevator.goTo(ElevatorSystem.Level.PICKUP);
-			}
-
-			if (gamepadB.cross()) {
-				elevator.goTo(ElevatorSystem.Level.LOW);
-			}
-
-			if (gamepadB.circle()) {
-				elevator.goTo(ElevatorSystem.Level.MID);
-			}
-
-			if (gamepadB.triangle()) {
-				elevator.goTo(ElevatorSystem.Level.HIGH);
-			}
-
 			// Telemetry
-			drivingSystem.printPosition();
+			//drivingSystem.printPosition();
+			telemetry.addData("1:",  1);
 			telemetry.update();
 		}
+
+
 	}
+
+
+
 }

@@ -7,6 +7,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
+import org.firstinspires.ftc.teamcode.systems.GWheelSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -19,6 +21,8 @@ public class OneDriverTeleop extends LinearOpMode {
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 		ClawSystem claw = new ClawSystem(this);
 		ElevatorSystem elevator = new ElevatorSystem(this);
+		FourBarSystem fourBarSystem = new FourBarSystem(this);
+		GWheelSystem gWheel = new GWheelSystem(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
 		final int divisorSpeed = 10; // the amount to divide the speed when finner controls are activated
@@ -51,18 +55,36 @@ public class OneDriverTeleop extends LinearOpMode {
 				claw.goTo(ClawSystem.ClawState.OPEN);
 			}
 
+
+			if (gamepad.rb()) {
+				gWheel.toggleCollect();
+			}
+
+			if (gamepad.lb()) {
+				gWheel.toggleSpit();
+			}
+
+
 			// Elevator controls
 			if (gamepad.dpad_down()) {
 				elevator.goTo(ElevatorSystem.Level.PICKUP);
 			}
 
-			if (gamepad.circle()) {
-				elevator.goTo(ElevatorSystem.Level.LOW);
-			}
+
 
 			if (gamepad.triangle()) {
 				elevator.goTo(ElevatorSystem.Level.MID);
 			}
+
+
+			if(gamepad.dpad_left()) {
+				fourBarSystem.goTo(0.29);
+			}
+
+			if(gamepad.square()) {
+				fourBarSystem.goTo(0.9);
+			}
+
 			Orientation orientation = drivingSystem.getOrientation();
 			telemetry.addData("z:", orientation.firstAngle);
 			telemetry.addData("x: ", orientation.secondAngle);

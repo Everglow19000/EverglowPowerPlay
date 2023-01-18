@@ -11,7 +11,7 @@ public class FourBarSystem {
 	 * Enum encapsulating the two positions the system should reach.
 	 */
 	public enum FourBarState {
-		PICKUP(0.56), DROPOFF(0.123);
+		PICKUP(0.29), DROPOFF(0.95);
 
 		private final double state;
 
@@ -36,6 +36,7 @@ public class FourBarSystem {
 
 	private final Servo servo1;
 	private final Servo servo2;
+
 
 	/**
 	 * @param opMode The current opMode running on the robot.
