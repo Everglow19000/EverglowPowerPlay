@@ -23,7 +23,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 		FourBarSystem fourBar = new FourBarSystem(this);
 
 		Pose actPowers = new Pose(0, 0, 0);
-		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
+		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.CLOSED;
 		FourBarSystem.FourBarState fourBarPosition = FourBarSystem.FourBarState.DROPOFF;
 		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
@@ -62,6 +62,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			if (gamepadB.lb()) {
 				fourBarPosition = fourBarPosition.toggle();
 				fourBar.goTo(fourBarPosition);
+				//telemetry.addData("FourBar:", );
 			}
 
 			// Elevator controls

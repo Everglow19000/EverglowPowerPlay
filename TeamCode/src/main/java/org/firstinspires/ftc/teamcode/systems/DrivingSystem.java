@@ -680,7 +680,7 @@ public class DrivingSystem {
 			Pose distances = getDistancesOld();
 			sidewaysDistance = distances.x;
 			double angleDeviation = normalizeAngle(startAngle - distances.angle);
-			driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
+			driveMecanum(new Pose(-power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
 			positionLogger.update();
 		}
 		stop();

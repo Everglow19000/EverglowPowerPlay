@@ -15,10 +15,10 @@ public class FourBarTest extends LinearOpMode {
 	public void runOpMode() {
 		servo1 = hardwareMap.get(Servo.class, "4bar_right");
 		servo2 = hardwareMap.get(Servo.class, "4bar_left");
-		servo2.setDirection(Servo.Direction.REVERSE);
+		servo1.setDirection(Servo.Direction.REVERSE);
 
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
-		double position = 0.3;
+		double position = 0.5;
 		waitForStart();
 		goTo(position);
 		while (opModeIsActive()) {

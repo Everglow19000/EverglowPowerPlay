@@ -11,15 +11,13 @@ public class ClawSystem {
 	 * Enum encapsulating the two positions the system should reach.
 	 */
 	public enum ClawState {
-		OPEN(0.75, 0),
-		CLOSED(1, 0);
+		OPEN(0.5),
+		CLOSED(0);
 
-		public final double claw1State;
-		public final double claw2State;
+		public final double clawState;
 
-		ClawState(double claw1State, double claw2State) {
-			this.claw1State = claw1State;
-			this.claw2State = claw2State;
+		ClawState(double clawState) {
+			this.clawState = clawState;
 		}
 
 		/*
@@ -37,16 +35,14 @@ public class ClawSystem {
 		}
 	}
 
-	private final Servo claw1;
-	private final Servo claw2;
+	private final Servo claw;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public ClawSystem(LinearOpMode opMode) {
-		claw1 = opMode.hardwareMap.get(Servo.class, "claw1");
-		claw2 = opMode.hardwareMap.get(Servo.class, "claw2");
-		claw2.setDirection(Servo.Direction.REVERSE);
+		claw = opMode.hardwareMap.get(Servo.class, "claw");
+		claw.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**
@@ -55,7 +51,6 @@ public class ClawSystem {
 	 * @param state The state to set the claw to (open or closed).
 	 */
 	public void goTo(ClawState state) {
-		claw1.setPosition(state.claw1State);
-		claw2.setPosition(state.claw2State);
+		claw.setPosition(state.clawState);
 	}
 }

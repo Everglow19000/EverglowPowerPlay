@@ -11,7 +11,7 @@ public class ElevatorSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Level {
-		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-2914);
+		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-3300);
 
 		public final int state;
 
@@ -22,8 +22,10 @@ public class ElevatorSystem {
 
 	private final DcMotor left;
 	private final DcMotor right;
+	private final OpMode opMode;
 
 	public ElevatorSystem(OpMode opMode) {
+		this.opMode = opMode;
 		left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
 		right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
 
@@ -49,5 +51,7 @@ public class ElevatorSystem {
 	public void goTo(Level level) {
 		left.setTargetPosition(level.state);
 		right.setTargetPosition(level.state);
+
+//		opMode.telemetry.addData("Elevator:", level.state);
 	}
 }
