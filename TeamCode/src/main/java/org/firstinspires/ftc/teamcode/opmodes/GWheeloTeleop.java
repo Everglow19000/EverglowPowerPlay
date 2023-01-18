@@ -17,7 +17,6 @@ public class GWheeloTeleop extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
-		DrivingSystem drivingSystem = new DrivingSystem(this);
 		GWheelSystem gWheelSystem = new GWheelSystem(this);
 		waitForStart();
 
@@ -27,15 +26,12 @@ public class GWheeloTeleop extends LinearOpMode {
 			actPowers.x = -gamepad1.left_stick_x * 0.75;
 			actPowers.y = -gamepad1.left_stick_y * 0.75;
 			actPowers.angle = -gamepad1.right_stick_x * 0.5;
-
-			drivingSystem.driveMecanum(actPowers);
 			if(gamepadA.circle()){
 				gWheelSystem.toggleCollect();
 			}
 			if(gamepadA.square()){
 				gWheelSystem.toggleSpit();
 			}
-			drivingSystem.printPosition();
 		}
 	}
 }

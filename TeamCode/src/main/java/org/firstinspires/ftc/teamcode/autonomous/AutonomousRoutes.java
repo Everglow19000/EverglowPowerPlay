@@ -31,15 +31,16 @@ public class AutonomousRoutes {
 	/**
 	 * A test method that drives the robot forwards or sideways, depending on the value the AprilTag.
 	 */
-	public void run() {
-
+	public void run(int right) {
 		clawSystem.goTo(ClawSystem.ClawState.CLOSED);
 		CameraSystem.AprilTagType tagType = cameraSystem.detectAprilTag();
 		opMode.telemetry.addData("tag", tagType.toString());
 		opMode.telemetry.update();
 
+		int sideWays = -85*right;
+
 		drivingSystem.driveStraight(60, 0.5);
-		drivingSystem.driveSideways(-85, 0.5);
+		drivingSystem.driveSideways(sideWays, 0.5);
 		elevatorSystem.goTo(ElevatorSystem.Level.HIGH);
 		fourBarSystem.goTo(FourBarSystem.FourBarState.DROPOFF);
 		drivingSystem.driveStraight(5, 0.5);
@@ -52,14 +53,14 @@ public class AutonomousRoutes {
 
 		switch (tagType) {
 			case TAG_1:
-				drivingSystem.driveSideways(150, 0.5);
+				drivingSystem.driveSideways(60-sideWays, 0.5);
 				break;
 			case TAG_2:
 			default:
 				drivingSystem.driveSideways(90, 0.5);
 				break;
 			case TAG_3:
-				drivingSystem.driveSideways(50, 0.5);
+				drivingSystem.driveSideways(-65-sideWays, 0.5);
 				break;
 		}
 	}

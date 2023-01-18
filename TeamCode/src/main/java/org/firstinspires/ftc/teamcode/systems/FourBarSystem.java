@@ -37,13 +37,11 @@ public class FourBarSystem {
 
 	private final Servo servo1;
 	private final Servo servo2;
-	private final OpMode opMode;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		this.opMode = opMode;
 		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_right");
 		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_left");
 		servo1.setDirection(Servo.Direction.REVERSE);
@@ -62,7 +60,6 @@ public class FourBarSystem {
 		double factor = 0.85;
 		servo1.setPosition(state);
 		servo2.setPosition(factor*state);
-
 //		opMode.telemetry.addData("Fourbar:", state);
 	}
 }

@@ -22,10 +22,8 @@ public class ElevatorSystem {
 
 	private final DcMotor left;
 	private final DcMotor right;
-	private final OpMode opMode;
 
 	public ElevatorSystem(OpMode opMode) {
-		this.opMode = opMode;
 		left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
 		right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
 
