@@ -57,7 +57,7 @@ public class FourBarSystem {
 	}
 
 	public void goTo(double state) {
-		double factor = 0.85;
+		double factor = 1;// 0.85
 		servo1.setPosition(state);
 		servo2.setPosition(factor*state);
 //		opMode.telemetry.addData("Fourbar:", state);

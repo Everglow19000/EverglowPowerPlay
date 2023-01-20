@@ -37,30 +37,39 @@ public class AutonomousRoutes {
 		opMode.telemetry.addData("tag", tagType.toString());
 		opMode.telemetry.update();
 
-		int sideWays = -85*right;
+		int sideWays = 110 * right;
 
-		drivingSystem.driveStraight(60, 0.5);
-		drivingSystem.driveSideways(sideWays, 0.5);
+		//drivingSystem.driveStraight(60, 0.5);
+		//drivingSystem.driveSideways(sideWays, 0.5);
+		drivingSystem.driveY(70);
+		drivingSystem.driveX(sideWays);
+
+
 		elevatorSystem.goTo(ElevatorSystem.Level.HIGH);
-		fourBarSystem.goTo(FourBarSystem.FourBarState.DROPOFF);
+		//fourBarSystem.goTo(FourBarSystem.FourBarState.DROPOFF);
 		drivingSystem.driveStraight(5, 0.5);
 		clawSystem.goTo(ClawSystem.ClawState.OPEN);
 		opMode.sleep(1000);
+
+
 		drivingSystem.driveStraight(-5, 0.5);
-		clawSystem.goTo(ClawSystem.ClawState.CLOSED);
-		fourBarSystem.goTo(FourBarSystem.FourBarState.PICKUP);
+
+		//fourBarSystem.goTo(FourBarSystem.FourBarState.PICKUP);
 		elevatorSystem.goTo(ElevatorSystem.Level.PICKUP);
 
 		switch (tagType) {
 			case TAG_1:
-				drivingSystem.driveSideways(60-sideWays, 0.5);
+				drivingSystem.driveToX(80);
+				//drivingSystem.driveSideWays(60-sideWays, 0.5);
 				break;
 			case TAG_2:
 			default:
-				drivingSystem.driveSideways(90, 0.5);
+				drivingSystem.driveToX(0);
+				//drivingSystem.driveSideways(90, 0.5);
 				break;
 			case TAG_3:
-				drivingSystem.driveSideways(-65-sideWays, 0.5);
+				drivingSystem.driveToX(-80);
+				//drivingSystem.driveSideways(-65-sideWays, 0.5);
 				break;
 		}
 	}

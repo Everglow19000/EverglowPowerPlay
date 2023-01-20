@@ -415,7 +415,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-//		trackPosition();
+		trackPosition();
 	}
 
 	/**
@@ -761,22 +761,17 @@ public class DrivingSystem {
 	 */
 	@PID
 	public void driveY(double distance) {
-		final double ANGLE_DEVIATION_SCALAR = 0.05;
 		final double epsilon = 0.5;
-
 		final double yTarget = positionCM.y + distance;
-		final double startAngle = getCurrentAngle();
+		;
 
-		PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
+		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
 		double deviation = yTarget - positionCM.y;
 		Pose actPowers = new Pose();
 
-		while (abs(deviation) > epsilon) {
-			double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-			actPowers.y = myPIDController.powerByDeviation(deviation);
-			actPowers.angle = ANGLE_DEVIATION_SCALAR * angleDeviation;
-
-			driveMecanum(actPowers);
+		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			actPowers.y = 0.003 * deviation + 0.15 * signum(deviation);
+			driveByAxis(actPowers);
 			deviation = yTarget - positionCM.y;
 		}
 		stop();
@@ -789,26 +784,31 @@ public class DrivingSystem {
 	 */
 	@PID
 	public void driveX(double distance) {
-		final double ANGLE_DEVIATION_SCALAR = 0.05;
 		final double epsilon = 0.5;
-
 		final double xTarget = positionCM.x + distance;
-		final double startAngle = getCurrentAngle();
+		;
 
-		PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
+		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
 		double deviation = xTarget - positionCM.x;
 		Pose actPowers = new Pose();
 
-		while (abs(deviation) > epsilon) {
-			double angleDeviation = normalizeAngle(startAngle - getCurrentAngle());
-			actPowers.x = myPIDController.powerByDeviation(deviation);
-			actPowers.angle = ANGLE_DEVIATION_SCALAR * angleDeviation;
-
-			driveMecanum(actPowers);
-			deviation = xTarget - positionCM.y;
+		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
+			driveByAxis(actPowers);
+			deviation = xTarget - positionCM.x;
 		}
 		stop();
 	}
+
+	public void driveToY(double Position) {
+		driveY(Position - positionCM.y);
+	}
+
+	public void driveToX(double Position) {
+		driveX(Position - positionCM.x);
+	}
+
+
 
 	/**
 	 * Rotates the robot a given number of radians.

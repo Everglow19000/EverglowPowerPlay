@@ -18,7 +18,7 @@ public class CalibrateRobotForwards extends LinearOpMode {
         if (!opModeIsActive()) {
             return;
         }
-		drivingSystem.driveStraight(180, 1);
+		drivingSystem.driveY(20);
 		drivingSystem.positionLogger.saveTo(PositionLogger.generateLogFileName("moveForwardLog"));
 	}
 }
