@@ -89,18 +89,39 @@ public class TrackingSystem {
 	 * Tracks the robot's position.
 	 */
 	public void trackPosition() {
+		// The displacement of each wheel
 		final double frontLeftDisplacement = position.y - frontLeft.getCurrentPosition() * CM_PER_TICK;
 		final double frontRightDisplacement = position.y - frontRight.getCurrentPosition() * CM_PER_TICK;
+		final double backDisplacement = position.x - back.getCurrentPosition() * CM_PER_TICK;
 
+		// Pose Exponentials info taken from
+		// https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials
 		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
 		final double centerDisplacement = (frontLeftDisplacement + frontRightDisplacement) / 2;
-		final double horizontalDisplacement = position.y - FORWARD_OFFSET * angleChange;
+		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
-		//Pose Exponentials https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials
-		position.x += centerDisplacement * sin(angleChange) / angleChange
-				+ horizontalDisplacement * (cos(angleChange) - 1) / angleChange;
-		position.y += centerDisplacement * (1 - cos(angleChange)) / angleChange
-				+ horizontalDisplacement * sin(angleChange) / angleChange;
+		// Temp variable for readability
+		final double angleCos = cos(position.angle), angleSin = sin(position.angle),
+				angleChangeCos = cos(angleChange), angleChangeSin = sin(angleChange);
+
+		// The angle was removed from the matrices and they were simplified to have only two rows
+		// because it wasn't actually used in the calculates.
+		final double[][] matrix1 = {{angleCos, -angleSin}, {angleSin, angleCos}};
+		final double[][] matrix2 = {{angleChangeSin / angleChange, (angleChangeCos - 1) / angleChange},
+				{(1 - angleChangeCos / angleChange), angleChangeSin / angleChange}};
+		final double[] matrix3 = {centerDisplacement, horizontalDisplacement};
+
+		// Multiplication of matrices 2 & 3
+		final double[] matrix4 = {matrix2[0][0] * matrix3[0] + matrix2[0][1] * matrix3[1],
+				matrix2[1][0] * matrix3[0] + matrix2[1][1] * matrix3[1]};
+
+		// Multiplication of matrices 1 & 4
+		final double[] resultMatrix = {matrix1[0][0] * matrix4[0] + matrix1[0][1] * matrix4[1],
+				matrix1[1][0] * matrix4[0] + matrix1[1][1] * matrix4[1]};
+
+		// Assignment of the new position
+		position.x += resultMatrix[0];
+		position.y += resultMatrix[1];
 		position.angle += angleChange;
 	}
 
