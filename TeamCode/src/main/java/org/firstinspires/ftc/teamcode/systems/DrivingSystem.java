@@ -12,16 +12,14 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
+import java.util.List;
+
 import android.util.Pair;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -36,7 +34,9 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
 
-import java.util.List;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 /**
  * A class for handling the driving of the robot.
@@ -50,41 +50,73 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Enum to indicate which robot we are currently running. The IMU initialization is
-	 * unique for each robot, since the Control Hub's orientation is different.
+	 * The square tile's side length in centimeters.
 	 */
-	private enum Robot {
-		ARMADILLO, NEW_ROBOT
-	}
-
-	private static final Robot robot = Robot.NEW_ROBOT;
-
-	private static final double k_a_accelerating = 1./500.;
-	private static final double k_a_decelerating = 1./1000.;
-//	private static final double k_error = 1./5.;
-	private static final double k_error = 1/5.;
-	private static final double k_v = 1 / RobotParameters.MAX_V_X;
-	private static final double k_d_error = 1./400;
-//	private static final double k_d_error = 0;
-
-	public static final double SQUARE_SIZE_CM = 71; // 60.5
-    private static final double WHEEL_RADIUS_CM = 4.8;
+	public static final double TILE_SIZE = 71; // 60.5
+	/**
+	 * The robot's length in centimeters.
+	 */
+	private static final double ROBOT_LENGTH = 44.;
+	/**
+	 * The robot's width in centimeters.
+	 */
+	private static final double ROBOT_WIDTH = 35.;
+	/**
+	 * The robot's wheel radius in centimeters.
+	 */
+	private static final double WHEEL_RADIUS = 4.8;
+	/**
+	 * The amount of wheel ticks per one full revolution of the encoder.
+	 */
 	private static final double TICKS_PER_ROTATION = 515;
-	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
+	/**
+	 * The amount of wheel ticks per one centimeter of wheel travel.
+	 */
+	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS * 2 * PI;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
 
-	// in order to make the robot drive at an equal velocity for the same power when driving in the x and y directions,
-	// we multiply its speed in the y direction by this constant.
+	// Variables used in the acceleration profile.
+	private static final double k_a_accelerating = 1. / 500.;
+	private static final double k_a_decelerating = 1. / 1000.;
+	private static final double k_error = 1 / 5.;
+	private static final double k_v = 1 / RobotParameters.MAX_V_X;
+	private static final double k_d_error = 1. / 400;
+
+	/**
+	 * A constant which the speed in the y direction is multiplied by
+	 * in order to make the robot drive at an equal velocity for the same power
+	 * when driving in the x and y directions
+	 */
 	private static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X / RobotParameters.MAX_V_Y;
 
 	private static final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
 
+
 	private final LinearOpMode opMode;
 
+	/**
+	 * Variable used to add multiple add to the telemetry dashboard.
+	 */
+	private final MultipleTelemetry multipleTelemetry;
+	/**
+	 * The instance of the robot's IMU.
+	 */
 	private final BNO055IMU imu;
+	/**
+	 * The motor which controls the front right wheel.
+	 */
 	private final DcMotor frontRight;
+	/**
+	 * The motor which controls the front left wheel.
+	 */
 	private final DcMotor frontLeft;
+	/**
+	 * The motor which controls the back right wheel.
+	 */
 	private final DcMotor backRight;
+	/**
+	 * The motor which controls the back left wheel.
+	 */
 	private final DcMotor backLeft;
 
 	private double flPreviousTicks = 0;
@@ -92,22 +124,17 @@ public class DrivingSystem {
 	private double blPreviousTicks = 0;
 	private double brPreviousTicks = 0;
 
-	private double ROBOT_LENGTH_CM;
-	private double ROBOT_WIDTH_CM;
-
 	private final Pose positionCM = new Pose(0., 0., 0.);
+
+	public double maxDrivePower = 1;
+
+	public double wantedPosition;
 
 	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
-	public double maxDrivePower = 1;
-
-	public double wantedPositon;
-
-	private final MultipleTelemetry multipleTelemetry;
-
-	public long getLastCycleTime(){
+	public long getLastCycleTime() {
 		return lastCycleTime;
 	}
 
@@ -125,11 +152,10 @@ public class DrivingSystem {
 	public DrivingSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
 		imu = initializeImu(opMode);
-		lastCycleTime = System.nanoTime();
 		multipleTelemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
+		lastCycleTime = System.nanoTime();
 
-
-		//enable bulk reads
+		// Enable bulk reads
 		List<LynxModule> allHubs = opMode.hardwareMap.getAll(LynxModule.class);
 		for (LynxModule hub : allHubs) {
 			hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -141,7 +167,6 @@ public class DrivingSystem {
 		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
-
 		// Makes the motors break when their power is set to zero, so they can better stop in place.
 		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -149,16 +174,8 @@ public class DrivingSystem {
 		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 		// Some motors are wired in reverse, so we must reverse them back.
-		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
-		if (robot == Robot.ARMADILLO) {
-			ROBOT_LENGTH_CM = 44.;
-			ROBOT_WIDTH_CM = 31.;
-		} else if (robot == Robot.NEW_ROBOT) {
-			ROBOT_LENGTH_CM = 44.;
-			ROBOT_WIDTH_CM = 35.;
-		}
+		frontLeft.setDirection(DcMotor.Direction.REVERSE);
+		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
 		// Reset the distances measured by the motors
 		positionLogger = new PositionLogger(this, this.opMode);
@@ -195,11 +212,7 @@ public class DrivingSystem {
 
 		// IMU configuration explained in: https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf, page 24
 
-		if (robot == Robot.ARMADILLO) {
-			axisMapConfigByte = 0x6; // swap x and z axis
-		} else {
-			axisMapConfigByte = (byte) (X_AXIS | Z_AXIS << 2 | Y_AXIS << 4); // swap z and y axis
-		}
+		axisMapConfigByte = (byte) (X_AXIS | Z_AXIS << 2 | Y_AXIS << 4); // swap z and y axis
 
 		byte AXIS_MAP_SIGN_BYTE = 0x0; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
 		// Need to be in CONFIG mode to write to registers
@@ -243,9 +256,9 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * resets the Position of the robot to another value
+	 * Resets the position of the robot to a given value.
 	 *
-	 * @program realLocation the new and correct location of the robot in the Board
+	 * @program The new and correct real location of the robot in the board.
 	 */
 	public void resetStartLocation(Point2D realLocation) {
 		positionCM.x = realLocation.x;
@@ -253,14 +266,16 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * convert the robot Location to be in squares and gives the deviation from the the center of the square that the robot is on
+	 * Converts the robot Location to squares and
+	 * calculates the deviation from the the center of the square that the robot is on.
 	 *
-	 * @program The Robot's Location in squares, the deviation of the robot from the center of the square it's on between 0 and 1
+	 * @program The Robot's Location in squares,
+	 * the deviation of the robot from the center of the square it's on (0 <= x <= 1).
 	 */
 	public Pair<Pose, Point2D> getSquareInformation() {
 		Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
-		SquareInformation.first.x = positionCM.x / SQUARE_SIZE_CM;
-		SquareInformation.first.y = positionCM.y / SQUARE_SIZE_CM;
+		SquareInformation.first.x = positionCM.x / TILE_SIZE;
+		SquareInformation.first.y = positionCM.y / TILE_SIZE;
 		SquareInformation.first.angle = positionCM.angle;
 
 		SquareInformation.second.x = SquareInformation.first.x % 1;
@@ -291,7 +306,7 @@ public class DrivingSystem {
 	 * Gets the robots current azimuth and returns it.
 	 * Angle is measured relative to the robot's starting angle, with positive angles being counterclockwise.
 	 *
-	 * @return double representing the robot's current angle.
+	 * @return A double representing the robot's current angle.
 	 */
 	public double getCurrentAngle() {
 		Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
@@ -303,9 +318,11 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * returns how far sideways and forward, in centimeters,
+	 * Returns how far sideways and forward, in centimeters,
 	 * the robot has moved and rotated since the last time that resetDistance() was called.
 	 * Assumes the robot hasn't moved in any other directions.
+	 *
+	 * @return A Pose representing the robot's current position and angle.
 	 */
 	public Pose getDistancesOld() {
 		Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES);// TODO: bring back to previous version. This is just a test for performance to see the angle.
@@ -316,7 +333,7 @@ public class DrivingSystem {
 		final double bR = backRight.getCurrentPosition();
 
 		Pose movementChange = new Pose();
-		movementChange.y = (fL + fR + bL + bR) / 4. * CM_PER_TICK ;
+		movementChange.y = (fL + fR + bL + bR) / 4. * CM_PER_TICK;
 //        movementChange.x = (fR - fL + bR - bL) / 4. * CM_PER_TICK;
 		movementChange.x = (fR - fL + bL - bR) / 4. * CM_PER_TICK;
 //        -fLChange + fRChange + bLChange - bRChange
@@ -576,8 +593,8 @@ public class DrivingSystem {
 			rating *= (PI - normalizeAngle(SquareLocation.angle - atan(cornerDistance.x / cornerDistance.y))) / PI; // how much the robot is facing the Pole
 
 			if (rating > bestRating) {
-				cornerSquarePosition.x *= SQUARE_SIZE_CM;
-				cornerSquarePosition.y *= SQUARE_SIZE_CM;
+				cornerSquarePosition.x *= TILE_SIZE;
+				cornerSquarePosition.y *= TILE_SIZE;
 				bestCornerPosition = cornerSquarePosition;
 			}
 		}
@@ -604,10 +621,8 @@ public class DrivingSystem {
 	 * Must call telemetry.update() after using this method.
 	 */
 	public void printPosition() {
-
-
-
 		double CM_TO_INCH = 0.393701;
+		double cycleFrequency = 1e9 / lastCycleDuration;
 		FtcDashboard ftcDashboard = FtcDashboard.getInstance();
 		TelemetryPacket packet = new TelemetryPacket();
 		packet.fieldOverlay()
@@ -619,7 +634,6 @@ public class DrivingSystem {
 		multipleTelemetry.addData("x", positionCM.x);
 		multipleTelemetry.addData("y", positionCM.y);
 		multipleTelemetry.addData("rot", toDegrees(positionCM.angle));
-		double cycleFrequency = 1e9 / lastCycleDuration;
 		multipleTelemetry.addData("Cycle Frequency [Hz]: ", cycleFrequency);
 	}
 
@@ -809,7 +823,6 @@ public class DrivingSystem {
 	}
 
 
-
 	/**
 	 * Rotates the robot a given number of radians.
 	 * A positive angle means clockwise rotation, a negative angle is counterclockwise.
@@ -904,16 +917,16 @@ public class DrivingSystem {
 			double targetVelocity = accelerationProfile.velocity(currentTime);
 			double targetAcceleration = accelerationProfile.acceleration(currentTime);
 			double error = targetPosition - pose.y;
-			double d_error_dt = (error - prevError)/dt;
+			double d_error_dt = (error - prevError) / dt;
 			double k_a = targetAcceleration > 0 ? k_a_accelerating : k_a_decelerating;
 
 			double forwardPower = k_v * targetVelocity + k_a * targetAcceleration + k_error * error - k_d_error * d_error_dt;
 			driveMecanum(new Pose(0, forwardPower, rotatePower));
 			positionCM.y = pose.y;
-			wantedPositon = targetPosition;
+			wantedPosition = targetPosition;
 			positionLogger.update();
 			printPosition();
-			multipleTelemetry.addData("wantedPosition: ", wantedPositon);
+			multipleTelemetry.addData("wantedPosition: ", wantedPosition);
 			multipleTelemetry.update();
 
 			prevError = error;

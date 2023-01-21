@@ -22,8 +22,6 @@ public class PositionLogger {
 	private final DrivingSystem drivingSystem;
 	private final List<RobotState> robotStates;
 
-	private final LinearOpMode opMode;
-
 	private static class RobotState {
 		final long time;
 		final Pose pose;
@@ -38,14 +36,13 @@ public class PositionLogger {
 
 	public PositionLogger(DrivingSystem drivingSystem, LinearOpMode opMode) {
 		this.drivingSystem = drivingSystem;
-		this.opMode = opMode;
 		robotStates = new ArrayList<>();
 	}
 
 	public void update() {
 //        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
 
-		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(), drivingSystem.wantedPositon);
+		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(), drivingSystem.wantedPosition);
 		robotStates.add(robotState);
 	}
 

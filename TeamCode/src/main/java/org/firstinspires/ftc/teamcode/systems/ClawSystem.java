@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 public class ClawSystem {
 	/**
-	 * Enum encapsulating the two positions the system should reach.
+	 * Enum encapsulating the two positions the claw should reach.
 	 */
 	public enum ClawState {
 		OPEN(0.37),
@@ -16,14 +16,13 @@ public class ClawSystem {
 
 		public final double clawState;
 
-
 		ClawState(double clawState) {
 			this.clawState = clawState;
 		}
 
 		/*
-		* Switches the state of the claw from open to closed or vice versa.
-		*/
+		 * Switches the state of the claw from open to closed or vice versa.
+		 */
 		public ClawState flip() {
 			switch (this) {
 				case OPEN:
@@ -36,13 +35,16 @@ public class ClawSystem {
 		}
 	}
 
+	/**
+	 * The servo which controls the claw.
+	 */
 	private final Servo claw;
 
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public ClawSystem(LinearOpMode opMode) {
+	public ClawSystem(OpMode opMode) {
 		claw = opMode.hardwareMap.get(Servo.class, "claw");
 		claw.setDirection(Servo.Direction.REVERSE);
 	}

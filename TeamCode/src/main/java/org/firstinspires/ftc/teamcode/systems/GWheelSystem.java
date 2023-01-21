@@ -1,27 +1,32 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * A class for handling the grabbing wheel.
  */
-@Config
 public class GWheelSystem {
-	private final DcMotor motor;
+	/**
+	 * The motor which controls the grabbing wheel.
+	 */
+	private final DcMotor gWheel;
+
+	/**
+	 * The power at which the motor for grabbing wheel should spin.
+	 */
 	public static double GWHEEL_POWER = 0.65;
 
-	//These variables control whether the grabbing wheel is running or not.
+	// These variables control whether the grabbing wheel is running or not.
 	private boolean isCollecting = false;
 	private boolean isSpitting = false;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public GWheelSystem(LinearOpMode opMode) {
-		motor = opMode.hardwareMap.get(DcMotor.class, "gWheel");
-		motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+	public GWheelSystem(OpMode opMode) {
+		gWheel = opMode.hardwareMap.get(DcMotor.class, "gWheel");
+		gWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 	}
 
 	/**
@@ -29,7 +34,7 @@ public class GWheelSystem {
 	 * Used in toggleCollecting().
 	 */
 	private void collect() {
-		motor.setPower(GWHEEL_POWER);
+		gWheel.setPower(GWHEEL_POWER);
 		isCollecting = true;
 	}
 
@@ -38,7 +43,7 @@ public class GWheelSystem {
 	 * Used in toggleSpitting().
 	 */
 	private void spit() {
-		motor.setPower(-GWHEEL_POWER);
+		gWheel.setPower(-GWHEEL_POWER);
 		isSpitting = true;
 	}
 
@@ -47,7 +52,7 @@ public class GWheelSystem {
 	 * Used in toggleCollecting() and toggleSpitting().
 	 */
 	private void stop() {
-		motor.setPower(0);
+		gWheel.setPower(0);
 		isSpitting = false;
 		isCollecting = false;
 	}
@@ -74,7 +79,12 @@ public class GWheelSystem {
 		}
 	}
 
+	/**
+	 * A temporary function for testing the grabbing wheel.
+	 *
+	 * @param power The power at which the grabbing wheel should spin.
+	 */
 	public void setPower(double power){
-		motor.setPower(power);
+		gWheel.setPower(power);
 	}
 }

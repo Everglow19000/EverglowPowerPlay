@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 public class ElevatorSystem {
 	/**
-	 * Enum encapsulating all the positions the system should reach.
+	 * Enum encapsulating all the positions the elevator should reach.
 	 */
 	public enum Level {
 		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-3300);
@@ -20,7 +20,13 @@ public class ElevatorSystem {
 		}
 	}
 
+	/**
+	 * The motor which controls the left side of the elevator.
+	 */
 	private final DcMotor left;
+	/**
+	 * The motor which controls the right side of the elevator.
+	 */
 	private final DcMotor right;
 
 	public ElevatorSystem(OpMode opMode) {
@@ -49,7 +55,5 @@ public class ElevatorSystem {
 	public void goTo(Level level) {
 		left.setTargetPosition(level.state);
 		right.setTargetPosition(level.state);
-
-//		opMode.telemetry.addData("Elevator:", level.state);
 	}
 }

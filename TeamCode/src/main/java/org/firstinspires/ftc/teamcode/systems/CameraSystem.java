@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import com.acmerobotics.dashboard.FtcDashboard;
+import java.io.File;
+import java.util.ArrayList;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.utils.AndroidUtils;
-import org.firstinspires.ftc.teamcode.utils.CameraCalibration;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.apriltag.AprilTagDetection;
@@ -16,21 +14,19 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
-
-import java.io.File;
-import java.util.ArrayList;
+import com.acmerobotics.dashboard.FtcDashboard;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.utils.AndroidUtils;
+import org.firstinspires.ftc.teamcode.utils.CameraCalibration;
 
 /**
- * A Class for handling the image processing for camera.
+ * A Class for handling the image processing for the camera.
  */
 public class CameraSystem {
-	private final LinearOpMode opMode;
-	private final CameraPipeline cameraPipeline;
-	private final OpenCvCamera camera;
-
-	static final double TAG_SIZE = 0.166; // UNITS ARE METERS
-
-	// Types for AprilTag IDs
+	/**
+	 * Enum encapsulating the types of AprilTag IDs.
+	 */
 	public enum AprilTagType {
 		TAG_1,
 		TAG_2,
@@ -41,90 +37,118 @@ public class CameraSystem {
 		DETECTION_IN_PROGRESS
 	}
 
+	static final double TAG_SIZE = 0.166; // In meters
+
+	private final LinearOpMode opMode;
+	private final CameraPipeline cameraPipeline;
+	private final OpenCvCamera camera;
+
 	// Inline camera pipeline class
 	static class CameraPipeline extends OpenCvPipeline {
-		private long nativeAprilTagPtr; // A pointer to the JNI AprilTag detector
-		private final Mat grey = new Mat(); // A blank canvas to store the b&w image
+		private final LinearOpMode opMode;
 
-		private final LinearOpMode opMode; // The OpMode that's currently running
+		/**
+		 * A pointer to the JNI AprilTag detector.
+		 * Might be null if createAprilTagDetector() in the constructor threw an exception.
+		 */
+		private long nativeAprilTagPtr;
+		/**
+		 * Last identified AprilTag
+		 */
+		public AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED;
+
+		private final Mat grey = new Mat(); // A blank canvas to store the b&w image
 		private boolean isCapturingImage = false;
 		private boolean isDetectingAprilTag = false;
 
-		public AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED; // Last identified AprilTag
-
+		/**
+		 * @param opMode The current opMode running on the robot.
+		 */
 		public CameraPipeline(LinearOpMode opMode) {
 			this.opMode = opMode;
 
-			// initiate AprilTag detector
+			// Initiate AprilTag detector
 			nativeAprilTagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
 		}
 
-		// runs when class is deleted
+		/**
+		 * Runs when class is deleted to free up memory.
+		 */
 		@Override
 		protected void finalize() {
-			// -- safely delete AprilTag detector from memory -- //
-			// Might be null if createAprilTagDetector() threw an exception
+			// Try to safely delete AprilTag detector from memory
 			if (nativeAprilTagPtr != 0) {
 				// Delete the native context we created in the constructor
-//                AprilTagDetectorJNI.releaseAprilTagDetector(nativeAprilTagPtr);
+				// AprilTagDetectorJNI.releaseAprilTagDetector(nativeAprilTagPtr); TODO: (???)
 				nativeAprilTagPtr = 0;
 			} else {
-				// handle exceptions
 				System.out.println("AprilTagDetectionPipeline.finalize(): nativeAprilTagPtr was NULL");
 			}
 		}
 
 		/**
-		 * Capture an image and save to robot
+		 * Enables capturing an image.
 		 */
 		public void captureImage() {
 			isCapturingImage = true;
 		}
 
 		/**
-		 * Run AprilTag detection
+		 * Enables running the AprilTag detection.
 		 */
 		public void detectAprilTag() {
 			isDetectingAprilTag = true;
 		}
 
-		// Runs automatically every frame
+		/**
+		 * Processes a captured image. Runs automatically every frame.
+		 *
+		 * @param input The input image to process, a matrix.
+		 * @return The processed image, a matrix.
+		 */
 		@Override
 		public Mat processFrame(Mat input) {
-			// Image capturing is enabled
 			if (isCapturingImage) {
 				opMode.telemetry.addLine("Capture");
 				opMode.telemetry.update();
 
-				isCapturingImage = false; // turn off capturing an image for the next iteration
+				// Turn off capturing an image for the next iteration
+				isCapturingImage = false;
 
 				try {
-					String timeStamp = AndroidUtils.timestampString(); // get current time
-					String filepath = // target path for the image capture
-							new File(AppUtil.ROBOT_DATA_DIR, String.format("img_%s.png", timeStamp)).getAbsolutePath();
-					// save capture to disk
+					// Define a target path for the image capture
+					String filepath = new File(
+							AppUtil.ROBOT_DATA_DIR,
+							String.format("img_%s.png", AndroidUtils.timestampString())
+					).getAbsolutePath();
+					// Save capture to storage
 					saveMatToDiskFullPath(input, filepath);
 
-					opMode.telemetry.addLine("Capturing Image");
+					opMode.telemetry.addLine("Captured Image");
 					opMode.telemetry.update();
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (Exception err) {
+					err.printStackTrace();
 				}
 			}
 
-			// AprilTag detection is enabled
 			if (isDetectingAprilTag) {
-				isDetectingAprilTag = false; // Turn off AprilTag detection for the next iteration
+				// Turn off AprilTag detection for the next iteration
+				isDetectingAprilTag = false;
 
 				try {
-					// convert image to grey
+					// Convert the image to grey
 					Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBA2GRAY);
+					// Detect april tags in the image
+					ArrayList<AprilTagDetection> detections =
+							AprilTagDetectorJNI.runAprilTagDetectorSimple(
+									nativeAprilTagPtr, grey, TAG_SIZE,
+									CameraCalibration.FX, CameraCalibration.FY,
+									CameraCalibration.CX, CameraCalibration.CY
+							);
 
-					// call the detector on the image
-					ArrayList<AprilTagDetection> detections = AprilTagDetectorJNI.runAprilTagDetectorSimple(nativeAprilTagPtr, grey, TAG_SIZE, CameraCalibration.FX, CameraCalibration.FY, CameraCalibration.CX, CameraCalibration.CY);
-
-					if (detections.size() > 0) { // detected at least one april tag
-						// assign global variable based on result
+					// If at least one april tag was detected
+					if (detections.size() > 0) {
+						// Assign a global variable based on result
 						switch (detections.get(0).id) {
 							case 0:
 								aprilTagID = AprilTagType.TAG_1;
@@ -138,11 +162,11 @@ public class CameraSystem {
 							default:
 								aprilTagID = AprilTagType.INVALID;
 						}
-					} else { // no AprilTag detected
+					} else {
 						aprilTagID = AprilTagType.DETECTION_ERROR;
 					}
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+				} catch (Exception err) {
+					throw new RuntimeException(err);
 				}
 			}
 			return input;
@@ -155,18 +179,24 @@ public class CameraSystem {
 	public CameraSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
 
+		// Initiate camera
+		int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources()
+				.getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
+		WebcamName webcamName = opMode.hardwareMap.get(WebcamName.class, "webcam");
+
 		// Initiate camera pipeline
 		cameraPipeline = new CameraPipeline(opMode);
-		int cameraMonitorViewId =
-				this.opMode.hardwareMap.appContext.getResources()
-					.getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
-		WebcamName webcamName =
-				this.opMode.hardwareMap.get(WebcamName.class, "webcam");
 
+		// Assign camera variable
 		camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
 		camera.setPipeline(cameraPipeline);
 
+		// Starts the camera
 		camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+			/**
+			 * Handle camera open success.
+			 * Open the FTC dashboard camera stream and start streaming.
+			 */
 			@Override
 			public void onOpened() {
 				FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -174,6 +204,11 @@ public class CameraSystem {
 				camera.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
 			}
 
+			/**
+			 * Handle camera open errors.
+			 *
+			 * @param errorCode reason for failure.
+			 */
 			@Override
 			public void onError(int errorCode) {
 				opMode.telemetry.addLine("CAMERA ERROR!!! code: " + errorCode);
@@ -184,30 +219,31 @@ public class CameraSystem {
 	}
 
 	/**
-	 * Take an image capture
+	 * Captures an image.
 	 */
 	public void captureImage() {
 		cameraPipeline.captureImage();
 	}
 
 	/**
-	 * Detects AprilTag from camera.
+	 * Detects an AprilTag from the camera.
 	 *
 	 * @return The type of the AprilTag detected.
 	 */
 	public AprilTagType detectAprilTag() {
-		// reset previous april tag id
+		// Reset previous april tag id
 		cameraPipeline.aprilTagID = AprilTagType.DETECTION_IN_PROGRESS;
 
-		// make the processFrame loop try to detect AprilTags
+		// Make the processFrame loop try to detect AprilTags
 		cameraPipeline.detectAprilTag();
 
 		ElapsedTime elapsedTime = new ElapsedTime();
-		// block the main loop until an AprilTag is detected
-		while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS && elapsedTime.milliseconds() < 8*1000) {
-		}
+		// Block the main loop until an AprilTag is detected
+		while (opMode.opModeIsActive() &&
+				cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS &&
+				elapsedTime.milliseconds() < 8 * 1000) {}
 
-		// return the id
+		// Return the id
 		return cameraPipeline.aprilTagID;
 	}
 }
