@@ -29,9 +29,23 @@ public class TrackingSystem {
 	private final LinearOpMode opMode;
 	private final SystemCoordinator systemCoordinator;
 
+	/**
+	 * The front left odometry wheel.
+	 */
 	private final DcMotorEx frontLeft;
+	/**
+	 * The front right odometry wheel.
+	 */
 	private final DcMotorEx frontRight;
+	/**
+	 * The back odometry wheel.
+	 */
 	private final DcMotorEx back;
+
+	// Keeps the robot's odometry wheel's previous positions
+	private double flPreviousTicks = 0;
+	private double frPreviousTicks = 0;
+	private double bPreviousTicks = 0;
 
 	private final Pose position = new Pose(0., 0., 0.);
 
@@ -83,19 +97,26 @@ public class TrackingSystem {
 	public void tick() {
 		trackPosition();
 		printPosition();
+		opMode.telemetry.update();
 	}
 
 	/**
 	 * Tracks the robot's position.
+	 * Pose Exponentials Method and explanation taken from
+	 * <a href="https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials">this site</a>.
 	 */
 	public void trackPosition() {
-		// The displacement of each wheel
-		final double frontLeftDisplacement = position.y - frontLeft.getCurrentPosition() * CM_PER_TICK;
-		final double frontRightDisplacement = position.y - frontRight.getCurrentPosition() * CM_PER_TICK;
-		final double backDisplacement = position.x - back.getCurrentPosition() * CM_PER_TICK;
+		// Get the current position of the odometry wheels
+		double flCurrentTicks = frontLeft.getCurrentPosition();
+		double frCurrentTicks = frontRight.getCurrentPosition();
+		double bCurrentTicks = back.getCurrentPosition();
 
-		// Pose Exponentials info taken from
-		// https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials
+		// The displacement of each wheel
+		final double frontLeftDisplacement = (flCurrentTicks - flPreviousTicks) * CM_PER_TICK;
+		final double frontRightDisplacement = (frCurrentTicks - frPreviousTicks) * CM_PER_TICK;
+		final double backDisplacement = (bCurrentTicks - bPreviousTicks) * CM_PER_TICK;
+
+		// Calculating the robot's displacement and rotation
 		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
 		final double centerDisplacement = (frontLeftDisplacement + frontRightDisplacement) / 2;
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
@@ -123,6 +144,11 @@ public class TrackingSystem {
 		position.x += resultMatrix[0];
 		position.y += resultMatrix[1];
 		position.angle += angleChange;
+
+		// Update the previous ticks
+		flPreviousTicks = flCurrentTicks;
+		frPreviousTicks = frCurrentTicks;
+		bPreviousTicks = bCurrentTicks;
 	}
 
 	/**
