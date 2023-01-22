@@ -72,5 +72,7 @@ public class AutonomousRoutes {
 				//drivingSystem.driveSideways(-65-sideWays, 0.5);
 				break;
 		}
+
+		opMode.sleep(10000);
 	}
 }

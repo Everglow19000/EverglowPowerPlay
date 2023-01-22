@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * A Class for handling the claw system.
  */
 public class ClawSystem {
+
 	/**
 	 * Enum encapsulating the two positions the claw should reach.
 	 */
@@ -40,6 +41,7 @@ public class ClawSystem {
 	 */
 	private final Servo claw;
 
+	private ClawState clawState = ClawState.CLOSED;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -55,6 +57,12 @@ public class ClawSystem {
 	 * @param state The state to set the claw to (open or closed).
 	 */
 	public void goTo(ClawState state) {
+		clawState = state;
 		claw.setPosition(state.clawState);
 	}
+
+	public void flip(){
+		goTo(clawState.flip());
+	}
+
 }
