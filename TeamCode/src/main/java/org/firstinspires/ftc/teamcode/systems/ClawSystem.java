@@ -12,8 +12,8 @@ public class ClawSystem {
 	 * Enum encapsulating the two positions the claw should reach.
 	 */
 	public enum ClawState {
-		OPEN(0.37),
-		CLOSED(0.6);
+		OPEN(0),
+		CLOSED(0.78);
 
 		public final double clawState;
 
@@ -48,7 +48,7 @@ public class ClawSystem {
 	 */
 	public ClawSystem(OpMode opMode) {
 		claw = opMode.hardwareMap.get(Servo.class, "claw");
-		claw.setDirection(Servo.Direction.REVERSE);
+//		claw.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**

@@ -45,7 +45,7 @@ public class TwoDriverTeleop extends LinearOpMode implements Runnable {
 
 		// reset claw position
 		claw.goTo(clawPosition);
-		fourBar.goTo(0.3);
+//		fourBar.goTo(0.3);
 
 		while (opModeIsActive()) {
 			gamepadB.update();

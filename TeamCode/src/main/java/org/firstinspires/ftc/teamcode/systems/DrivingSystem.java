@@ -432,7 +432,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-		trackPosition();
+//		trackPosition();
 	}
 
 	/**
@@ -664,8 +664,8 @@ public class DrivingSystem {
 			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
 			driveMecanum(new Pose(0, power, rotatePower));
 			positionLogger.update();
-			printPosition();
-			multipleTelemetry.update();
+//			printPosition();
+//			multipleTelemetry.update();
 		}
 		stop();
 	}

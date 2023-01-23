@@ -11,7 +11,7 @@ public class ElevatorSystem {
 	 * Enum encapsulating all the positions the elevator should reach.
 	 */
 	public enum Level {
-		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-3300);
+		PICKUP(0), PRE_PICKUP(-1025), LOW(-1025), MID(-2914), HIGH(-3300);
 
 		public final int state;
 
@@ -33,18 +33,23 @@ public class ElevatorSystem {
 		left = opMode.hardwareMap.get(DcMotor.class, "left_elevator");
 		right = opMode.hardwareMap.get(DcMotor.class, "right_elevator");
 
+		left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 		left.setDirection(DcMotor.Direction.REVERSE);
 		left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		left.setTargetPosition(0);
-		right.setTargetPosition(0);
-
-		left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-		left.setPower(0.7);
-		right.setPower(0.7);
+//		left.setTargetPosition(0);
+//		right.setTargetPosition(0);
+//
+//		left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//		right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+		left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//		left.setPower(0.7);
+//		right.setPower(0.7);
+		setPower(0);
 	}
 
 	/**
@@ -55,5 +60,10 @@ public class ElevatorSystem {
 	public void goTo(Level level) {
 		left.setTargetPosition(level.state);
 		right.setTargetPosition(level.state);
+	}
+
+	public void setPower(double power){
+		left.setPower(power);
+		right.setPower(power);
 	}
 }

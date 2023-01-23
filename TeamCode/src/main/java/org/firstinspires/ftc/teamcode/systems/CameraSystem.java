@@ -243,6 +243,7 @@ public class CameraSystem {
 				cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS &&
 				elapsedTime.milliseconds() < 8 * 1000) {}
 
+		camera.stopStreaming();
 		// Return the id
 		return cameraPipeline.aprilTagID;
 	}

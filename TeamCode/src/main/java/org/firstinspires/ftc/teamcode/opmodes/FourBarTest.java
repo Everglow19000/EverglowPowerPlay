@@ -18,22 +18,20 @@ public class FourBarTest extends LinearOpMode {
 		servo1.setDirection(Servo.Direction.REVERSE);
 
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
-		double position = 0.5;
+		double position1 = 0.5;
+		double position2 = 0.5;
 		waitForStart();
-		goTo(position);
 		while (opModeIsActive()) {
 			gamepad.update();
-			position += gamepad1.left_stick_y * 0.01;
-			position = Math.min(Math.max(position, 0), 1);
-			goTo(position);
-			telemetry.addData("position", position);
+			position1 += gamepad1.left_stick_y * 0.003;
+			position2 += gamepad1.right_stick_y * 0.003;
+			position1 = Math.min(Math.max(position1, 0), 1);
+			position2 = Math.min(Math.max(position2, 0), 1);
+			servo1.setPosition(position1);
+			servo2.setPosition(position2);
+			telemetry.addData("position1", position1);
+			telemetry.addData("position2", position2);
 			telemetry.update();
 			sleep(10);
 		}
-	}
-
-	private void goTo(double state) {
-		servo1.setPosition(state);
-		servo2.setPosition(state);
-	}
-}
+	}}

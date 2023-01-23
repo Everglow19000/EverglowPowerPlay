@@ -11,12 +11,14 @@ public class FourBarSystem {
 	 * Enum encapsulating the two positions the fourBar should reach.
 	 */
 	public enum FourBarState {
-		PICKUP(0.56), DROPOFF(0.46);
+		PICKUP(0.1, 0.), DROPOFF(0.6, 0.5);
 
-		private final double state;
+		private final double posRight;
+		private final double posLeft;
 
-		FourBarState(double state) {
-			this.state = state;
+		FourBarState(double posRight, double state2) {
+			this.posRight = posRight;
+			this.posLeft = state2;
 		}
 
 		/*
@@ -37,19 +39,19 @@ public class FourBarSystem {
 	/**
 	 * The first of the two servos which controls the fourBar.
 	 */
-	private final Servo servo1;
+	private final Servo servoRight;
 	/**
 	 * The second of the two servos which controls the fourBar.
 	 */
-	private final Servo servo2;
+	private final Servo servoLeft;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(OpMode opMode) {
-		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_right");
-		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_left");
-		servo1.setDirection(Servo.Direction.REVERSE);
+		servoRight = opMode.hardwareMap.get(Servo.class, "4bar_right");
+		servoLeft = opMode.hardwareMap.get(Servo.class, "4bar_left");
+		servoRight.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**
@@ -58,17 +60,7 @@ public class FourBarSystem {
 	 * @param state The state to move the fourBar to.
 	 */
 	public void goTo(FourBarState state) {
-		goTo(state.state);
-	}
-
-	/**
-	 * A temporary function for setting the fourBar to a specified position.
-	 *
-	 * @param state The state to move the fourBar to.
-	 */
-	public void goTo(double state) {
-		double factor = 1; // 0.85
-		servo1.setPosition(state);
-		servo2.setPosition(factor * state);
+		servoLeft.setPosition(state.posLeft);
+		servoRight.setPosition(state.posRight);
 	}
 }

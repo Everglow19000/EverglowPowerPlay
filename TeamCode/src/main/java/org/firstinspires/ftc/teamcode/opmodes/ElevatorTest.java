@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 
 @TeleOp(name = "ElevatorTest", group = "Test")
@@ -13,7 +14,7 @@ public class ElevatorTest extends LinearOpMode {
 	public void runOpMode() {
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 		ClawSystem claw = new ClawSystem(this);
-
+		FourBarSystem fourBarSystem = new FourBarSystem(this);
 		DcMotor leftElevator = hardwareMap.get(DcMotor.class, "left_elevator");
 		DcMotor rightElevator = hardwareMap.get(DcMotor.class, "right_elevator");
 		leftElevator.setDirection(DcMotor.Direction.REVERSE);
@@ -34,6 +35,14 @@ public class ElevatorTest extends LinearOpMode {
 			if (gamepad.circle()) {
 				claw.goTo(ClawSystem.ClawState.OPEN);
 			}
+
+			if (gamepad.rb()){
+				fourBarSystem.goTo(FourBarSystem.FourBarState.PICKUP);
+			}
+			if (gamepad.lb()){
+				fourBarSystem.goTo(FourBarSystem.FourBarState.DROPOFF);
+			}
+
 			leftElevator.setPower(gamepad1.left_stick_y);
 			rightElevator.setPower(gamepad1.left_stick_y);
 			telemetry.addData("left position", leftElevator.getCurrentPosition());

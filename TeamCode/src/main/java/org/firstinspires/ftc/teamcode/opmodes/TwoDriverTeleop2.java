@@ -39,6 +39,8 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 
 
 		waitForStart();
+		claw.goTo(ClawSystem.ClawState.OPEN);
+		fourBar.goTo(FourBarSystem.FourBarState.PICKUP);
 
 		while (opModeIsActive()) {
 			gamepadA.update();
@@ -59,18 +61,19 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 			// Apply calculated velocity to mecanum wheels
 			drivingSystem.driveMecanum(actPowers);
 
-			if (gamepadB.dpad_up()){
-				elevator.goTo(ElevatorSystem.Level.HIGH);
-			}
-			if (gamepadB.dpad_left()){
-				elevator.goTo(ElevatorSystem.Level.MID);
-			}
-			if (gamepadB.dpad_down()){
-				elevator.goTo(ElevatorSystem.Level.LOW);
-			}
-			if (gamepadB.dpad_right()){
-				elevator.goTo(ElevatorSystem.Level.PICKUP);
-			}
+//			if (gamepadB.dpad_up()){
+//				elevator.goTo(ElevatorSystem.Level.HIGH);
+//			}
+//			if (gamepadB.dpad_left()){
+//				elevator.goTo(ElevatorSystem.Level.MID);
+//			}
+//			if (gamepadB.dpad_down()){
+//				elevator.goTo(ElevatorSystem.Level.LOW);
+//			}
+//			if (gamepadB.dpad_right()){
+//				elevator.goTo(ElevatorSystem.Level.PICKUP);
+//			}
+			elevator.setPower(gamepad2.left_stick_y * 0.5);
 
 
 			if(gamepadB.lt()){
@@ -88,8 +91,11 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 				fourBar.goTo(FourBarSystem.FourBarState.PICKUP);
 			}
 
+			if (gamepadB.cross()){
+				claw.goTo(ClawSystem.ClawState.CLOSED);
+			}
 			if (gamepadB.circle()){
-				claw.flip();
+				claw.goTo(ClawSystem.ClawState.OPEN);
 			}
 
 

@@ -78,11 +78,11 @@ public class OneDriverTeleop extends LinearOpMode {
 
 
 			if(gamepad.dpad_left()) {
-				fourBarSystem.goTo(0.29);
+//				fourBarSystem.goTo(0.29);
 			}
 
 			if(gamepad.square()) {
-				fourBarSystem.goTo(0.9);
+//				fourBarSystem.goTo(0.9);
 			}
 
 			Orientation orientation = drivingSystem.getOrientation();
