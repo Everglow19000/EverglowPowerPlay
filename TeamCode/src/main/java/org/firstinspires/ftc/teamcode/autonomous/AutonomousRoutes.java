@@ -26,7 +26,7 @@ public class AutonomousRoutes {
 	 * A test method that drives the robot forwards or sideways, depending on the value the AprilTag.
 	 */
 	public void run() {
-		clawSystem.goTo(ClawSystem.ClawState.CLOSED);
+//		clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED);
 		CameraSystem.AprilTagType tagType = cameraSystem.detectAprilTag();
 		opMode.telemetry.addData("tag", tagType.toString());
 		opMode.telemetry.update();

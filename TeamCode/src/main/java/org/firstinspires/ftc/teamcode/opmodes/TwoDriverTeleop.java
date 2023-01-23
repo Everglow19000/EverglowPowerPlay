@@ -4,68 +4,101 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
-import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
+import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.Sequence;
 
-@TeleOp(name = "TwoDriverTeleop", group = ".Main")
+import java.util.Arrays;
+
+@TeleOp(name = "TemplateTeleop", group = ".Main")
 public class TwoDriverTeleop extends LinearOpMode {
+
+	final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
+
 	@Override
 	public void runOpMode() {
+		SystemCoordinator systems = new SystemCoordinator(this);
+		Sequence elevatorSequence = null;
 		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
-
-		DrivingSystem drivingSystem = new DrivingSystem(this);
-		ClawSystem claw = new ClawSystem(this);
-		ElevatorSystem elevator = new ElevatorSystem(this);
-
-		Pose actPowers = new Pose(0, 0, 0);
-		ClawSystem.ClawState clawPosition = ClawSystem.ClawState.OPEN;
-		final double speedDivisor = 4.5; // When finner controls are active the robot's speed is divided by this number
-
-		// reset claw position
-		claw.goTo(clawPosition);
-
 		waitForStart();
 
 		while (opModeIsActive()) {
 			gamepadA.update();
 			gamepadB.update();
 
-			// Calculate desired robot velocity
-			actPowers.x = -gamepad1.left_stick_x * 0.75;
-			actPowers.y = -gamepad1.left_stick_y * 0.75;
-			actPowers.angle = -gamepad1.right_stick_x * 0.5;
+			Pose powers = new Pose();
+
+			powers.x = -gamepad1.left_stick_x * 0.75;
+			powers.y = -gamepad1.left_stick_y * 0.75;
+			powers.angle = -gamepad1.right_stick_x * 0.5;
 
 			// Activate slower driving and turning, for finer adjustment
 			if (gamepad1.right_trigger > 0.2) {
-				actPowers.x = -gamepad1.left_stick_x / speedDivisor;
-				actPowers.y = -gamepad1.left_stick_y / speedDivisor;
-				actPowers.angle = -gamepad1.right_stick_x / speedDivisor;
+				powers.x = -gamepad1.left_stick_x / speedDivisor;
+				powers.y = -gamepad1.left_stick_y / speedDivisor;
+				powers.angle = -gamepad1.right_stick_x / speedDivisor;
 			}
 
 			// Apply calculated velocity to mecanum wheels
-			drivingSystem.driveMecanum(actPowers);
+			systems.drivingSystem.driveMecanum(powers);
 
-			// Claw controls
-			if (gamepadB.lt()) {
-				clawPosition = clawPosition.flip();
-				claw.goTo(clawPosition);
+
+			if(gamepadB.lt()){
+				systems.gWheelSystem.toggleSpit();
+			}
+			if(gamepadB.rt()){
+				systems.gWheelSystem.toggleCollect();
 			}
 
-			// Elevator controls
-			if (gamepadB.dpad_down()) {
-				elevator.goTo(ElevatorSystem.Level.PICKUP);
-			} else if (gamepadB.circle()) {
-				elevator.goTo(ElevatorSystem.Level.LOW);
-			} else if (gamepadB.triangle()) {
-				elevator.goTo(ElevatorSystem.Level.MID);
+			if (gamepadB.dpad_right()){
+				if (elevatorSequence != null){
+					elevatorSequence.interrupt();
+				}
+				elevatorSequence = new Sequence(Arrays.asList(
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
+						systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1)
+				));
 			}
 
-			// Telemetry
-			drivingSystem.printPosition();
-			telemetry.update();
+			if (gamepadB.dpad_down()){
+				if (elevatorSequence != null){
+					elevatorSequence.interrupt();
+				}
+				elevatorSequence = new Sequence(Arrays.asList(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1)
+				));
+			}
+
+			if (gamepadB.dpad_right()){
+				if (elevatorSequence != null){
+					elevatorSequence.interrupt();
+				}
+				elevatorSequence = new Sequence(Arrays.asList(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1)
+				));
+			}
+
+			if (gamepadB.dpad_right()){
+				if (elevatorSequence != null){
+					elevatorSequence.interrupt();
+				}
+				elevatorSequence = new Sequence(Arrays.asList(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1)
+				));
+			}
+
+			systems.tick();
+
+
+
 		}
 	}
 }

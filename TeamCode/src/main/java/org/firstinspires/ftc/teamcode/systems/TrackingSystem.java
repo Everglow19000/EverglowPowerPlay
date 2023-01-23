@@ -61,11 +61,6 @@ public class TrackingSystem {
 		frontRight = opMode.hardwareMap.get(DcMotorEx.class, "frontRight");
 		back = opMode.hardwareMap.get(DcMotorEx.class, "back");
 
-		// Makes the motors break when their power is set to zero, so they can better stop in place.
-		frontLeft.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-		frontRight.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-		back.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-
 		// Reset the distances measured by the motors
 		resetDistance();
 	}

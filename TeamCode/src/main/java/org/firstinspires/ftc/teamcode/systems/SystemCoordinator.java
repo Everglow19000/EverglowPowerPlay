@@ -2,28 +2,42 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
+
+import java.util.ArrayList;
 
 /**
  * A class for coordinating the all systems on the robot in a state machine.
  */
 public class SystemCoordinator {
+
+	public static SystemCoordinator instance;
+
+	public final LinearOpMode opMode;
+
 	//Create a new instance of each system
 	public final ElevatorSystem elevatorSystem;
 	public final ClawSystem clawSystem;
 	public final DrivingSystemNew drivingSystem;
 	public final FourBarSystem fourBarSystem;
 	public final TrackingSystem trackingSystem;
-	//There is no gWheel system because is has only two states: running or not. There might be in the future.
+	public final GWheelSystem gWheelSystem;
 	//There is no camera system because it runs in a separate thread.
 
+	private final ArrayList<Sequence> actionSequences;
+
 	public SystemCoordinator(LinearOpMode opMode) {
+		this.opMode = opMode;
 		//Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
 		clawSystem = new ClawSystem(opMode);
 		drivingSystem = new DrivingSystemNew(opMode, this);
 		fourBarSystem = new FourBarSystem(opMode);
 		trackingSystem = new TrackingSystem(opMode, this);
+		gWheelSystem = new GWheelSystem(opMode);
+
+		actionSequences = new ArrayList<>();
 	}
 
 	/**
@@ -38,15 +52,20 @@ public class SystemCoordinator {
 		trackingSystem.tick();
 	}
 
+	public void executeSequence(Sequence sequence){
+		sequence.start();
+		actionSequences.add(sequence);
+	}
+
 	/**
 	 * Broadcasts a message from one system to all of them.
 	 *
 	 * @param message The message to be broadcasted.
 	 */
 	public void sendMessage(State.Message message) {
-		clawSystem.receiveMessage();
-		drivingSystem.receiveMessage();
-		elevatorSystem.receiveMessage();
-		fourBarSystem.receiveMessage();
+		// todo: remove the sequences if they are done. This isn't critical but should probably be done for elegance.
+		for (Sequence sequence: actionSequences){
+			sequence.handleMessage(message);
+		}
 	}
 }

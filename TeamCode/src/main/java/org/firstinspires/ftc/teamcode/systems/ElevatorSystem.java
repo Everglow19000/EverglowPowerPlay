@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.abs;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
 import org.firstinspires.ftc.teamcode.utils.RestingState;
 
@@ -11,60 +14,6 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  * A class for handling the elevator system.
  */
 public class ElevatorSystem {
-	private final DcMotor left;
-	private final DcMotor right;
-	private State state;
-
-	/**
-	 * A state used when the robot should be moving.
-	 */
-	public class ActingState implements State {
-		private final double totalMovementTime;
-		private final double startPositionLeft;
-		private final double startPositionRight;
-		private final ElapsedTime timer;
-		private final double velocity;
-
-		/**
-		 * @param level             A elevator level to move to (e.g. ElevatorLevel.GROUND).
-		 * @param totalMovementTime The total time the movement should take.
-		 */
-		public ActingState(Level level, double totalMovementTime) {
-			this(level.desiredPosition, totalMovementTime);
-		}
-
-		/**
-		 * @param desiredPosition   The desired position the elevator should move to, in ticks.
-		 * @param totalMovementTime The total time the movement should take.
-		 */
-		public ActingState(double desiredPosition, double totalMovementTime) {
-			this.totalMovementTime = totalMovementTime;
-			this.startPositionLeft = left.getCurrentPosition();
-			this.startPositionRight = right.getCurrentPosition();
-			this.timer = new ElapsedTime();
-			// Calculate position change per tick
-			//TODO: USE ACCELERATION PROFILE - THIS DOES NOT CURRENTLY WORK
-			this.velocity = (desiredPosition - (startPositionLeft + startPositionRight) / 2) / (totalMovementTime);
-		}
-
-		public void tick() {
-			// The claw has reached its desired position
-			if (timer.time() > totalMovementTime) {
-				state = new RestingState();
-				return;
-			}
-
-			// Otherwise, update the elevator level
-			left.setPower(velocity);
-			right.setPower(velocity);
-		}
-
-		public void onReceiveMessage(State.Message message) {
-			// Do nothing
-		}
-	}
-
-
 	/**
 	 * Enum encapsulating all the positions the system should reach.
 	 */
@@ -77,6 +26,37 @@ public class ElevatorSystem {
 			this.desiredPosition = desiredPosition;
 		}
 	}
+	/**
+	 * A state used when the robot should be moving.
+	 */
+	public class ActingState implements State {
+		private static final int EPSILON = 20;
+		private final Level level;
+
+		/**
+		 * @param level             A elevator level to move to (e.g. ElevatorLevel.GROUND).
+		 */
+		public ActingState(Level level) {
+			this.level = level;
+			left.setTargetPosition(level.desiredPosition);
+			right.setTargetPosition(level.desiredPosition);
+		}
+
+		public void tick() {
+			// The claw has reached its desired position
+			boolean leftArrived = abs(level.desiredPosition - left.getCurrentPosition()) < EPSILON;
+			boolean rightArrived = abs(level.desiredPosition - right.getCurrentPosition()) < EPSILON;
+			if (leftArrived && rightArrived){
+				state = new RestingState();
+				SystemCoordinator.instance.sendMessage(Message.ELEVATOR_DONE);
+			}
+		}
+
+	}
+
+	private final DcMotor left;
+	private final DcMotor right;
+	private State state;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -99,32 +79,11 @@ public class ElevatorSystem {
 		right.setPower(0.7);
 	}
 
-	/**
-	 * Sets the elevator to the specified level.
-	 *
-	 * @param level        The level to move the elevator to.
-	 * @param movementTime The time it should take the elevator to reach the desired position.
-	 */
-	public void goTo(Level level, double movementTime) {
-		this.state = new ActingState(level, movementTime);
+	public Sequence.SequenceItem goToSequenceItem(ElevatorSystem.Level level){
+		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, ()->{
+			state = new ActingState(level);
+		});
 	}
-	public void goTo(double level, double movementTime) {
-		this.state = new ActingState(level, movementTime);
-	}
-
-	/**
-	 * Sets the elevator to the specified level.
-	 * The time to reach the position is static at 2 seconds.
-	 *
-	 * @param level The level to set the elevator to (e.g. ElevatorLevel.GROUND).
-	 */
-	public void goTo(Level level) {
-		goTo(level, 2);
-	}
-	public void goTo(double level) {
-		goTo(level, 2);
-	}
-
 
 	/**
 	 * Ticks the elevator system.
@@ -133,10 +92,4 @@ public class ElevatorSystem {
 		state.tick();
 	}
 
-	/**
-	 * Receives a message from all the other classes.
-	 */
-	public void receiveMessage() {
-		state.onReceiveMessage();
-	}
 }

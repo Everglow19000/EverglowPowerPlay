@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
 import org.firstinspires.ftc.teamcode.utils.RestingState;
 
@@ -11,66 +15,80 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  * A class for handling the four bar linkage system.
  */
 public class FourBarSystem {
-	private final Servo servo1;
-	private final Servo servo2;
-	private State state;
+	/**
+	 * Enum encapsulating the two positions the system should reach.
+	 */
+	public enum FourBarPosition {
+		PICKUP(0.1, 0.), DROPOFF(0.6, 0.5);
 
+		private final double posRight;
+		private final double posLeft;
+
+		FourBarPosition(double posRight, double posLeft) {
+			this.posRight = posRight;
+			this.posLeft = posLeft;
+		}
+
+		/*
+		 * Toggles the state of the fourBar
+		 */
+		public FourBarPosition toggle() {
+			switch (this) {
+				case PICKUP:
+					return DROPOFF;
+				case DROPOFF:
+					return PICKUP;
+				default:
+					throw new IllegalStateException();
+			}
+		}
+	}
+	private final Servo servoRight;
+	private final Servo servoLeft;
+
+	private State state;
 	/**
 	 * A state used when the robot should be moving.
 	 */
 	public class ActingState implements State {
 		private final double totalMovementTime;
-		private final double startPosition;
+		private final double startPositionLeft;
+		private final double startPositionRight;
+		private final double velocityLeft;
 		private final ElapsedTime timer;
-		private final double velocity;
+		private final double velocityRight;
 
-		/**
-		 * @param state             A fourBar state to move to (FourBarState.OPEN or FourBarState.CLOSED).
-		 * @param totalMovementTime The total time the movement should take.
-		 */
-		public ActingState(FourBarState state, double totalMovementTime) {
-			this(state.desiredPosition, totalMovementTime);
-		}
+		private final FourBarPosition targetState;
 
-		/**
-		 * @param desiredPosition   The desired position the fourBar should move to, between 0 and 1.
-		 * @param totalMovementTime The total time the movement should take.
-		 */
-		public ActingState(double desiredPosition, double totalMovementTime) {
-			this.totalMovementTime = totalMovementTime;
-			this.startPosition = (servo1.getPosition() + servo2.getPosition()) / 2; // average of the two servos
+		public ActingState(FourBarPosition targetState, double velocity) {
+			startPositionRight = servoRight.getPosition();
+			startPositionLeft = servoLeft.getPosition();
+			double errorRight = targetState.posRight - startPositionRight;
+			double errorLeft = targetState.posLeft - startPositionLeft;
+			this.targetState = targetState;
+			this.totalMovementTime = max(abs(errorRight / velocity), abs(errorLeft / velocity));
 			this.timer = new ElapsedTime();
 			// Calculate position change per tick
-			this.velocity = (desiredPosition - startPosition) / (totalMovementTime);
+			this.velocityRight = errorRight / totalMovementTime;
+			this.velocityLeft = errorLeft / totalMovementTime;
 		}
 
 		public void tick() {
 			// The claw has reached its desired position
 			if (timer.time() > totalMovementTime) {
+				servoRight.setPosition(targetState.posRight);
+				servoLeft.setPosition(targetState.posLeft);
 				state = new RestingState();
+				SystemCoordinator.instance.sendMessage(Message.FOUR_BAR_DONE);
 				return;
 			}
 
 			// Otherwise, update the claw position
-			servo1.setPosition(startPosition + velocity * timer.time());
-			servo2.setPosition(startPosition + velocity * timer.time());
+			servoRight.setPosition(startPositionRight + velocityRight * timer.time());
+			servoLeft.setPosition(startPositionLeft + velocityLeft * timer.time());
 		}
-
 		public void onReceiveMessage(State.Message message) {
 			// Do nothing
-		}
-	}
-
-	/**
-	 * Enum encapsulating the two positions the system should reach.
-	 */
-	public enum FourBarState {
-		PICKUP(0.56), DROPOFF(0.123);
-
-		private final double desiredPosition;
-
-		FourBarState(double desiredPosition) {
-			this.desiredPosition = desiredPosition;
 		}
 	}
 
@@ -78,35 +96,9 @@ public class FourBarSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_left");
-		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_right");
-		servo2.setDirection(Servo.Direction.REVERSE);
-	}
-
-	/**
-	 * Sets the fourBar to the specified state.
-	 *
-	 * @param state        The state to set the claw to (pickup or dropoff).
-	 * @param movementTime The time it should take the fourBar to reach the desired position.
-	 */
-	public void goTo(FourBarState state, double movementTime) {
-		goTo(state.desiredPosition, movementTime);
-	}
-	public void goTo(double state, double movementTime) {
-		this.state = new ActingState(state, movementTime);
-	}
-
-	/**
-	 * Sets the fourBar to the specified state.
-	 * The time to reach the position is static at 0.5 seconds.
-	 *
-	 * @param state The state to set the fourBar to (FourBarState.PICKUP or FourBarState.DROPOFF).
-	 */
-	public void goTo(FourBarState state) {
-		goTo(state, 0.5);
-	}
-	public void goTo(double state) {
-		goTo(state, 0.5);
+		servoRight = opMode.hardwareMap.get(Servo.class, "4bar_left");
+		servoLeft = opMode.hardwareMap.get(Servo.class, "4bar_right");
+		servoRight.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**
@@ -116,10 +108,11 @@ public class FourBarSystem {
 		state.tick();
 	}
 
-	/**
-	 * Receives a message from all the other classes.
-	 */
-	public void receiveMessage() {
-		state.onReceiveMessage();
+
+	public Sequence.SequenceItem goToSequenceItem(FourBarPosition position, double time){
+		return new Sequence.SequenceItem(State.Message.FOUR_BAR_DONE, ()->{
+			state = new ActingState(position, time);
+		});
 	}
+
 }

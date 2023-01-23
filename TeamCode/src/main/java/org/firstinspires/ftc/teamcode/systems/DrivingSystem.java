@@ -391,13 +391,6 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Receives a message from all the other classes.
-	 */
-	public void receiveMessage() {
-		state.onReceiveMessage();
-	}
-
-	/**
 	 * Drives the robot in the given orientation on the driver's axis and keeps track of it's position.
 	 *
 	 * @param powers Relative velocities vector.

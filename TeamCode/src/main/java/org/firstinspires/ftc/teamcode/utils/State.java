@@ -2,11 +2,8 @@ package org.firstinspires.ftc.teamcode.utils;
 
 public interface State {
 	enum Message {
-		ClawDone, FourBarDone, DrivingDone, ElevatorDone
+		CLAW_DONE, FOUR_BAR_DONE, DRIVING_DONE, ELEVATOR_DONE
 	}
 
 	void tick();
-
-	default void onReceiveMessage() {
-	}
 }

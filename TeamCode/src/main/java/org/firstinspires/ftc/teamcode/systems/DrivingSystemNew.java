@@ -12,9 +12,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.RestingState;
+import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
 
 /**
@@ -74,6 +74,56 @@ public class DrivingSystemNew {
 		}
 	}
 
+
+
+	public class DriveStraightState implements State{
+
+		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
+
+		private final double targetY;
+		private final double targetAngle;
+
+		public DriveStraightState(double targetY, double targetAngle) {
+			this.targetY = targetY;
+			this.targetAngle = targetAngle;
+
+		}
+
+		@Override
+		public void tick() {
+			Pose position = SystemCoordinator.instance.trackingSystem.getPosition();
+			double yDeviation = targetY - position.y;
+			double angleDeviation = normalizeAngle(targetAngle - position.angle);
+			double yPower = 0.03 * yDeviation + 0.15 * signum(yDeviation);
+			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
+			driveMecanum(new Pose(0, yPower, rotPower));
+		}
+	}
+
+	public class DriveSidewaysState implements State{
+
+		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
+
+		private final double targetX;
+		private final double targetAngle;
+
+		public DriveSidewaysState(double targetX, double targetAngle) {
+			this.targetX = targetX;
+			this.targetAngle = targetAngle;
+
+		}
+
+		@Override
+		public void tick() {
+			Pose position = SystemCoordinator.instance.trackingSystem.getPosition();
+			double xDeviation = targetX - position.x;
+			double angleDeviation = normalizeAngle(targetAngle - position.angle);
+			double xPower = 0.03 * xDeviation + 0.15 * signum(xDeviation);
+			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
+			driveMecanum(new Pose(xPower, 0, rotPower));
+		}
+	}
+
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
@@ -128,7 +178,7 @@ public class DrivingSystemNew {
 	 *               angle rotational power, positive is counter clockwise, negative is clockwise.
 	 *               -1 <= x, y, angle <= 1.
 	 */
-	private void driveMecanum(Pose powers) {
+	public void driveMecanum(Pose powers) {
 		// Determine how much power each motor should receive.
 		double frontRightPower = powers.y + powers.x + powers.angle;
 		double frontLeftPower = powers.y - powers.x - powers.angle;
@@ -154,48 +204,6 @@ public class DrivingSystemNew {
 	}
 
 	/**
-	 * Makes the robot stop in place.
-	 */
-	private void stop() {
-		driveMecanum(new Pose());
-	}
-
-
-	/**
-	 * Changes the robot's state to make it go to a given position.
-	 *
-	 * @param powers       Velocity vector containing elements: x, y, and an azimuth angle.
-	 * @param movementTime The time it should take the robot to reach the desired position.
-	 */
-	public void goTo(Pose powers, double movementTime) {
-		state = new ActingState(powers, movementTime);
-	}
-
-	/**
-	 * Changes the robot's state to make it go to a given position.
-	 * The time to reach the position is static at 10 seconds.
-	 *
-	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
-	 */
-	public void goTo(Pose powers) {
-		goTo(powers, 10);
-	}
-
-	/**
-	 * Ticks the driving system.
-	 */
-	public void tick() {
-		state.tick();
-	}
-
-	/**
-	 * Receives a message from all the other classes.
-	 */
-	public void receiveMessage() {
-		state.onReceiveMessage();
-	}
-
-	/**
 	 * Drives the robot in the given orientation on the driver's axis and keeps track of it's position.
 	 *
 	 * @param powers Relative velocities vector.
@@ -214,132 +222,33 @@ public class DrivingSystemNew {
 		driveMecanum(mecanumPowers);
 	}
 
-	/**
-	 * Drives the robot straight a given distance.
-	 *
-	 * @param distance How far the robot should go, measured in cm.
-	 * @param power    How much power should be given to the motors, from 0 to 1.
-	 */
-	public void driveStraight(double distance, double power) {
-		// If we're traveling a negative distance, that means traveling backwards,
-		// so the power should be inverted and so should the distance.
-		if (distance < 0) {
-			distance *= -1;
-			power *= -1;
-		}
-
-		final double ANGLE_DEVIATION_SCALAR = 0.05;
-
-		resetDistance();
-		double startAngle = systemCoordinator.trackingSystem.getPosition().angle;
-		double forwardDistance = systemCoordinator.trackingSystem.getPosition().y;
-
-		while (opMode.opModeIsActive() && Math.abs(forwardDistance) < distance) {
-			Pose pose = systemCoordinator.trackingSystem.getPosition();
-			forwardDistance = pose.y;
-			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
-			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
-			driveMecanum(new Pose(0, power, rotatePower));
-			systemCoordinator.trackingSystem.printPosition();
-			opMode.telemetry.update();
-		}
-		stop();
-		resetDistance();
+	public Sequence.SequenceItem driveStraightSequenceItem(double targetY, double targetAngle){
+		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, ()->{
+			state = new DriveStraightState(targetY, targetAngle);
+		});
 	}
 
-	/**
-	 * Drives the robot sideways a given distance. Positive direction is rightwards.
-	 *
-	 * @param distance How far the robot should go, measured in cm.
-	 * @param power    How much power should be given to the motors, from 0 to 1.
-	 */
-	public void driveSideways(double distance, double power) {
-		// If we're traveling a negative distance, that means traveling left,
-		// so the power should be inverted and so should the distance.
-		if (distance < 0) {
-			distance *= -1;
-			power *= -1;
-		}
-
-		double ANGLE_DEVIATION_SCALAR = 0.05;
-
-		resetDistance();
-		Pose pose = systemCoordinator.trackingSystem.getPosition();
-		double startAngle = pose.angle;
-		double sidewaysDistance = pose.x;
-		while (opMode.opModeIsActive() && Math.abs(sidewaysDistance) < distance) {
-			Pose distances = systemCoordinator.trackingSystem.getPosition();
-			sidewaysDistance = distances.x;
-			double angleDeviation = normalizeAngle(startAngle - distances.angle);
-			driveMecanum(new Pose(power, 0, -angleDeviation * ANGLE_DEVIATION_SCALAR));
-		}
-		stop();
+	public Sequence.SequenceItem driveSidewaysSequenceItem(double targetX, double targetAngle){
+		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, ()->{
+			state = new DriveStraightState(targetX, targetAngle);
+		});
 	}
 
-	/**
-	 * Rotates the robot a given number of radians.
-	 * A positive angle means clockwise rotation, a negative angle is counterclockwise.
-	 *
-	 * @param angle Angle (in radians) to rotate the robot.
-	 */
-	public void rotate(double angle) {
-		final double powerScalar = 0.007;
-		final double minPower = 0.2;
 
-		double currentAngle = systemCoordinator.trackingSystem.getPosition().angle;
-
-		// Angles must always be between -PI and PI RADIANS.
-		// The function used below adds or subtracts 2PI RADIANS from the angle
-		// so that it's always in the good range.
-		double targetAngle = normalizeAngle(currentAngle + angle);
-
-		double deviation = normalizeAngle(targetAngle - currentAngle);
-
-		while (abs(deviation) > ROTATION_EPSILON) { // once the angular error is less than ROTATION_EPSILON, we have arrived
-			currentAngle = systemCoordinator.trackingSystem.getPosition().angle;
-			deviation = normalizeAngle(targetAngle - currentAngle);
-			// the power is proportional to the deviation, but may not go below minPower.
-			double rotatePower = deviation * powerScalar + minPower * signum(deviation);
-			driveMecanum(new Pose(0, 0, rotatePower));
-		}
-		stop();
-	}
 
 	/**
-	 * Drives the robot in a straight line to a given position on the board (x, y, angle).
-	 *
-	 * @param targetLocation The location and orientation for the robot to reach.
+	 * Makes the robot stop in place.
 	 */
-	public void moveTo(Pose targetLocation) {
-		final Pose powerScalar = new Pose(0.007, 0.008, 0.6);
-		final Pose minPower = new Pose(0.12, 0.15, 0.08);
-		final Pose epsilon = new Pose(0.5, 1, 0.0087);
-
-		Pose deviation = Pose.difference(targetLocation, systemCoordinator.trackingSystem.getPosition());
-		deviation.angle = normalizeAngle(deviation.angle);
-		Pose actPowers = new Pose();
-
-		while (abs(deviation.x) > epsilon.x ||
-				abs(deviation.y) > epsilon.y ||
-				abs(deviation.angle) > epsilon.angle) {
-
-			if (abs(deviation.x) > epsilon.x) {
-				actPowers.x = signum(deviation.x) * minPower.x + deviation.x * powerScalar.x;
-			}
-			if (abs(deviation.y) > epsilon.y) {
-				actPowers.y = signum(deviation.y) * minPower.y + deviation.y * powerScalar.y;
-			}
-			if (abs(deviation.angle) > epsilon.angle) {
-				actPowers.angle = signum(deviation.angle) * minPower.angle
-						+ deviation.angle * powerScalar.angle;
-			}
-
-			driveByAxis(actPowers);
-
-			actPowers.setValue(new Pose());
-			deviation = Pose.difference(targetLocation, systemCoordinator.trackingSystem.getPosition());
-			deviation.angle = normalizeAngle(deviation.angle);
-		}
-		stop();
+	private void stop() {
+		driveMecanum(new Pose());
 	}
+
+
+	/**
+	 * Ticks the driving system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
 }
