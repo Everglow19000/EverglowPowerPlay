@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 
 @TeleOp(name = "FourBarTest", group = "Test")
@@ -11,15 +12,18 @@ public class FourBarTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
-		Servo fourBar = hardwareMap.get(Servo.class, "4bar");
+		FourBarSystem system = new FourBarSystem(this);
+
 		double position = 0.5;
 		waitForStart();
-		fourBar.setPosition(position);
+		system.goTo(position);
 		while (opModeIsActive()) {
 			position += gamepad1.left_stick_y * 0.01;
-			fourBar.setPosition(position);
-			telemetry.addData("position", position);
+			system.goTo(position);
+			telemetry.addData("4bar:", position);
 			telemetry.update();
+
+			system.tick();
 			sleep(10);
 		}
 	}

@@ -11,7 +11,8 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  * A class for handling the four bar linkage system.
  */
 public class FourBarSystem {
-	private final Servo fourBar;
+	private final Servo servo1;
+	private final Servo servo2;
 	private State state;
 
 	/**
@@ -37,7 +38,7 @@ public class FourBarSystem {
 		 */
 		public ActingState(double desiredPosition, double totalMovementTime) {
 			this.totalMovementTime = totalMovementTime;
-			this.startPosition = fourBar.getPosition();
+			this.startPosition = (servo1.getPosition() + servo2.getPosition()) / 2; // average of the two servos
 			this.timer = new ElapsedTime();
 			// Calculate position change per tick
 			this.velocity = (desiredPosition - startPosition) / (totalMovementTime);
@@ -51,7 +52,8 @@ public class FourBarSystem {
 			}
 
 			// Otherwise, update the claw position
-			fourBar.setPosition(startPosition + velocity * timer.time());
+			servo1.setPosition(startPosition + velocity * timer.time());
+			servo2.setPosition(startPosition + velocity * timer.time());
 		}
 
 		public void onReceiveMessage(State.Message message) {
@@ -76,7 +78,9 @@ public class FourBarSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		fourBar = opMode.hardwareMap.get(Servo.class, "fourBar");
+		servo1 = opMode.hardwareMap.get(Servo.class, "4bar_left");
+		servo2 = opMode.hardwareMap.get(Servo.class, "4bar_right");
+		servo2.setDirection(Servo.Direction.REVERSE);
 	}
 
 	/**
@@ -86,6 +90,9 @@ public class FourBarSystem {
 	 * @param movementTime The time it should take the fourBar to reach the desired position.
 	 */
 	public void goTo(FourBarState state, double movementTime) {
+		goTo(state.desiredPosition, movementTime);
+	}
+	public void goTo(double state, double movementTime) {
 		this.state = new ActingState(state, movementTime);
 	}
 
@@ -96,6 +103,9 @@ public class FourBarSystem {
 	 * @param state The state to set the fourBar to (FourBarState.PICKUP or FourBarState.DROPOFF).
 	 */
 	public void goTo(FourBarState state) {
+		goTo(state, 0.5);
+	}
+	public void goTo(double state) {
 		goTo(state, 0.5);
 	}
 

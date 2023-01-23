@@ -108,6 +108,9 @@ public class ElevatorSystem {
 	public void goTo(Level level, double movementTime) {
 		this.state = new ActingState(level, movementTime);
 	}
+	public void goTo(double level, double movementTime) {
+		this.state = new ActingState(level, movementTime);
+	}
 
 	/**
 	 * Sets the elevator to the specified level.
@@ -118,6 +121,10 @@ public class ElevatorSystem {
 	public void goTo(Level level) {
 		goTo(level, 2);
 	}
+	public void goTo(double level) {
+		goTo(level, 2);
+	}
+
 
 	/**
 	 * Ticks the elevator system.

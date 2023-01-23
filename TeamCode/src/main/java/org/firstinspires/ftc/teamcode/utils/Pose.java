@@ -83,6 +83,10 @@ public class Pose {
 		this.angle += other.angle;
 	}
 
+	public void normalizeAngle() {
+		this.angle = Utils.normalizeAngle(this.angle);
+	}
+
 	/**
 	 * Calculates the difference between the values of two poses.
 	 *
