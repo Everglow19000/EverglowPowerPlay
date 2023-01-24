@@ -856,11 +856,9 @@ public class DrivingSystem {
 
 		resetDistance();
 		double startAngle = getDistancesOld().angle;
-		double forwardDistance = getDistancesOld().y;
 
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			Pose pose = getDistancesOld();
-			forwardDistance = pose.y;
 			power = accelerationProfile.velocity(elapsedTime.seconds()) / RobotParameters.MAX_V_Y;
 			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
 			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;

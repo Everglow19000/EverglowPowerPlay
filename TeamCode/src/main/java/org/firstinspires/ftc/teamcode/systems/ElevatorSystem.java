@@ -2,16 +2,24 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.RobotParameters;
+import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
+import org.firstinspires.ftc.teamcode.utils.Pose;
 
 /**
  * A class for handling the elevator system.
  */
 public class ElevatorSystem {
+
+	AccelerationProfile accelerationProfile;
 	/**
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Level {
-		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-2914);
+		PICKUP(0), LOW(-1833), MID(-2914), HIGH(-2914);
 
 		public final int state;
 
@@ -49,5 +57,17 @@ public class ElevatorSystem {
 	public void goTo(Level level) {
 		left.setTargetPosition(level.state);
 		right.setTargetPosition(level.state);
+	}
+
+	public void goToAccelerationProfile(Level level){
+		accelerationProfile = new AccelerationProfile(1,1,level.state);
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		double power;
+		while(elapsedTime.seconds() < accelerationProfile.finalTime()){
+			power = accelerationProfile.velocity(elapsedTime.seconds()) / RobotParameters.MAX_V_Y;
+			left.setPower(power);
+			right.setPower(power);
+		}
 	}
 }
