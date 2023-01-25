@@ -84,8 +84,14 @@ public class FourBarSystem {
 			}
 
 			// Otherwise, update the claw position
-			servoRight.setPosition(startPositionRight + velocityRight * timer.time());
-			servoLeft.setPosition(startPositionLeft + velocityLeft * timer.time());
+			double positionRight = startPositionRight + velocityRight * timer.time();
+			double positionLeft = startPositionLeft + velocityLeft * timer.time();
+			servoRight.setPosition(positionRight);
+			servoLeft.setPosition(positionLeft);
+
+			SystemCoordinator.instance.opMode.telemetry.addData("positionRight", positionRight);
+			SystemCoordinator.instance.opMode.telemetry.addData("positionLeft", positionLeft);
+			SystemCoordinator.instance.opMode.telemetry.update();
 		}
 		public void onReceiveMessage(State.Message message) {
 			// Do nothing
@@ -109,9 +115,9 @@ public class FourBarSystem {
 	}
 
 
-	public Sequence.SequenceItem goToSequenceItem(FourBarPosition position, double time){
+	public Sequence.SequenceItem goToSequenceItem(FourBarPosition position, double velocity){
 		return new Sequence.SequenceItem(State.Message.FOUR_BAR_DONE, ()->{
-			state = new ActingState(position, time);
+			state = new ActingState(position, velocity);
 		});
 	}
 

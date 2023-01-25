@@ -28,6 +28,7 @@ public class SystemCoordinator {
 	private final ArrayList<Sequence> actionSequences;
 
 	public SystemCoordinator(LinearOpMode opMode) {
+		instance = this;
 		this.opMode = opMode;
 		//Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
@@ -63,6 +64,8 @@ public class SystemCoordinator {
 	 * @param message The message to be broadcasted.
 	 */
 	public void sendMessage(State.Message message) {
+		opMode.telemetry.addData("Recieved Message: ", message);
+		opMode.telemetry.update();
 		// todo: remove the sequences if they are done. This isn't critical but should probably be done for elegance.
 		for (Sequence sequence: actionSequences){
 			sequence.handleMessage(message);

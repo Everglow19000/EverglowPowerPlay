@@ -91,8 +91,8 @@ public class TrackingSystem {
 	 */
 	public void tick() {
 		trackPosition();
-		printPosition();
-		opMode.telemetry.update();
+//		printPosition();
+//		opMode.telemetry.update();
 	}
 
 	/**

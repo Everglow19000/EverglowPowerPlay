@@ -89,9 +89,9 @@ public class ClawSystem {
 		claw = opMode.hardwareMap.get(Servo.class, "claw");
 	}
 
-	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double time){
+	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double velocity){
 		return new Sequence.SequenceItem(State.Message.CLAW_DONE, ()->{
-			state = new ActingState(position, time);
+			state = new ActingState(position, velocity);
 		});
 	}
 
