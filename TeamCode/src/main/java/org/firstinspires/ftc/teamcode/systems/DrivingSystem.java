@@ -26,7 +26,7 @@ public class DrivingSystem {
 	private final DcMotor backRight;
 	private final DcMotor backLeft;
 
-	private State state;
+	private State state = new RestingState();
 
 	/**
 	 * A state used when the robot should be moving.
