@@ -23,8 +23,9 @@ public class Sequence {
 
 	private final Deque<SequenceItem> items;
 
-	public Sequence(List<SequenceItem> items) {
-		this.items = new ArrayDeque<>(items);
+
+	public Sequence(SequenceItem ...items){
+		this.items = new ArrayDeque<>(Arrays.asList(items));
 	}
 
 	public void start() {

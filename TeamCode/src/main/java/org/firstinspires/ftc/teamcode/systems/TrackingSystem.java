@@ -55,9 +55,9 @@ public class TrackingSystem {
 		this.opMode = opMode;
 
 		//Get odometry pod interfaces
-		frontLeft = opMode.hardwareMap.get(DcMotorEx.class, "frontLeft");
-		frontRight = opMode.hardwareMap.get(DcMotorEx.class, "frontRight");
-		back = opMode.hardwareMap.get(DcMotorEx.class, "back");
+		frontLeft = opMode.hardwareMap.get(DcMotorEx.class, "front_left");
+		frontRight = opMode.hardwareMap.get(DcMotorEx.class, "front_right");
+		back = opMode.hardwareMap.get(DcMotorEx.class, "back_right");
 
 		// Reset the distances measured by the motors
 		resetDistance();

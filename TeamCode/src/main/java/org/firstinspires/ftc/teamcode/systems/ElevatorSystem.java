@@ -55,7 +55,7 @@ public class ElevatorSystem {
 
 	private final DcMotor left;
 	private final DcMotor right;
-	private State state;
+	private State state = new RestingState();
 
 	/**
 	 * @param opMode The current opMode running on the robot.

@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  */
 public class ClawSystem {
 	private final Servo claw;
-	private State state;
+	private State state = new RestingState();
 
 	/**
 	 * Enum encapsulating the two positions the system should reach.

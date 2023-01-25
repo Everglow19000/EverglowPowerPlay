@@ -46,7 +46,7 @@ public class FourBarSystem {
 	private final Servo servoRight;
 	private final Servo servoLeft;
 
-	private State state;
+	private State state = new RestingState();
 	/**
 	 * A state used when the robot should be moving.
 	 */

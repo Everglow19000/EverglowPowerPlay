@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
 
 import java.util.Arrays;
 
-@TeleOp(name = "TemplateTeleop", group = ".Main")
+@TeleOp(name = "TwoDriverTeleop", group = ".Main")
 public class TwoDriverTeleop extends LinearOpMode {
 
 	/**
@@ -50,58 +50,58 @@ public class TwoDriverTeleop extends LinearOpMode {
 			systems.drivingSystem.driveMecanum(powers);
 
 
-			if(gamepadB.lt()){
+			if (gamepadB.lt()) {
 				systems.gWheelSystem.toggleSpit();
 			}
-			if(gamepadB.rt()){
+			if (gamepadB.rt()) {
 				systems.gWheelSystem.toggleCollect();
 			}
 
-			if (gamepadB.dpad_right()){
-				if (elevatorSequence != null){
+			if (gamepadB.dpad_right()) {
+				if (elevatorSequence != null) {
 					elevatorSequence.interrupt();
 				}
-				elevatorSequence = new Sequence(Arrays.asList(
+				elevatorSequence = new Sequence(
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 						systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1)
-				));
+				);
+				systems.executeSequence(elevatorSequence);
 			}
 
-			if (gamepadB.dpad_down()){
-				if (elevatorSequence != null){
+			if (gamepadB.dpad_down()) {
+				if (elevatorSequence != null) {
 					elevatorSequence.interrupt();
 				}
-				elevatorSequence = new Sequence(Arrays.asList(
+				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1)
-				));
+				);
+				systems.executeSequence(elevatorSequence);
 			}
 
-			if (gamepadB.dpad_right()){
-				if (elevatorSequence != null){
+			if (gamepadB.dpad_right()) {
+				if (elevatorSequence != null) {
 					elevatorSequence.interrupt();
 				}
-				elevatorSequence = new Sequence(Arrays.asList(
+				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1)
-				));
+				);
+				systems.executeSequence(elevatorSequence);
 			}
 
-			if (gamepadB.dpad_right()){
-				if (elevatorSequence != null){
+			if (gamepadB.dpad_right()) {
+				if (elevatorSequence != null) {
 					elevatorSequence.interrupt();
 				}
-				elevatorSequence = new Sequence(Arrays.asList(
+				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1)
-				));
+				);
+				systems.executeSequence(elevatorSequence);
 			}
-
 			systems.tick();
-
-
-
 		}
 	}
 }
