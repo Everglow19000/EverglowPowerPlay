@@ -19,7 +19,7 @@ public class SystemCoordinator {
 	//Create a new instance of each system
 	public final ElevatorSystem elevatorSystem;
 	public final ClawSystem clawSystem;
-	public final DrivingSystemNew drivingSystem;
+	public final DrivingSystem drivingSystem;
 	public final FourBarSystem fourBarSystem;
 	public final TrackingSystem trackingSystem;
 	public final GWheelSystem gWheelSystem;
@@ -32,9 +32,9 @@ public class SystemCoordinator {
 		//Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
 		clawSystem = new ClawSystem(opMode);
-		drivingSystem = new DrivingSystemNew(opMode, this);
+		drivingSystem = new DrivingSystem(opMode);
 		fourBarSystem = new FourBarSystem(opMode);
-		trackingSystem = new TrackingSystem(opMode, this);
+		trackingSystem = new TrackingSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
 
 		actionSequences = new ArrayList<>();

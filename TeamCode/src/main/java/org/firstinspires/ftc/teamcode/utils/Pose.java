@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.utils;
 
-import static java.lang.Math.PI;
-
 /**
  * An object encompassing a set of two dimensional position and an azimuth.
  */

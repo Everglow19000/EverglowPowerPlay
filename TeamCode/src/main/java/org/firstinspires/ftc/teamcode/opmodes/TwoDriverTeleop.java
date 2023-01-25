@@ -16,7 +16,10 @@ import java.util.Arrays;
 @TeleOp(name = "TemplateTeleop", group = ".Main")
 public class TwoDriverTeleop extends LinearOpMode {
 
-	final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
+	/**
+	 * A number to divide the speed by when finner controls are activated
+	 */
+	final double speedDivisor = 4.5;
 
 	@Override
 	public void runOpMode() {

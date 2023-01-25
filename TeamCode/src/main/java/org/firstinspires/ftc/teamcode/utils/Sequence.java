@@ -1,15 +1,13 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Sequence {
-	public static class SequenceItem{
+	public static class SequenceItem {
 		public final HashSet<State.Message> messagesToWait;
 		public final Runnable runAction;
 
@@ -18,7 +16,7 @@ public class Sequence {
 			this.runAction = runAction;
 		}
 
-		public SequenceItem(State.Message message, Runnable runAction){
+		public SequenceItem(State.Message message, Runnable runAction) {
 			this(new HashSet<>(Collections.singletonList(message)), runAction);
 		}
 	}
@@ -29,21 +27,17 @@ public class Sequence {
 		this.items = new ArrayDeque<>(items);
 	}
 
-	public void start(){
+	public void start() {
 		items.getFirst().runAction.run();
 		handleContinue();
 	}
 
-	public void interrupt(){
-		items.clear();
-	}
+	public void interrupt() {items.clear();}
 
-	public boolean isSequenceDone(){
-		return items.isEmpty();
-	}
+	public boolean isSequenceDone() {return items.isEmpty();}
 
-	public void handleMessage(State.Message message){
-		if (isSequenceDone()){
+	public void handleMessage(State.Message message) {
+		if (isSequenceDone()) {
 			return;
 		}
 		SequenceItem firstItem = items.getFirst();
@@ -51,10 +45,10 @@ public class Sequence {
 		handleContinue();
 	}
 
-	private void handleContinue(){
-		while (!isSequenceDone()){
+	private void handleContinue() {
+		while (!isSequenceDone()) {
 			SequenceItem currentlyWaitingFor = items.getFirst();
-			if(!currentlyWaitingFor.messagesToWait.isEmpty()){
+			if (!currentlyWaitingFor.messagesToWait.isEmpty()) {
 				return;
 			}
 			items.removeFirst();

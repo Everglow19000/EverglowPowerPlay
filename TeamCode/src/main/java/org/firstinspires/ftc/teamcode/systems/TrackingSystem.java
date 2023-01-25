@@ -27,7 +27,6 @@ public class TrackingSystem {
 	private static final double FORWARD_OFFSET = 0; //TODO: Measure this
 
 	private final LinearOpMode opMode;
-	private final SystemCoordinator systemCoordinator;
 
 	/**
 	 * The front left odometry wheel.
@@ -52,9 +51,8 @@ public class TrackingSystem {
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public TrackingSystem(LinearOpMode opMode, SystemCoordinator systemCoordinator) {
+	public TrackingSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
-		this.systemCoordinator = systemCoordinator;
 
 		//Get odometry pod interfaces
 		frontLeft = opMode.hardwareMap.get(DcMotorEx.class, "frontLeft");
@@ -96,8 +94,8 @@ public class TrackingSystem {
 	}
 
 	/**
-	 * Tracks the robot's position.
-	 * Pose Exponentials Method and explanation taken from
+	 * Tracks the robot's position and updates the position variable.
+	 * Pose Exponentials Method and explanation from
 	 * <a href="https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials">this site</a>.
 	 */
 	public void trackPosition() {

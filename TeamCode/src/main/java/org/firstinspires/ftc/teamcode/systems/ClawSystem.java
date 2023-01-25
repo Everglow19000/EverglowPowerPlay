@@ -57,8 +57,8 @@ public class ClawSystem {
 		private final ClawPosition finalState;
 
 		/**
-		 * @param finalState             A claw finalState to move to (ClawState.OPEN or ClawState.CLOSED)
-		 * @param totalMovementTime The total time the movement should take.
+		 * @param finalState A claw finalState to move to (ClawState.OPEN or ClawState.CLOSED)
+		 * @param velocity   The velocity at which the claw should move.
 		 */
 		public ActingState(ClawPosition finalState, double velocity) {
 			this.finalState = finalState;
@@ -90,8 +90,8 @@ public class ClawSystem {
 		claw = opMode.hardwareMap.get(Servo.class, "claw");
 	}
 
-	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double time){
-		return new Sequence.SequenceItem(State.Message.CLAW_DONE, ()->{
+	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double time) {
+		return new Sequence.SequenceItem(State.Message.CLAW_DONE, () -> {
 			state = new ActingState(position, time);
 		});
 	}
