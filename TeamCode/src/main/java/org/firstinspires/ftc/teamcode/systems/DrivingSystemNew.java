@@ -31,7 +31,7 @@ public class DrivingSystemNew {
 	private final DcMotor backRight;
 	private final DcMotor backLeft;
 
-	private State state;
+	private State state = new RestingState();
 
 	/**
 	 * A state used when the robot should be moving.
@@ -100,7 +100,7 @@ public class DrivingSystemNew {
 		}
 	}
 
-	public class DriveSidewaysState implements State{
+	public class DriveSidewaysState implements State {
 
 		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
 

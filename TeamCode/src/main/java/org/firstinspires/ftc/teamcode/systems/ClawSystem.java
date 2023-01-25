@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  */
 public class ClawSystem {
 	private final Servo claw;
-	private State state;
+	private State state = new RestingState();
 
 	/**
 	 * Enum encapsulating the two positions the system should reach.
@@ -58,7 +58,6 @@ public class ClawSystem {
 
 		/**
 		 * @param finalState             A claw finalState to move to (ClawState.OPEN or ClawState.CLOSED)
-		 * @param totalMovementTime The total time the movement should take.
 		 */
 		public ActingState(ClawPosition finalState, double velocity) {
 			this.finalState = finalState;
