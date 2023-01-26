@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.utils;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 
 public class Sequence {
+	/**
+	 * A class for storing an action in a sequence.
+	 * Takes an action in the form of a Runnable.
+	 */
 	public static class SequenceItem {
 		public final HashSet<State.Message> messagesToWait;
 		public final Runnable runAction;
@@ -21,31 +25,59 @@ public class Sequence {
 		}
 	}
 
+	/**
+	 * The items in the sequence.
+	 */
 	private final Deque<SequenceItem> items;
 
-
-	public Sequence(SequenceItem ...items){
+	/**
+	 * Assigns an array of sequence items created previously to the sequence.
+	 *
+	 * @param items The items in the sequence.
+	 */
+	public Sequence(SequenceItem... items) {
 		this.items = new ArrayDeque<>(Arrays.asList(items));
 	}
 
+	/**
+	 * Starts the sequence by running the first action and then handling the rest of the sequence.
+	 */
 	public void start() {
 		items.getFirst().runAction.run();
 		handleContinue();
 	}
 
-	public void interrupt() {items.clear();}
+	/**
+	 * Interrupts the sequence by clearing the items in the sequence, making it stop executing.
+	 */
+	public void interrupt() {
+		items.clear();
+	}
 
-	public boolean isSequenceDone() {return items.isEmpty();}
+	/**
+	 * @return Whether the sequence is done.
+	 */
+	public boolean isSequenceDone() {
+		return items.isEmpty();
+	}
 
+	/**
+	 * Handles receiving messages from the System Coordinator.
+	 * If the message is in the first item in the sequence, it is removed from the list of messages to wait for.
+	 *
+	 * @param message The message to be handled.
+	 */
 	public void handleMessage(State.Message message) {
-		if (isSequenceDone()) {
+		if (isSequenceDone())
 			return;
-		}
 		SequenceItem firstItem = items.getFirst();
 		firstItem.messagesToWait.remove(message);
 		handleContinue();
 	}
 
+	/**
+	 * Handles executing the rest of the sequence, including waiting for messages.
+	 */
 	private void handleContinue() {
 		while (!isSequenceDone()) {
 			SequenceItem currentlyWaitingFor = items.getFirst();

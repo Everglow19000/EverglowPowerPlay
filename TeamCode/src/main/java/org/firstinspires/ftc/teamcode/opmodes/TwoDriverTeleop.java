@@ -11,11 +11,8 @@ import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.Sequence;
 
-import java.util.Arrays;
-
 @TeleOp(name = "TwoDriverTeleop", group = ".Main")
 public class TwoDriverTeleop extends LinearOpMode {
-
 	/**
 	 * A number to divide the speed by when finner controls are activated
 	 */
@@ -24,9 +21,10 @@ public class TwoDriverTeleop extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		SystemCoordinator systems = new SystemCoordinator(this);
-		Sequence elevatorSequence = null;
 		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
+
+		Sequence elevatorSequence = null;
 		waitForStart();
 
 		while (opModeIsActive()) {

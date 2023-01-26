@@ -5,9 +5,9 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -20,28 +20,40 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
  * A class for handling tracking the robot's position.
  */
 public class BADTrackingSystem {
-	private static final double WHEEL_RADIUS_CM = 4.8;
+	/**
+	 * The radius of the wheels in centimeters.
+	 */
+	private static final double WHEEL_RADIUS = 4.8;
+	/**
+	 * The number of ticks per full revolution of the odometry wheels.
+	 */
 	private static final double TICKS_PER_ROTATION = 515;
-	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
+	/**
+	 * Conversion factor from ticks to centimeters.
+	 */
+	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS * 2 * PI;
 
+	/**
+	 * The current opMode running on the robot.
+	 */
 	private final LinearOpMode opMode;
 
 	/**
 	 * The front left wheel.
 	 */
-	private final DcMotorEx frontLeft;
+	private final DcMotor frontLeft;
 	/**
 	 * The front right wheel.
 	 */
-	private final DcMotorEx frontRight;
+	private final DcMotor frontRight;
 	/**
 	 * The back left wheel.
 	 */
-	private final DcMotorEx backLeft;
+	private final DcMotor backLeft;
 	/**
 	 * The back right wheel.
 	 */
-	private final DcMotorEx backRight;
+	private final DcMotor backRight;
 	/**
 	 * The IMU.
 	 */
@@ -53,6 +65,9 @@ public class BADTrackingSystem {
 	private double blPreviousTicks = 0;
 	private double brPreviousTicks = 0;
 
+	/**
+	 * The robot's current position.
+	 */
 	private final Pose position = new Pose(0., 0., 0.);
 
 	/**
@@ -63,10 +78,10 @@ public class BADTrackingSystem {
 		imu = initializeImu(opMode);
 
 		//Get odometry pod interfaces
-		frontLeft = opMode.hardwareMap.get(DcMotorEx.class, "front_left");
-		frontRight = opMode.hardwareMap.get(DcMotorEx.class, "front_right");
-		backLeft = opMode.hardwareMap.get(DcMotorEx.class, "back_left");
-		backRight = opMode.hardwareMap.get(DcMotorEx.class, "back_right");
+		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
+		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
+		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
+		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
 		// Reset the distances measured by the motors
 		resetDistance();
@@ -128,15 +143,15 @@ public class BADTrackingSystem {
 	 * Should always be called before initializing the robot.
 	 */
 	private void resetDistance() {
-		frontLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-		frontRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-		backLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-		backRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		frontLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-		frontRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-		backLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-		backRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 	}
 
 	/**

@@ -3,30 +3,25 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.systems.ClawSystem;
-import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
-import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
-import org.firstinspires.ftc.teamcode.utils.Sequence;
 
 @TeleOp(name = "OneDriverTeleop", group = ".Main")
 public class OneDriverTeleop extends LinearOpMode {
-
+	/**
+	 * A number to divide the speed by when finner controls are activated
+	 */
 	final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
 	@Override
 	public void runOpMode() {
 		SystemCoordinator systems = new SystemCoordinator(this);
-		Sequence elevatorSequence = null;
-		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
-		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
+		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 		waitForStart();
 
 		while (opModeIsActive()) {
-			gamepadA.update();
-			gamepadB.update();
+			gamepad.update();
 
 			Pose powers = new Pose();
 
@@ -45,10 +40,10 @@ public class OneDriverTeleop extends LinearOpMode {
 			systems.drivingSystem.driveMecanum(powers);
 
 
-			if (gamepadA.lt()) {
+			if (gamepad.lt()) {
 				systems.gWheelSystem.toggleSpit();
 			}
-			if (gamepadA.rt()) {
+			if (gamepad.rt()) {
 				systems.gWheelSystem.toggleCollect();
 			}
 		}

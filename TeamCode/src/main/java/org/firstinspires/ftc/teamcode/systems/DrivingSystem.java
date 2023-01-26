@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import static java.lang.Math.cos;
 import static java.lang.Math.max;
 import static java.lang.Math.signum;
-import static java.lang.Math.sin;
 import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -11,21 +9,41 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.State;
 import org.firstinspires.ftc.teamcode.utils.RestingState;
 import org.firstinspires.ftc.teamcode.utils.Sequence;
-import org.firstinspires.ftc.teamcode.utils.State;
 
 /**
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
+	/**
+	 * The current opMode running on the robot.
+	 */
 	private final LinearOpMode opMode;
 
-	private final DcMotor frontRight;
+	/**
+	 * The front left wheel.
+	 */
 	private final DcMotor frontLeft;
-	private final DcMotor backRight;
+	/**
+	 * The front right wheel.
+	 */
+	private final DcMotor frontRight;
+	/**
+	 * The back left wheel.
+	 */
 	private final DcMotor backLeft;
+	/**
+	 * The back right wheel.
+	 */
+	private final DcMotor backRight;
 
+	/**
+	 * The current state of the the DrivingSystem.
+	 * Can be either RestingState or ActingState
+	 * (temporarily also DriveStraightState and DriveSidewaysState).
+	 */
 	private State state = new RestingState();
 
 	/**
@@ -69,9 +87,7 @@ public class DrivingSystem {
 		}
 	}
 
-
 	public class DriveStraightState implements State {
-
 		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
 
 		private final double targetY;
@@ -95,7 +111,6 @@ public class DrivingSystem {
 	}
 
 	public class DriveSidewaysState implements State {
-
 		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
 
 		private final double targetX;
@@ -143,7 +158,6 @@ public class DrivingSystem {
 		// Reset the distances measured by the motors
 		resetDistance();
 	}
-
 
 	/**
 	 * Resets the distance measured on all encoders,
@@ -197,44 +211,11 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Drives the robot in the given orientation on the driver's axis and keeps track of it's position.
-	 *
-	 * @param powers Relative velocities vector.
-	 */
-	public void driveByAxis(Pose powers) {
-		final double currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
-		final double cosAngle = cos(currentAngle);
-		final double sinAngle = sin(currentAngle);
-
-		Pose mecanumPowers = new Pose(
-				cosAngle * powers.x - sinAngle * powers.y,
-				cosAngle * powers.y + sinAngle * powers.x,
-				powers.angle
-		);
-
-		driveMecanum(mecanumPowers);
-	}
-
-	public Sequence.SequenceItem driveStraightSequenceItem(double targetY, double targetAngle) {
-		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, () -> {
-			state = new DriveStraightState(targetY, targetAngle);
-		});
-	}
-
-	public Sequence.SequenceItem driveSidewaysSequenceItem(double targetY, double targetAngle) {
-		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, () -> {
-			state = new DriveStraightState(targetY, targetAngle);
-		});
-	}
-
-
-	/**
 	 * Makes the robot stop in place.
 	 */
 	private void stop() {
 		driveMecanum(new Pose());
 	}
-
 
 	/**
 	 * Ticks the driving system.
@@ -243,4 +224,15 @@ public class DrivingSystem {
 		state.tick();
 	}
 
+	public Sequence.SequenceItem driveStraightSequenceItem(double targetY, double targetAngle) {
+		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, () -> {
+			state = new DriveStraightState(targetY, targetAngle);
+		});
+	}
+
+	public Sequence.SequenceItem driveSidewaysSequenceItem(double targetX, double targetAngle) {
+		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, () -> {
+			state = new DriveSidewaysState(targetX, targetAngle);
+		});
+	}
 }
