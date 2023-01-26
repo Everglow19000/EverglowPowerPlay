@@ -102,8 +102,8 @@ public class FourBarSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(LinearOpMode opMode) {
-		servoRight = opMode.hardwareMap.get(Servo.class, "4bar_left");
-		servoLeft = opMode.hardwareMap.get(Servo.class, "4bar_right");
+		servoRight = opMode.hardwareMap.get(Servo.class, "4bar_right");
+		servoLeft = opMode.hardwareMap.get(Servo.class, "4bar_left");
 		servoRight.setDirection(Servo.Direction.REVERSE);
 	}
 

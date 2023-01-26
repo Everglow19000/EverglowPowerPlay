@@ -53,12 +53,14 @@ public class Sequence {
 	}
 
 	private void handleContinue(){
-		while (!isSequenceDone()){
+		while (true){
+			if (isSequenceDone()) return;
 			SequenceItem currentlyWaitingFor = items.getFirst();
 			if(!currentlyWaitingFor.messagesToWait.isEmpty()){
 				return;
 			}
 			items.removeFirst();
+			if (isSequenceDone()) return;
 			items.getFirst().runAction.run();
 		}
 	}

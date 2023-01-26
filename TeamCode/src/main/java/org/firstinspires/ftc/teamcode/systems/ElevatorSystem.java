@@ -44,8 +44,13 @@ public class ElevatorSystem {
 
 		public void tick() {
 			// The claw has reached its desired position
-			boolean leftArrived = abs(level.desiredPosition - left.getCurrentPosition()) < EPSILON;
-			boolean rightArrived = abs(level.desiredPosition - right.getCurrentPosition()) < EPSILON;
+			int leftError = abs(level.desiredPosition - left.getCurrentPosition());
+			boolean leftArrived = leftError < EPSILON;
+			int rightError = abs(level.desiredPosition - right.getCurrentPosition());
+			boolean rightArrived = rightError < EPSILON;
+			SystemCoordinator.instance.opMode.telemetry.addData("leftError", leftError);
+			SystemCoordinator.instance.opMode.telemetry.addData("rightError", rightError);
+			SystemCoordinator.instance.opMode.telemetry.update();
 			if (leftArrived && rightArrived){
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(Message.ELEVATOR_DONE);

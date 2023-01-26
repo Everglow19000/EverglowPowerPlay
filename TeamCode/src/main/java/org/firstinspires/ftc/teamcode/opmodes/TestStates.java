@@ -56,7 +56,7 @@ public class TestStates extends LinearOpMode {
 				Sequence.SequenceItem sequenceItem = systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1);
 				sequenceItem.runAction.run();
 			}
-			if (gamepadB.triangle()){
+			if (gamepadB.dpad_down()){
 				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1);
 				sequenceItem.runAction.run();
 			}

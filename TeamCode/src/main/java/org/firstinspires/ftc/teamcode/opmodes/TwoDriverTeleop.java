@@ -53,8 +53,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			if (gamepadB.rt()) {
 				systems.gWheelSystem.toggleCollect();
 			}
-
-			if (gamepadB.dpad_right()) {
+			if (gamepadB.dpad_left()) {
 				if (elevatorSequence != null) {
 					elevatorSequence.interrupt();
 				}
@@ -88,7 +87,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 				systems.executeSequence(elevatorSequence);
 			}
 
-			if (gamepadB.dpad_right()) {
+			if (gamepadB.dpad_up()) {
 				if (elevatorSequence != null) {
 					elevatorSequence.interrupt();
 				}
