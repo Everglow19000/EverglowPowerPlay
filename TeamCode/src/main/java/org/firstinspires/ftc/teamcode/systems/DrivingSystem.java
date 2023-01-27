@@ -78,9 +78,19 @@ public class DrivingSystem {
 	// Variables used in the acceleration profile.
 	private static final double k_a_accelerating = 1. / 500.;
 	private static final double k_a_decelerating = 1. / 1000.;
-	private static final double k_error = 1 / 5.;
+	private static final double k_error = 0;
+	private static final double k_d_error = 0.0;
+//	private static final double k_error = 0.1;
+//	private static final double k_d_error = 0.005;
 	private static final double k_v = 1 / RobotParameters.MAX_V_X;
-	private static final double k_d_error = 1. / 400;
+
+
+	private static final double k_v_rot = 1 / RobotParameters.MAX_V_ROT;
+	private static final double k_a_rot_accelerating = 55./500;
+	private static final double k_a_rot_decelerating = 0;
+	private static final double k_error_rot = 25.*0.1;
+	private static final double k_d_error_rot = 10 * 0.005;
+
 
 	/**
 	 * A constant which the speed in the y direction is multiplied by
@@ -920,7 +930,7 @@ public class DrivingSystem {
 			double d_error_dt = (error - prevError) / dt;
 			double k_a = targetAcceleration > 0 ? k_a_accelerating : k_a_decelerating;
 
-			double forwardPower = k_v * targetVelocity + k_a * targetAcceleration + k_error * error - k_d_error * d_error_dt;
+			double forwardPower = k_v * targetVelocity + k_a * targetAcceleration + k_error * error + k_d_error * d_error_dt;
 			driveMecanum(new Pose(0, forwardPower, rotatePower));
 			positionCM.y = pose.y;
 			wantedPosition = targetPosition;
@@ -934,4 +944,84 @@ public class DrivingSystem {
 		}
 		stop();
 	}
+
+	public void driveSidewaysByProfile(AccelerationProfile accelerationProfile){
+		final double ANGLE_DEVIATION_SCALAR = 0.;
+		resetDistance();
+		double startAngle = getDistancesOld().angle;
+
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		double prevError = 0;
+		double prevTime = 0;
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+			Pose pose = getDistancesOld();
+			final double currentTime = elapsedTime.seconds();
+			final double dt = currentTime - prevTime;
+			lastCycleTime = elapsedTime.nanoseconds();
+			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
+			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
+
+			double targetPosition = accelerationProfile.position(currentTime);
+			double targetVelocity = accelerationProfile.velocity(currentTime);
+			double targetAcceleration = accelerationProfile.acceleration(currentTime);
+			double error = targetPosition - pose.x;
+			double d_error_dt = (error - prevError) / dt;
+			double k_a = targetAcceleration > 0 ? k_a_accelerating : k_a_decelerating;
+
+			double sidewaysPower = k_v * targetVelocity + k_a * targetAcceleration + k_error * error + k_d_error * d_error_dt;
+			driveMecanum(new Pose(sidewaysPower, 0, rotatePower));
+			positionCM.x = pose.x;
+			wantedPosition = targetPosition;
+			positionLogger.update();
+			printPosition();
+			multipleTelemetry.addData("wantedPosition: ", wantedPosition);
+			multipleTelemetry.update();
+
+			prevError = error;
+			prevTime = currentTime;
+		}
+		stop();
+	}
+
+
+
+	public void rotateByAccelerationProfile(AccelerationProfile accelerationProfile){
+		final double ANGLE_DEVIATION_SCALAR = 0.;
+		resetDistance();
+		double startAngle = getDistancesOld().angle;
+
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		double prevError = 0;
+		double prevTime = 0;
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+			Pose pose = getDistancesOld();
+			pose.angle = Math.toRadians(pose.angle);
+			final double currentTime = elapsedTime.seconds();
+			final double dt = currentTime - prevTime;
+			lastCycleTime = elapsedTime.nanoseconds();
+
+			double targetAngle = accelerationProfile.position(currentTime);
+			double targetVelocity = accelerationProfile.velocity(currentTime);
+			double targetAcceleration = accelerationProfile.acceleration(currentTime);
+			double error = normalizeAngle(targetAngle - pose.angle);
+			double d_error_dt = (error - prevError) / dt;
+			double k_a = targetAcceleration > 0 ? k_a_rot_accelerating : k_a_rot_decelerating;
+
+			double rotatePower = k_v_rot * targetVelocity + k_a * targetAcceleration + k_error_rot * error + k_d_error_rot * d_error_dt;
+			driveMecanum(new Pose(0, 0, rotatePower));
+			positionCM.angle = pose.angle;
+			wantedPosition = Math.toDegrees(targetAngle);
+			positionLogger.update();
+			printPosition();
+			multipleTelemetry.addData("wantedPosition: ", wantedPosition);
+			multipleTelemetry.update();
+
+			prevError = error;
+			prevTime = currentTime;
+		}
+		stop();
+	}
+
 }
