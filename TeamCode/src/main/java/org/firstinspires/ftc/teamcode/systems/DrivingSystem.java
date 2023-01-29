@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.signum;
 import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
 
+import com.qualcomm.hardware.lynx.LynxDcMotorController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.Pose;
@@ -17,6 +20,7 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
+	private final double EPSILON = 1;
 	/**
 	 * The current opMode running on the robot.
 	 */
@@ -46,47 +50,6 @@ public class DrivingSystem {
 	 */
 	private State state = new RestingState();
 
-	/**
-	 * A state used when the robot should be moving.
-	 */
-	public class ActingState implements State {
-		private final double totalMovementTime;
-		private final ElapsedTime timer;
-		private final double velocityX;
-		private final double velocityY;
-		private final double angle;
-
-		/**
-		 * @param desiredPosition   The desired position the robot should move to, Pose.
-		 * @param totalMovementTime The total time the movement should take.
-		 */
-		public ActingState(Pose desiredPosition, double totalMovementTime) {
-			this.totalMovementTime = totalMovementTime;
-			this.timer = new ElapsedTime();
-			// Calculate position change per tick
-			//TODO: USE ACCELERATION PROFILE - THIS DOES NOT CURRENTLY WORK
-			Pose position = SystemCoordinator.instance.trackingSystem.getPosition();
-			this.velocityX = (desiredPosition.x - position.x) / (totalMovementTime);
-			this.velocityY = (desiredPosition.y - position.y) / (totalMovementTime);
-			this.angle = (desiredPosition.angle - position.angle) / (totalMovementTime);
-		}
-
-		public void tick() {
-			// The claw has reached its desired position
-			if (timer.time() > totalMovementTime) {
-				state = new RestingState();
-				return;
-			}
-
-			// Otherwise, update the robot position
-			driveMecanum(new Pose(velocityX, velocityY, angle));
-		}
-
-		public void onReceiveMessage(State.Message message) {
-			// Do nothing
-		}
-	}
-
 	public class DriveStraightState implements State {
 		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
 
@@ -106,7 +69,13 @@ public class DrivingSystem {
 			double angleDeviation = normalizeAngle(targetAngle - position.angle);
 			double yPower = 0.03 * yDeviation + 0.15 * signum(yDeviation);
 			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
-			driveMecanum(new Pose(0, yPower, rotPower));
+			if (abs(yDeviation) < EPSILON){
+				stop();
+				state = new RestingState();
+				SystemCoordinator.instance.sendMessage(Message.DRIVING_DONE);
+			}else {
+				driveMecanum(new Pose(0, yPower, rotPower));
+			}
 		}
 	}
 
@@ -129,7 +98,14 @@ public class DrivingSystem {
 			double angleDeviation = normalizeAngle(targetAngle - position.angle);
 			double xPower = 0.03 * xDeviation + 0.15 * signum(xDeviation);
 			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
-			driveMecanum(new Pose(xPower, 0, rotPower));
+			if (abs(xDeviation) < EPSILON){
+				stop();
+				state = new RestingState();
+				SystemCoordinator.instance.sendMessage(Message.DRIVING_DONE);
+			}else {
+				driveMecanum(new Pose(xPower, 0, rotPower));
+			}
+
 		}
 	}
 
@@ -145,11 +121,6 @@ public class DrivingSystem {
 		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
-		// Makes the motors break when their power is set to zero, so they can better stop in place.
-		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -186,6 +157,13 @@ public class DrivingSystem {
 	 *               -1 <= x, y, angle <= 1.
 	 */
 	public void driveMecanum(Pose powers) {
+		// makes the motors float if their power is set to zero when driving.
+		// calling this once each cycle shouldn't be a problem, as it seems the library keeps track of the previous value, and only updates if needed.
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
 		// Determine how much power each motor should receive.
 		double frontRightPower = powers.y + powers.x + powers.angle;
 		double frontLeftPower = powers.y - powers.x - powers.angle;
@@ -196,7 +174,7 @@ public class DrivingSystem {
 		// If any number that we want to give it is greater than 1,
 		// we must divide all the numbers equally so the maximum is 1
 		// and the proportions are preserved.
-		double norm = max(max(frontRightPower, frontLeftPower), max(backRightPower, backLeftPower));
+		double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower)));
 		if (norm > 1) {
 			frontRightPower /= norm;
 			frontLeftPower /= norm;
@@ -214,7 +192,14 @@ public class DrivingSystem {
 	 * Makes the robot stop in place.
 	 */
 	private void stop() {
-		driveMecanum(new Pose());
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontRight.setPower(0);
+		frontLeft.setPower(0);
+		backRight.setPower(0);
+		backLeft.setPower(0);
 	}
 
 	/**

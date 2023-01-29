@@ -49,7 +49,7 @@ public class CameraSystem {
 		private boolean isCapturingImage = false;
 		private boolean isDetectingAprilTag = false;
 
-		public AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED; // Last identified AprilTag
+		public volatile AprilTagType aprilTagID = AprilTagType.UNIDENTIFIED; // Last identified AprilTag
 
 		public CameraPipeline(LinearOpMode opMode) {
 			this.opMode = opMode;

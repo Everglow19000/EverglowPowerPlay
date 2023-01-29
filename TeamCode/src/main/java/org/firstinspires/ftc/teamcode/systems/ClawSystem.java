@@ -96,6 +96,15 @@ public class ClawSystem {
 	}
 
 	/**
+	 * Goes to the specified position immidiatly, without relying on the sate machine.
+	 * Should only be used for testing.
+	 * @param position the position to go to.
+	 */
+	public void goToImmediate(ClawPosition position){
+		claw.setPosition(position.desiredPosition);
+	}
+
+	/**
 	 * Ticks the claw system.
 	 */
 	public void tick() {

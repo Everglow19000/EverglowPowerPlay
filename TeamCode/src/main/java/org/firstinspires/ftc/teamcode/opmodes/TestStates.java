@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.Sequence;
 
-@TeleOp(name = "TestStates", group = ".Main")
+@TeleOp(name = "TestStates", group = "Test")
 public class TestStates extends LinearOpMode {
 
 	final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated

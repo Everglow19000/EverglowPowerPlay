@@ -122,4 +122,14 @@ public class FourBarSystem {
 		});
 	}
 
+	/**
+	 * Goes to the specified position immidiatly, without relying on the sate machine.
+	 * Should only be used for testing.
+	 * @param position the position to go to.
+	 */
+	public void goToImmediate(FourBarPosition position){
+		servoRight.setPosition(position.posRight);
+		servoLeft.setPosition(position.posLeft);
+	}
+
 }
