@@ -29,6 +29,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
+import org.firstinspires.ftc.teamcode.utils.PdffController;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
@@ -78,10 +79,8 @@ public class DrivingSystem {
 	// Variables used in the acceleration profile.
 	private static final double k_a_accelerating = 1. / 500.;
 	private static final double k_a_decelerating = 1. / 1000.;
-	private static final double k_error = 0;
-	private static final double k_d_error = 0.0;
-//	private static final double k_error = 0.1;
-//	private static final double k_d_error = 0.005;
+	private static final double k_error = 0.1;
+	private static final double k_d_error = 0.005;
 	private static final double k_v = 1 / RobotParameters.MAX_V_X;
 
 
@@ -178,10 +177,10 @@ public class DrivingSystem {
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
 		// Makes the motors break when their power is set to zero, so they can better stop in place.
-		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -906,41 +905,29 @@ public class DrivingSystem {
 	}
 
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
-		final double ANGLE_DEVIATION_SCALAR = 0.;
-//		final double ANGLE_DEVIATION_SCALAR = 0.05;
 		resetDistance();
-		double startAngle = getDistancesOld().angle;
 
 		ElapsedTime elapsedTime = new ElapsedTime();
 
-		double prevError = 0;
-		double prevTime = 0;
+
+		PdffController controller = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			Pose pose = getDistancesOld();
 			final double currentTime = elapsedTime.seconds();
-			final double dt = currentTime - prevTime;
 			lastCycleTime = elapsedTime.nanoseconds();
-			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
-			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
-
 			double targetPosition = accelerationProfile.position(currentTime);
 			double targetVelocity = accelerationProfile.velocity(currentTime);
 			double targetAcceleration = accelerationProfile.acceleration(currentTime);
 			double error = targetPosition - pose.y;
-			double d_error_dt = (error - prevError) / dt;
-			double k_a = targetAcceleration > 0 ? k_a_accelerating : k_a_decelerating;
 
-			double forwardPower = k_v * targetVelocity + k_a * targetAcceleration + k_error * error + k_d_error * d_error_dt;
-			driveMecanum(new Pose(0, forwardPower, rotatePower));
+			double forwardPower = controller.getPower(currentTime, error, targetVelocity, targetAcceleration);
+			driveMecanum(new Pose(0, forwardPower, 0));
 			positionCM.y = pose.y;
 			wantedPosition = targetPosition;
 			positionLogger.update();
 			printPosition();
 			multipleTelemetry.addData("wantedPosition: ", wantedPosition);
 			multipleTelemetry.update();
-
-			prevError = error;
-			prevTime = currentTime;
 		}
 		stop();
 	}
