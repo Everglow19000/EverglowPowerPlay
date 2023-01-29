@@ -158,7 +158,7 @@ public class CameraSystem {
 		cameraPipeline = new CameraPipeline(opMode);
 		int cameraMonitorViewId =
 				this.opMode.hardwareMap.appContext.getResources()
-					.getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
+						.getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
 		WebcamName webcamName =
 				this.opMode.hardwareMap.get(WebcamName.class, "webcam");
 
@@ -201,7 +201,7 @@ public class CameraSystem {
 
 		ElapsedTime elapsedTime = new ElapsedTime();
 		// block the main loop until an AprilTag is detected
-		while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS && elapsedTime.milliseconds() < 8*1000) {
+		while (opMode.opModeIsActive() && cameraPipeline.aprilTagID == AprilTagType.DETECTION_IN_PROGRESS && elapsedTime.milliseconds() < 8 * 1000) {
 		}
 
 		// return the id

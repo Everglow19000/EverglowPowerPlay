@@ -56,7 +56,7 @@ public class Sequence {
 		items.clear();
 	}
 
-	public boolean isSequenceDone(){
+	public boolean isSequenceDone() {
 		return items.isEmpty();
 	}
 
@@ -67,7 +67,7 @@ public class Sequence {
 	 * @param message The message to be handled.
 	 */
 	public void handleMessage(State.Message message) {
-		if (isSequenceDone()){
+		if (isSequenceDone()) {
 			return;
 		}
 		SequenceItem firstItem = items.getFirst();
@@ -78,11 +78,11 @@ public class Sequence {
 	/**
 	 * Handles executing the rest of the sequence, including waiting for messages.
 	 */
-	private void handleContinue(){
-		while (true){
+	private void handleContinue() {
+		while (true) {
 			if (isSequenceDone()) return;
 			SequenceItem currentlyWaitingFor = items.getFirst();
-			if(!currentlyWaitingFor.messagesToWait.isEmpty()){
+			if (!currentlyWaitingFor.messagesToWait.isEmpty()) {
 				return;
 			}
 			items.removeFirst();

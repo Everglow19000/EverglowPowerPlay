@@ -25,6 +25,7 @@ public class ElevatorSystem {
 			this.desiredPosition = desiredPosition;
 		}
 	}
+
 	/**
 	 * A state used when the robot should be moving.
 	 */
@@ -33,7 +34,7 @@ public class ElevatorSystem {
 		private final Level level;
 
 		/**
-		 * @param level             A elevator level to move to (e.g. ElevatorLevel.GROUND).
+		 * @param level A elevator level to move to (e.g. ElevatorLevel.GROUND).
 		 */
 		public ActingState(Level level) {
 			this.level = level;
@@ -50,7 +51,7 @@ public class ElevatorSystem {
 			SystemCoordinator.instance.opMode.telemetry.addData("leftError", leftError);
 			SystemCoordinator.instance.opMode.telemetry.addData("rightError", rightError);
 			SystemCoordinator.instance.opMode.telemetry.update();
-			if (leftArrived && rightArrived){
+			if (leftArrived && rightArrived) {
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(Message.ELEVATOR_DONE);
 			}
@@ -83,8 +84,8 @@ public class ElevatorSystem {
 		right.setPower(0.7);
 	}
 
-	public Sequence.SequenceItem goToSequenceItem(ElevatorSystem.Level level){
-		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, ()->{
+	public Sequence.SequenceItem goToSequenceItem(ElevatorSystem.Level level) {
+		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
 			state = new ActingState(level);
 		});
 	}

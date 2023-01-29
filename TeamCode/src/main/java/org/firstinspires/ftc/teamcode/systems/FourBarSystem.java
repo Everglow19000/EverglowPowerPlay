@@ -44,10 +44,12 @@ public class FourBarSystem {
 			}
 		}
 	}
+
 	private final Servo servoRight;
 	private final Servo servoLeft;
 
 	private State state = new RestingState();
+
 	/**
 	 * A state used when the robot should be moving.
 	 */
@@ -94,6 +96,7 @@ public class FourBarSystem {
 			SystemCoordinator.instance.opMode.telemetry.addData("positionLeft", positionLeft);
 			SystemCoordinator.instance.opMode.telemetry.update();
 		}
+
 		public void onReceiveMessage(State.Message message) {
 			// Do nothing
 		}
@@ -116,18 +119,19 @@ public class FourBarSystem {
 	}
 
 
-	public Sequence.SequenceItem goToSequenceItem(FourBarPosition position, double velocity){
-		return new Sequence.SequenceItem(State.Message.FOUR_BAR_DONE, ()->{
+	public Sequence.SequenceItem goToSequenceItem(FourBarPosition position, double velocity) {
+		return new Sequence.SequenceItem(State.Message.FOUR_BAR_DONE, () -> {
 			state = new ActingState(position, velocity);
 		});
 	}
 
 	/**
-	 * Goes to the specified position immidiatly, without relying on the sate machine.
+	 * Goes to the specified position immediately, without relying on the state machine.
 	 * Should only be used for testing.
+	 *
 	 * @param position the position to go to.
 	 */
-	public void goToImmediate(FourBarPosition position){
+	public void goToImmediate(FourBarPosition position) {
 		servoRight.setPosition(position.posRight);
 		servoLeft.setPosition(position.posLeft);
 	}

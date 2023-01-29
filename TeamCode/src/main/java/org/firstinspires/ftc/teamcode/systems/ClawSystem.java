@@ -57,7 +57,7 @@ public class ClawSystem {
 		private final ClawPosition finalState;
 
 		/**
-		 * @param finalState             A claw finalState to move to (ClawState.OPEN or ClawState.CLOSED)
+		 * @param finalState A claw finalState to move to (ClawState.OPEN or ClawState.CLOSED)
 		 */
 		public ActingState(ClawPosition finalState, double velocity) {
 			this.finalState = finalState;
@@ -89,18 +89,19 @@ public class ClawSystem {
 		claw = opMode.hardwareMap.get(Servo.class, "claw");
 	}
 
-	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double velocity){
-		return new Sequence.SequenceItem(State.Message.CLAW_DONE, ()->{
+	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double velocity) {
+		return new Sequence.SequenceItem(State.Message.CLAW_DONE, () -> {
 			state = new ActingState(position, velocity);
 		});
 	}
 
 	/**
-	 * Goes to the specified position immidiatly, without relying on the sate machine.
+	 * Goes to the specified position immediately, without relying on the state machine.
 	 * Should only be used for testing.
+	 *
 	 * @param position the position to go to.
 	 */
-	public void goToImmediate(ClawPosition position){
+	public void goToImmediate(ClawPosition position) {
 		claw.setPosition(position.desiredPosition);
 	}
 
