@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
 import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
-import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 @TeleOp(name = "ControlledDriving")
@@ -19,7 +19,7 @@ public class ControlledDriving extends LinearOpMode {
 		//GWheel gWheel = new GWheel(this);
 
 		drivingSystem.maxDrivePower = 0.2;
-		drivingSystem.resetStartLocation(new Point2D(71. / 2, 71. / 2));
+		drivingSystem.resetStartLocation(new PointD(71. / 2, 71. / 2));
 
 		final int driveTypeCount = 3;
 		int driveType = 0;

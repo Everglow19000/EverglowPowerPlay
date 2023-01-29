@@ -29,7 +29,7 @@ public class RunTests {
         for (double t = 0; t < 10; t += 0.2)
         {
             System.out.print(t);
-            System.out.println(a.position(t));
+            System.out.println(a.getPosition(t));
         }
     }
 }

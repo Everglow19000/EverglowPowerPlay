@@ -30,7 +30,8 @@ import org.firstinspires.ftc.teamcode.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PdffController;
-import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.PointD;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
@@ -144,6 +145,12 @@ public class DrivingSystem {
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
 
+	private Pose targetPose = new Pose();
+
+	public Pose getTargetPosition(){
+		return new Pose(targetPose);
+	}
+
 	public long getLastCycleTime() {
 		return lastCycleTime;
 	}
@@ -188,7 +195,7 @@ public class DrivingSystem {
 		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
 		// Reset the distances measured by the motors
-		positionLogger = new PositionLogger();
+		positionLogger = new PositionLogger(this, this.opMode);
 		resetDistance();
 	}
 
@@ -270,7 +277,7 @@ public class DrivingSystem {
 	 *
 	 * @program The new and correct real location of the robot in the board.
 	 */
-	public void resetStartLocation(Point2D realLocation) {
+	public void resetStartLocation(PointD realLocation) {
 		positionCM.x = realLocation.x;
 		positionCM.y = realLocation.y;
 	}
@@ -282,8 +289,8 @@ public class DrivingSystem {
 	 * @program The Robot's Location in squares,
 	 * the deviation of the robot from the center of the square it's on (0 <= x <= 1).
 	 */
-	public Pair<Pose, Point2D> getSquareInformation() {
-		Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
+	public Pair<Pose, PointD> getSquareInformation() {
+		Pair<Pose, PointD> SquareInformation = new Pair<>(new Pose(), new PointD());
 		SquareInformation.first.x = positionCM.x / TILE_SIZE;
 		SquareInformation.first.y = positionCM.y / TILE_SIZE;
 		SquareInformation.first.angle = positionCM.angle;
@@ -354,15 +361,15 @@ public class DrivingSystem {
 	/**
 	 * Gets the movement of the robot in the robot's axis since the last tracked position.
 	 *
-	 * @return Point2D: Sum of movement Sideways, Sum of movement Forward; in cm.
+	 * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
-	public Point2D getDistances() {
+	public PointD getDistances() {
 		final double flChange = frontLeft.getCurrentPosition() - flPreviousTicks;
 		final double frChange = frontRight.getCurrentPosition() - frPreviousTicks;
 		final double blChange = backLeft.getCurrentPosition() - blPreviousTicks;
 		final double brChange = backRight.getCurrentPosition() - brPreviousTicks;
 
-		Point2D movementChange = new Point2D();
+		PointD movementChange = new PointD();
 
 		movementChange.x = (-flChange + frChange + blChange - brChange) / 4. * CM_PER_TICK;
 		movementChange.y = (flChange + frChange + blChange + brChange) / 4. * CM_PER_TICK;
@@ -374,9 +381,9 @@ public class DrivingSystem {
 	 * Gets the movement of the robot in the robot's axis since the last tracked position and resets it.
 	 * should be called only by trackPosition.
 	 *
-	 * @return Point2D: Sum of movement Sideways, Sum of movement Forward; in cm.
+	 * @return PointD: Sum of movement Sideways, Sum of movement Forward; in cm.
 	 */
-	public Point2D updateDistances() {
+	public PointD updateDistances() {
 		double flTicks = frontLeft.getCurrentPosition();
 		double frTicks = frontRight.getCurrentPosition();
 		double blTicks = backLeft.getCurrentPosition();
@@ -392,7 +399,7 @@ public class DrivingSystem {
 		blPreviousTicks = blTicks;
 		brPreviousTicks = brTicks;
 
-		Point2D movementChange = new Point2D();
+		PointD movementChange = new PointD();
 		movementChange.x = (-fLChange + fRChange + bLChange - bRChange) / 4. * CM_PER_TICK;
 		movementChange.y = (fLChange + fRChange + bLChange + bRChange) / 4. * CM_PER_TICK;
 
@@ -477,9 +484,9 @@ public class DrivingSystem {
 	public void controlledDriveByAxis(Pose Powers) {
 		final double K = 0.03;
 
-		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pair<Pose, PointD> mySquareInformation = getSquareInformation();
 		Pose SquareLocation = mySquareInformation.first;
-		Point2D squareDeviation = mySquareInformation.second;
+		PointD squareDeviation = mySquareInformation.second;
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -512,9 +519,9 @@ public class DrivingSystem {
 	public void controlledDriveByAxis2(Pose Powers) {
 		final double K = 50.;
 
-		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pair<Pose, PointD> mySquareInformation = getSquareInformation();
 		Pose SquareLocation = mySquareInformation.first;
-		Point2D squareDeviation = mySquareInformation.second;
+		PointD squareDeviation = mySquareInformation.second;
 
 		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -550,9 +557,9 @@ public class DrivingSystem {
 	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
 	 */
 	public void controlledDriveByAxis3(Pose Powers) {
-		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+		Pair<Pose, PointD> mySquareInformation = getSquareInformation();
 		Pose SquareLocation = mySquareInformation.first;
-		Point2D squareDeviation = mySquareInformation.second;
+		PointD squareDeviation = mySquareInformation.second;
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -575,16 +582,16 @@ public class DrivingSystem {
 		driveByAxis(Powers);
 	}
 
-	public Point2D closestJunctionLocation() {
-		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
+	public PointD closestJunctionLocation() {
+		Pair<Pose, PointD> mySquareInformation = getSquareInformation();
 		Pose SquareLocation = mySquareInformation.first;
-		Point2D squareDeviation = mySquareInformation.second;
-		Point2D squareCenter = new Point2D(SquareLocation.x - squareDeviation.x, SquareLocation.y - squareDeviation.y);
+		PointD squareDeviation = mySquareInformation.second;
+		PointD squareCenter = new PointD(SquareLocation.x - squareDeviation.x, SquareLocation.y - squareDeviation.y);
 
-		Point2D bestCornerPosition = new Point2D();
+		PointD bestCornerPosition = new PointD();
 		double bestRating = 0;
 		for (int corner = 0; corner < 4; corner++) {
-			Point2D cornerSquarePosition = new Point2D();
+			PointD cornerSquarePosition = new PointD();
 			cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
 			cornerSquarePosition.x = round(cornerSquarePosition.x);
 			cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
@@ -595,7 +602,7 @@ public class DrivingSystem {
 				continue;
 			}
 
-			Point2D cornerDistance = new Point2D();
+			PointD cornerDistance = new PointD();
 			cornerDistance.x = cornerSquarePosition.x - SquareLocation.x;
 			cornerDistance.y = cornerSquarePosition.y - SquareLocation.y;
 
@@ -616,7 +623,7 @@ public class DrivingSystem {
 	 * Keeps track of robot's position on the field.
 	 */
 	private void trackPosition() {
-		final Point2D positionChange = updateDistances();
+		final PointD positionChange = updateDistances();
 
 		final double currentAngle = getCurrentAngle();
 		final double angleAverage = (currentAngle + positionCM.angle) / 2;
@@ -916,8 +923,8 @@ public class DrivingSystem {
 			Pose pose = getDistancesOld();
 			final double currentTime = elapsedTime.seconds();
 			lastCycleTime = elapsedTime.nanoseconds();
-			double targetPosition = accelerationProfile.position(currentTime);
-			double targetVelocity = accelerationProfile.velocity(currentTime);
+			double targetPosition = accelerationProfile.getPosition(currentTime);
+			double targetVelocity = accelerationProfile.getVelocity(currentTime);
 			double targetAcceleration = accelerationProfile.acceleration(currentTime);
 			double error = targetPosition - pose.y;
 
@@ -950,8 +957,8 @@ public class DrivingSystem {
 			double angleDeviation = AngleUnit.DEGREES.normalize(startAngle - pose.angle);
 			double rotatePower = angleDeviation * ANGLE_DEVIATION_SCALAR;
 
-			double targetPosition = accelerationProfile.position(currentTime);
-			double targetVelocity = accelerationProfile.velocity(currentTime);
+			double targetPosition = accelerationProfile.getPosition(currentTime);
+			double targetVelocity = accelerationProfile.getVelocity(currentTime);
 			double targetAcceleration = accelerationProfile.acceleration(currentTime);
 			double error = targetPosition - pose.x;
 			double d_error_dt = (error - prevError) / dt;
@@ -990,8 +997,8 @@ public class DrivingSystem {
 			final double dt = currentTime - prevTime;
 			lastCycleTime = elapsedTime.nanoseconds();
 
-			double targetAngle = accelerationProfile.position(currentTime);
-			double targetVelocity = accelerationProfile.velocity(currentTime);
+			double targetAngle = accelerationProfile.getPosition(currentTime);
+			double targetVelocity = accelerationProfile.getVelocity(currentTime);
 			double targetAcceleration = accelerationProfile.acceleration(currentTime);
 			double error = normalizeAngle(targetAngle - pose.angle);
 			double d_error_dt = (error - prevError) / dt;
@@ -1028,7 +1035,7 @@ public class DrivingSystem {
 					normalizeAngle(0 - currentPose.angle)*k_angleDeviation
 			);
 
-			expectedPosition = targetPose;
+			this.targetPose = targetPose;
 
 			Pose powers = traj.getPowers(elapsedTime.seconds());
 			driveByAxis(new Pose(

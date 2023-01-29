@@ -21,28 +21,30 @@ import java.util.Locale;
 public class PositionLogger {
 	private final DrivingSystem drivingSystem;
 	private final List<RobotState> robotStates;
+	private final LinearOpMode opMode;
 
 	private static class RobotState {
 		final long time;
-		final Pose pose;
-		final double wantedPosition;
-		public RobotState(long time, Pose pose, double wantedPosition) {
-			this.time = time;
-			this.pose = pose;
-			this.wantedPosition = wantedPosition;
+		final Pose currentPose;
+		final Pose expectedPose;
 
+		public RobotState(long time, Pose currentPose, Pose expectedPose) {
+			this.time = time;
+			this.currentPose = currentPose;
+			this.expectedPose = expectedPose;
 		}
 	}
 
 	public PositionLogger(DrivingSystem drivingSystem, LinearOpMode opMode) {
 		this.drivingSystem = drivingSystem;
+		this.opMode = opMode;
 		robotStates = new ArrayList<>();
 	}
 
 	public void update() {
 //        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
-
-		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(), drivingSystem.wantedPosition);
+		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(),
+				drivingSystem.getTargetPosition());
 		robotStates.add(robotState);
 	}
 
@@ -69,18 +71,21 @@ public class PositionLogger {
 			}
 			// put the needed data in the file
 			stream = new PrintStream(new FileOutputStream(fileToCreate), true, "utf-8");
-			stream.println("time[sec], x[cm], y[cm], rot[degrees], wanted position[cm]");
+			stream.println("time[sec], currentX[cm], currentY[cm], currentRot[degrees], " +
+					"expectedX[cm], expectedY[cm], expectedRot[degrees]");
 			if (stream.checkError()) {
 				throw new IOException("Failed to write to fileToCreate.");
 			}
-			int i = 0;
+
 			for (RobotState robotState : robotStates) {
-				String lineString = String.format("%s, %s, %s, %s, %s",
+				String lineString = String.format("%s, %s, %s, %s, %s, %s, %s",
 						(robotState.time - startTimeNanos) / 1e9,
-						robotState.pose.x,
-						robotState.pose.y,
-						Math.toDegrees(robotState.pose.angle),
-						robotState.wantedPosition
+						robotState.currentPose.x,
+						robotState.currentPose.y,
+						Math.toDegrees(robotState.currentPose.angle),
+						robotState.expectedPose.x,
+						robotState.expectedPose.y,
+						Math.toDegrees(robotState.expectedPose.angle)
 				);
 				stream.println(lineString);
 				if (stream.checkError()) {
@@ -95,7 +100,6 @@ public class PositionLogger {
 				stream.close();
 			}
 		}
-
 	}
 
 	public void clear() {
