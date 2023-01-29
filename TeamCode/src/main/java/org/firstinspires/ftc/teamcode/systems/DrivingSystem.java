@@ -69,11 +69,11 @@ public class DrivingSystem {
 			double angleDeviation = normalizeAngle(targetAngle - position.angle);
 			double yPower = 0.03 * yDeviation + 0.15 * signum(yDeviation);
 			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
-			if (abs(yDeviation) < EPSILON){
+			if (abs(yDeviation) < EPSILON) {
 				stop();
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(Message.DRIVING_DONE);
-			}else {
+			} else {
 				driveMecanum(new Pose(0, yPower, rotPower));
 			}
 		}
@@ -98,11 +98,11 @@ public class DrivingSystem {
 			double angleDeviation = normalizeAngle(targetAngle - position.angle);
 			double xPower = 0.03 * xDeviation + 0.15 * signum(xDeviation);
 			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
-			if (abs(xDeviation) < EPSILON){
+			if (abs(xDeviation) < EPSILON) {
 				stop();
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(Message.DRIVING_DONE);
-			}else {
+			} else {
 				driveMecanum(new Pose(xPower, 0, rotPower));
 			}
 

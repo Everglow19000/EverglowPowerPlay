@@ -21,7 +21,7 @@ public class SystemCoordinator {
 	public final ClawSystem clawSystem;
 	public final DrivingSystem drivingSystem;
 	public final FourBarSystem fourBarSystem;
-	public final TrackingSystem trackingSystem;
+	public final BADTrackingSystem trackingSystem;
 	public final GWheelSystem gWheelSystem;
 	//There is no camera system because it runs in a separate thread.
 
@@ -38,7 +38,7 @@ public class SystemCoordinator {
 		clawSystem = new ClawSystem(opMode);
 		drivingSystem = new DrivingSystem(opMode);
 		fourBarSystem = new FourBarSystem(opMode);
-		trackingSystem = new TrackingSystem(opMode);
+		trackingSystem = new BADTrackingSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
 
 		actionSequences = new ArrayList<>();
