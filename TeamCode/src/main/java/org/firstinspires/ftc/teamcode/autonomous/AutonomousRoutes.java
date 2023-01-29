@@ -107,6 +107,9 @@ public class AutonomousRoutes implements Runnable {
 			if (isTimeractive){
 				befourAction = false;
 				systems.drivingSystem.move2(pickCone);
+				systems.gWheelSystem.toggleCollect();
+				opMode.sleep(2500);
+				systems.gWheelSystem.toggleCollect();
 				sequencePickUp.start();
 				opMode.sleep(250);
 				systems.drivingSystem.move2(putCone);
