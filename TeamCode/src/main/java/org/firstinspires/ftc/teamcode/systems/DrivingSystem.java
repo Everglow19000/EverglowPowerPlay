@@ -10,11 +10,8 @@ import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
 
 import androidx.core.util.Pair;
 
-import com.qualcomm.hardware.lynx.LynxDcMotorController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorImpl;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
