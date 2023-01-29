@@ -47,7 +47,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			}
 
 			// Apply calculated velocity to mecanum wheels
-			systems.drivingSystem.driveMecanum(powers);
+			systems.drivingSystem.driveByAxis(powers);
 
 
 			if (gamepadB.lt()) {
