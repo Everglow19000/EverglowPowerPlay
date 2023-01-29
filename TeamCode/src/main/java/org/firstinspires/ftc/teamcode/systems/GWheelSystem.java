@@ -22,6 +22,10 @@ public class GWheelSystem {
 		gWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 	}
 
+	public void setWheelPower(double power) {
+		gWheel.setPower(power);
+	}
+
 	/**
 	 * A function which spins the grabbing wheel inward to collect the cones.
 	 * Used in toggleCollecting().
