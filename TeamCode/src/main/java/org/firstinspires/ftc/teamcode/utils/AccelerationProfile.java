@@ -44,7 +44,7 @@ public class AccelerationProfile {
 		return -a;
 	}
 
-	public double velocity(double t) {
+	public double getVelocity(double t) {
 		if (reachMaxSpeedEh) {
 			if (t < t1)
 				return a * t;
@@ -57,7 +57,7 @@ public class AccelerationProfile {
 		return a * t1 - a * (t - t1);
 	}
 
-	public double position(double t) {
+	public double getPosition(double t) {
 		if (reachMaxSpeedEh) {
 			if (t < t1)
 				return 0.5 * a * Math.pow(t, 2);

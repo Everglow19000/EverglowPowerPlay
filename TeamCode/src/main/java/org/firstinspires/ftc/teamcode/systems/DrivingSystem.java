@@ -34,6 +34,7 @@ import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
+import org.firstinspires.ftc.teamcode.utils.Trajectory;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -187,7 +188,7 @@ public class DrivingSystem {
 		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
 		// Reset the distances measured by the motors
-		positionLogger = new PositionLogger(this, this.opMode);
+		positionLogger = new PositionLogger();
 		resetDistance();
 	}
 
@@ -1010,5 +1011,38 @@ public class DrivingSystem {
 		}
 		stop();
 	}
+
+	public void driveByPath(Trajectory traj){
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
+			final double currentTime = elapsedTime.seconds();
+			final double k_pointDeviation = 0;
+			final double k_angleDeviation = 1/toRadians(5);
+
+			Pose currentPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
+			Pose targetPose = traj.getPose(currentTime);
+			Pose deviation = new Pose(
+					(targetPose.x - currentPose.x)*k_pointDeviation,
+					(targetPose.y - currentPose.y)*k_pointDeviation,
+					normalizeAngle(0 - currentPose.angle)*k_angleDeviation
+			);
+
+			expectedPosition = targetPose;
+
+			Pose powers = traj.getPowers(elapsedTime.seconds());
+			driveByAxis(new Pose(
+					powers.x + deviation.x,
+					powers.y + deviation.y,
+					powers.angle + deviation.angle));
+//			driveMecanum(new Pose((powers.x+deviation.x), (powers.y+deviation.y), (powers.angle+deviation.angle)));
+			positionLogger.update();
+			printPosition();
+			opMode.telemetry.addData("track position", positionCM.x + "," + positionCM.y);
+			opMode.telemetry.update();
+		}
+		stop();
+	}
+
 
 }
