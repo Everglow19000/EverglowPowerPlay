@@ -9,7 +9,11 @@ import java.util.List;
 import java.util.Set;
 
 public class Sequence {
-	public static class SequenceItem{
+	/**
+	 * A class for storing an action in a sequence.
+	 * Takes an action in the form of a Runnable.
+	 */
+	public static class SequenceItem {
 		public final HashSet<State.Message> messagesToWait;
 		public final Runnable runAction;
 
@@ -18,24 +22,37 @@ public class Sequence {
 			this.runAction = runAction;
 		}
 
-		public SequenceItem(State.Message message, Runnable runAction){
+		public SequenceItem(State.Message message, Runnable runAction) {
 			this(new HashSet<>(Collections.singletonList(message)), runAction);
 		}
 	}
 
+	/**
+	 * The items in the sequence.
+	 */
 	private final Deque<SequenceItem> items;
 
-
-	public Sequence(SequenceItem ...items){
+	/**
+	 * Assigns an array of sequence items created previously to the sequence.
+	 *
+	 * @param items The items in the sequence.
+	 */
+	public Sequence(SequenceItem... items) {
 		this.items = new ArrayDeque<>(Arrays.asList(items));
 	}
 
-	public void start(){
+	/**
+	 * Starts the sequence by running the first action and then handling the rest of the sequence.
+	 */
+	public void start() {
 		items.getFirst().runAction.run();
 		handleContinue();
 	}
 
-	public void interrupt(){
+	/**
+	 * Interrupts the sequence by clearing the items in the sequence, making it stop executing.
+	 */
+	public void interrupt() {
 		items.clear();
 	}
 
@@ -43,7 +60,13 @@ public class Sequence {
 		return items.isEmpty();
 	}
 
-	public void handleMessage(State.Message message){
+	/**
+	 * Handles receiving messages from the System Coordinator.
+	 * If the message is in the first item in the sequence, it is removed from the list of messages to wait for.
+	 *
+	 * @param message The message to be handled.
+	 */
+	public void handleMessage(State.Message message) {
 		if (isSequenceDone()){
 			return;
 		}
@@ -52,6 +75,9 @@ public class Sequence {
 		handleContinue();
 	}
 
+	/**
+	 * Handles executing the rest of the sequence, including waiting for messages.
+	 */
 	private void handleContinue(){
 		while (true){
 			if (isSequenceDone()) return;

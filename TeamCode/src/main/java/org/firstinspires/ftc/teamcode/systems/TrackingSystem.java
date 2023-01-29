@@ -6,7 +6,7 @@ import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -14,52 +14,65 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
  * A class for handling tracking the robot's position.
  */
 public class TrackingSystem {
-	private static final double WHEEL_RADIUS_CM = 4.8;
-	private static final double TICKS_PER_ROTATION = 515;
-	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS_CM * 2 * PI;
 	/**
-	 * The distance between the front left and front right wheels.
+	 * The radius of the odometry wheels, in centimeters.
+	 */
+	private static final double WHEEL_RADIUS = 4.8;
+	/**
+	 * The number of ticks per full revolution of the odometry wheels.
+	 */
+	private static final double TICKS_PER_ROTATION = 515;
+	/**
+	 * Conversion factor from ticks to centimeters.
+	 */
+	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS * 2 * PI;
+	/**
+	 * The distance between the two front wheels.
 	 */
 	private static final double LATERAL_DISTANCE = 15; //TODO: Measure this
 	/**
-	 * The distance between the center of the robot and the front wheel.
+	 * The distance between the center of the robot and the back wheel.
 	 */
 	private static final double FORWARD_OFFSET = 0; //TODO: Measure this
 
+	/**
+	 * The current opMode running on the robot.
+	 */
 	private final LinearOpMode opMode;
-	private final SystemCoordinator systemCoordinator;
 
 	/**
 	 * The front left odometry wheel.
 	 */
-	private final DcMotorEx frontLeft;
+	private final DcMotor frontLeft;
 	/**
 	 * The front right odometry wheel.
 	 */
-	private final DcMotorEx frontRight;
+	private final DcMotor frontRight;
 	/**
 	 * The back odometry wheel.
 	 */
-	private final DcMotorEx back;
+	private final DcMotor back;
 
 	// Keeps the robot's odometry wheel's previous positions
 	private double flPreviousTicks = 0;
 	private double frPreviousTicks = 0;
 	private double bPreviousTicks = 0;
 
+	/**
+	 * The robot's current position.
+	 */
 	private final Pose position = new Pose(0., 0., 0.);
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public TrackingSystem(LinearOpMode opMode, SystemCoordinator systemCoordinator) {
+	public TrackingSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
-		this.systemCoordinator = systemCoordinator;
 
 		//Get odometry pod interfaces
-		frontLeft = opMode.hardwareMap.get(DcMotorEx.class, "front_left");
-		frontRight = opMode.hardwareMap.get(DcMotorEx.class, "front_right");
-		back = opMode.hardwareMap.get(DcMotorEx.class, "back_right");
+		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
+		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
+		back = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
 		// Reset the distances measured by the motors
 		resetDistance();
@@ -70,13 +83,13 @@ public class TrackingSystem {
 	 * Should always be called before initializing the robot.
 	 */
 	private void resetDistance() {
-		frontLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-		frontRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-		back.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		frontLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-		frontRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-		back.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		back.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 	}
 
 	/**
@@ -96,8 +109,8 @@ public class TrackingSystem {
 	}
 
 	/**
-	 * Tracks the robot's position.
-	 * Pose Exponentials Method and explanation taken from
+	 * Tracks the robot's position and updates the position variable.
+	 * Pose Exponentials Method and explanation from
 	 * <a href="https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials">this site</a>.
 	 */
 	public void trackPosition() {

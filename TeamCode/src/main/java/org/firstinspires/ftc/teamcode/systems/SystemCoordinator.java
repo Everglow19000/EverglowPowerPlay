@@ -19,7 +19,7 @@ public class SystemCoordinator {
 	//Create a new instance of each system
 	public final ElevatorSystem elevatorSystem;
 	public final ClawSystem clawSystem;
-	public final DrivingSystemNew drivingSystem;
+	public final DrivingSystem drivingSystem;
 	public final FourBarSystem fourBarSystem;
 	public final TrackingSystem trackingSystem;
 	public final GWheelSystem gWheelSystem;
@@ -27,15 +27,18 @@ public class SystemCoordinator {
 
 	private final ArrayList<Sequence> actionSequences;
 
+	/**
+	 * @param opMode The current opMode running on the robot.
+	 */
 	public SystemCoordinator(LinearOpMode opMode) {
 		instance = this;
 		this.opMode = opMode;
 		//Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
 		clawSystem = new ClawSystem(opMode);
-		drivingSystem = new DrivingSystemNew(opMode, this);
+		drivingSystem = new DrivingSystem(opMode);
 		fourBarSystem = new FourBarSystem(opMode);
-		trackingSystem = new TrackingSystem(opMode, this);
+		trackingSystem = new TrackingSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
 
 		actionSequences = new ArrayList<>();
@@ -53,7 +56,12 @@ public class SystemCoordinator {
 		trackingSystem.tick();
 	}
 
-	public void executeSequence(Sequence sequence){
+	/**
+	 * Executes a sequence.
+	 *
+	 * @param sequence The sequence to be executed.
+	 */
+	public void executeSequence(Sequence sequence) {
 		sequence.start();
 		actionSequences.add(sequence);
 	}
@@ -64,10 +72,8 @@ public class SystemCoordinator {
 	 * @param message The message to be broadcasted.
 	 */
 	public void sendMessage(State.Message message) {
-		opMode.telemetry.addData("Recieved Message: ", message);
-		opMode.telemetry.update();
-		// todo: remove the sequences if they are done. This isn't critical but should probably be done for elegance.
-		for (Sequence sequence: actionSequences){
+		//TODO: remove the sequences if they are done. This isn't critical but should probably be done for elegance.
+		for (Sequence sequence : actionSequences) {
 			sequence.handleMessage(message);
 		}
 	}
