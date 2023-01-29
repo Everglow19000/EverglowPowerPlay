@@ -12,6 +12,7 @@ public class Autonomous extends LinearOpMode {
 	public void runOpMode() {
 		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
 		CameraSystem cameraSystem = new CameraSystem(this);
+		AutonomousRoutes autonomousRoutes = new AutonomousRoutes(this);
 		waitForStart();
 		CameraSystem.AprilTagType tagType = cameraSystem.detectAprilTag();
 		double sidewaysDistance;
@@ -28,6 +29,7 @@ public class Autonomous extends LinearOpMode {
 				break;
 		}
 
+		autonomousRoutes.putConesAndBack(true);
 		Sequence sequence = new Sequence(
 				systemCoordinator.drivingSystem.driveSidewaysSequenceItem(sidewaysDistance, 0),
 				systemCoordinator.drivingSystem.driveStraightSequenceItem(90, 0)
