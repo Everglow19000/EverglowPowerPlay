@@ -43,7 +43,7 @@ public class AutonomousRoutes {
 
 		//drivingSystem.driveStraight(60, 0.5);
 		//drivingSystem.driveSideways(sideWays, 0.5);
-		drivingSystem.driveY(70);
+		drivingSystem.driveY(40);
 //		drivingSystem.driveX(sideWays);
 
 
@@ -61,7 +61,7 @@ public class AutonomousRoutes {
 
 		switch (tagType) {
 			case TAG_1:
-				drivingSystem.driveToX(80);
+				drivingSystem.driveToX(30);
 				//drivingSystem.driveSideWays(60-sideWays, 0.5);
 				break;
 			case TAG_2:
@@ -70,7 +70,7 @@ public class AutonomousRoutes {
 				//drivingSystem.driveSideways(90, 0.5);
 				break;
 			case TAG_3:
-				drivingSystem.driveToX(-80);
+				drivingSystem.driveToX(-30);
 				//drivingSystem.driveSideways(-65-sideWays, 0.5);
 				break;
 		}
