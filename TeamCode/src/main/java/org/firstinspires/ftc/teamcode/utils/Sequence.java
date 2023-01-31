@@ -8,6 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A class for creating a sequence of actions.
+ * Also contains the SequenceItem class, which is used to create an action in a sequence.
+ */
 public class Sequence {
 	/**
 	 * A class for storing an action in a sequence.
