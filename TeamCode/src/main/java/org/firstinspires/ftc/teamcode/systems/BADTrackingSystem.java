@@ -230,7 +230,6 @@ public class BADTrackingSystem {
 
 	/**
 	 * Prints the robot's current position to the telemetry.
-	 * Must call telemetry.update() after using this method.
 	 */
 	public void printPosition() {
 		opMode.telemetry.addData("x", position.x);

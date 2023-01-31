@@ -39,6 +39,9 @@ public class OneDriverTeleop extends LinearOpMode {
 			// Apply calculated velocity to mecanum wheels
 			systems.drivingSystem.driveMecanum(powers);
 
+			// Print the current position of the robot
+			systems.trackingSystem.printPosition();
+
 
 			if (gamepad.lt()) {
 				systems.gWheelSystem.toggleSpit();
