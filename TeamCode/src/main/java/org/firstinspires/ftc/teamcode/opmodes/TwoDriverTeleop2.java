@@ -35,6 +35,9 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 		Pose actPowers = new Pose(0, 0, 0);
 
 		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
+		double position1 = 0.01;
+		double position2 = 0.3;
+
 
 
 
@@ -74,7 +77,7 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 //				elevator.goTo(ElevatorSystem.Level.PICKUP);
 //			}
 			elevator.setPower(gamepad2.left_stick_y * 0.5);
-
+			//fourBar.setPower(gamepad2.right_stick_y * 0.1)
 
 			if(gamepadB.lt()){
 				gWheel.toggleSpit();
@@ -82,6 +85,15 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 			if(gamepadB.rt()){
 				gWheel.toggleCollect();
 			}
+
+			double bla = gamepad2.right_stick_y * 0.1;
+			position1 += bla;
+			position2 += bla;
+
+			//fourBar.goToD(position1, bla);
+
+			//FourBarSystem.FourBarState state = new FourBarState(position1, position2);
+
 
 			if (gamepadB.lb()){
 				fourBar.goTo(FourBarSystem.FourBarState.DROPOFF);

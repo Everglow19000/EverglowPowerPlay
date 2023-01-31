@@ -11,11 +11,10 @@ public class FourBarSystem {
 	 * Enum encapsulating the two positions the fourBar should reach.
 	 */
 	public enum FourBarState {
-		PICKUP(0.1, 0.), DROPOFF(0.6, 0.5);
+		PICKUP(0.01, 0.3), DROPOFF(0.36, 0.81);
 
 		private final double posRight;
 		private final double posLeft;
-
 		FourBarState(double posRight, double state2) {
 			this.posRight = posRight;
 			this.posLeft = state2;
@@ -63,4 +62,12 @@ public class FourBarSystem {
 		servoLeft.setPosition(state.posLeft);
 		servoRight.setPosition(state.posRight);
 	}
+
+	public void goToD(double state1, double state2) {
+		servoLeft.setPosition(state1);
+		servoRight.setPosition(state2);
+	}
+
+
+
 }

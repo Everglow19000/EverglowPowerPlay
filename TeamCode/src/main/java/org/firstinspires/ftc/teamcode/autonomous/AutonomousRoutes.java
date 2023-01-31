@@ -43,7 +43,7 @@ public class AutonomousRoutes {
 
 		//drivingSystem.driveStraight(60, 0.5);
 		//drivingSystem.driveSideways(sideWays, 0.5);
-		drivingSystem.driveY(40);
+		drivingSystem.driveY(65);
 //		drivingSystem.driveX(sideWays);
 
 
@@ -61,7 +61,7 @@ public class AutonomousRoutes {
 
 		switch (tagType) {
 			case TAG_1:
-				drivingSystem.driveToX(30);
+				drivingSystem.driveToX(70);
 				//drivingSystem.driveSideWays(60-sideWays, 0.5);
 				break;
 			case TAG_2:
@@ -70,7 +70,7 @@ public class AutonomousRoutes {
 				//drivingSystem.driveSideways(90, 0.5);
 				break;
 			case TAG_3:
-				drivingSystem.driveToX(-30);
+				drivingSystem.driveToX(-70);
 				//drivingSystem.driveSideways(-65-sideWays, 0.5);
 				break;
 		}
@@ -87,7 +87,7 @@ public class AutonomousRoutes {
 
 		//drivingSystem.driveStraight(60, 0.5);
 		//drivingSystem.driveSideways(sideWays, 0.5);
-		drivingSystem.driveY(70);
+		drivingSystem.driveY(0);
 		drivingSystem.driveX(sideWays);
 
 
@@ -105,7 +105,7 @@ public class AutonomousRoutes {
 
 		switch (tagType) {
 			case TAG_1:
-				drivingSystem.driveToX(80);
+				drivingSystem.driveToX(95);
 				//drivingSystem.driveSideWays(60-sideWays, 0.5);
 				break;
 			case TAG_2:
@@ -114,7 +114,7 @@ public class AutonomousRoutes {
 				//drivingSystem.driveSideways(90, 0.5);
 				break;
 			case TAG_3:
-				drivingSystem.driveToX(-80);
+				drivingSystem.driveToX(-95);
 				//drivingSystem.driveSideways(-65-sideWays, 0.5);
 				break;
 		}
@@ -129,7 +129,7 @@ public class AutonomousRoutes {
 		opMode.telemetry.update();
 		switch (tagType){
 			case TAG_1:
-				drivingSystem.driveSideways(65, 0.5);
+				drivingSystem.driveSideways(80, 0.5);
 				drivingSystem.driveStraight(90, 0.5);
 				break;
 			case TAG_2:
@@ -137,7 +137,7 @@ public class AutonomousRoutes {
 				drivingSystem.driveStraight(90, 0.5);
 				break;
 			case TAG_3:
-				drivingSystem.driveSideways(-65, 0.5);
+				drivingSystem.driveSideways(-80, 0.5);
 				drivingSystem.driveStraight(90, 0.5);
 				break;
 		}

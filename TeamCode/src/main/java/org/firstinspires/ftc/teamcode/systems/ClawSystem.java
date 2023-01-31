@@ -12,8 +12,8 @@ public class ClawSystem {
 	 * Enum encapsulating the two positions the claw should reach.
 	 */
 	public enum ClawState {
-		OPEN(0),
-		CLOSED(0.78);
+		OPEN(0.5),
+		CLOSED(0.2);
 
 		public final double clawState;
 

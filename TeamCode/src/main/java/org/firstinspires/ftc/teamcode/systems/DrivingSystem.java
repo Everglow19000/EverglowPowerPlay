@@ -449,7 +449,7 @@ public class DrivingSystem {
 		frontLeft.setPower(frontLeftPower);
 		backRight.setPower(backRightPower);
 		backLeft.setPower(backLeftPower);
-//		trackPosition();
+		trackPosition();
 	}
 
 	/**
@@ -801,7 +801,7 @@ public class DrivingSystem {
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
-			actPowers.y = 0.003 * deviation + 0.15 * signum(deviation);
+			actPowers.y = 0.01 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
 			deviation = yTarget - positionCM.y;
 		}
@@ -824,7 +824,7 @@ public class DrivingSystem {
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
-			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
+			actPowers.x = 0.01 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
 			deviation = xTarget - positionCM.x;
 		}
