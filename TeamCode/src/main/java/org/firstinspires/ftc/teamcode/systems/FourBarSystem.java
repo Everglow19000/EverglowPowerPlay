@@ -4,6 +4,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.max;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -45,8 +46,10 @@ public class FourBarSystem {
 		}
 	}
 
+
 	private final Servo servoRight;
 	private final Servo servoLeft;
+	private final DcMotor fourBarMotor;
 
 	private State state = new RestingState();
 
@@ -108,6 +111,7 @@ public class FourBarSystem {
 	public FourBarSystem(LinearOpMode opMode) {
 		servoRight = opMode.hardwareMap.get(Servo.class, "4bar_right");
 		servoLeft = opMode.hardwareMap.get(Servo.class, "4bar_left");
+		fourBarMotor = opMode.hardwareMap.get(DcMotor.class, "4bar");
 		servoRight.setDirection(Servo.Direction.REVERSE);
 	}
 

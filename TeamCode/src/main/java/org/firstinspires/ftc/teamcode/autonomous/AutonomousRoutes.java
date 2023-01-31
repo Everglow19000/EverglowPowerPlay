@@ -46,20 +46,18 @@ public class AutonomousRoutes implements Runnable {
 
 	@RequiresApi(api = Build.VERSION_CODES.O)
 	public void run(){
-		isTimeractive = true;
+
 		int startSec = LocalTime.now().getSecond();
 		int nowSec = LocalTime.now().getSecond();
 		double deltaTime = nowSec - startSec;
 		double deltaTimeRelativeToAction = deltaTime;
-		boolean gotActed = false;
 		while (opMode.opModeIsActive() && deltaTimeRelativeToAction<20){
 			nowSec = LocalTime.now().getSecond();
 			deltaTime = nowSec - startSec;
 			if (befourAction){
 				deltaTimeRelativeToAction = deltaTime+5;
-				gotActed = true;
 			}
-			else if (gotActed){
+			else{
 				deltaTimeRelativeToAction = deltaTime;
 			}
 		}
@@ -70,10 +68,9 @@ public class AutonomousRoutes implements Runnable {
 	public void putConesAndBack(boolean isRightAutonomous){
 		Thread timerThread = new Thread();
 		timerThread.run();
-		opMode.sleep(10);
 
+		isTimeractive = true;
 		final double lenSquere = 64;
-
 
 		final int right;
 		if (isRightAutonomous){
@@ -83,39 +80,43 @@ public class AutonomousRoutes implements Runnable {
 		}
 
 		final Pose startPose = systems.trackingSystem.getPosition();
-		final Pose pickCone = new Pose(right*lenSquere/2, 2*lenSquere, PI/2);
-		final Pose putCone = new Pose(-right*lenSquere/4, 2.5*lenSquere, PI/2);
+		final Pose pickCone = new Pose(right*lenSquere/2, 2*lenSquere, 0);//PI/2
+		final Pose putCone = new Pose(-right*lenSquere/4, 2.5*lenSquere, 0);//
 
 		while (opMode.opModeIsActive() && isTimeractive) {
 			befourAction = true;
-			Sequence sequencePickUp = new Sequence(
-					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH));
-
-			Sequence sequenceDropOff = new Sequence(
-					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1),
-					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
-
-			Sequence sequenceBackToStart = new Sequence(
-					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
+//			Sequence sequencePickUp = new Sequence(
+//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
+//					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
+//					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
+//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+//					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH));
+//
+//			Sequence sequenceDropOff = new Sequence(
+//					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1),
+//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
+//
+//			Sequence sequenceBackToStart = new Sequence(
+//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+//					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
+//					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
 
 			if (isTimeractive){
 				befourAction = false;
-				systems.drivingSystem.move2(pickCone);
-				systems.gWheelSystem.toggleCollect();
-				opMode.sleep(2500);
-				systems.gWheelSystem.toggleCollect();
-				sequencePickUp.start();
+				//systems.drivingSystem.move2(pickCone);
+				systems.drivingSystem.driveX(pickCone.x);
+				systems.drivingSystem.driveY(pickCone.y);
+				//systems.gWheelSystem.toggleCollect();
 				opMode.sleep(250);
-				systems.drivingSystem.move2(putCone);
-				sequenceDropOff.start();
+				//systems.gWheelSystem.toggleCollect();
+				//sequencePickUp.start();
+				opMode.sleep(250);
+				//systems.drivingSystem.move2(putCone);
+				systems.drivingSystem.driveX(putCone.x);
+				systems.drivingSystem.driveY(putCone.y);
+				//sequenceDropOff.start();
 				opMode.sleep(750);
-				sequenceBackToStart.start();
+				//sequenceBackToStart.start();
 			}else {
 				break;
 			}

@@ -47,8 +47,7 @@ public class DrivingSystem {
 	 */
 	private final DcMotor backRight;
 
-
-	private final Pose positionCM = new Pose();
+	private final TrackingSystem trackingSystem;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
 	public static final double TILE_SIZE = 71;
 	/**
@@ -134,6 +133,7 @@ public class DrivingSystem {
 		frontLeft.setDirection(DcMotor.Direction.REVERSE);
 		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
+		trackingSystem = new TrackingSystem(opMode);
 		// Reset the distances measured by the motors
 		resetDistance();
 	}
@@ -202,8 +202,7 @@ public class DrivingSystem {
 		final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
 		final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
-
-		Pose Deviation = Pose.difference(targetLocation, positionCM);
+		Pose Deviation = Pose.difference(targetLocation, trackingSystem.getPosition());
 		Deviation.normalizeAngle();
 		PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
@@ -212,9 +211,10 @@ public class DrivingSystem {
 						abs(Deviation.y) > epsilon.y ||
 						abs(Deviation.angle) > epsilon.angle)) {
 
+			trackingSystem.trackPosition();
 			driveByAxis(actPowers.powerByDeviation(Deviation));
 			opMode.telemetry.update();
-			Deviation = Pose.difference(targetLocation, positionCM);
+			Deviation = Pose.difference(targetLocation, trackingSystem.getPosition());
 			Deviation.normalizeAngle();
 		}
 		stop();
@@ -249,40 +249,43 @@ public class DrivingSystem {
 
 	public void driveX(double distance) {
 		final double epsilon = 0.5;
-		final double xTarget = positionCM.x + distance;
+		final double xTarget = trackingSystem.getPosition().x + distance;
 		;
 
 		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
-		double deviation = xTarget - positionCM.x;
+		double deviation = xTarget - trackingSystem.getPosition().x;
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			trackingSystem.trackPosition();
 			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
-			deviation = xTarget - positionCM.x;
+			deviation = xTarget - trackingSystem.getPosition().x;
 		}
 		stop();
 	}
 
 	public void driveY(double distance) {
 		final double epsilon = 0.5;
-		final double yTarget = positionCM.y + distance;
+		final double yTarget = trackingSystem.getPosition().y + distance;
 		;
 
 		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
-		double deviation = yTarget - positionCM.y;
+		double deviation = yTarget - trackingSystem.getPosition().y;
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			trackingSystem.trackPosition();
 			actPowers.y = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
-			deviation = yTarget - positionCM.y;
+			deviation = yTarget - trackingSystem.getPosition().y;
 		}
+		trackingSystem.printPosition();
 		stop();
 	}
 
 	public void driveByAxis(Pose powers) {
-		final double currentAngle = positionCM.angle;
+		final double currentAngle = trackingSystem.getPosition().angle;
 		final double cosAngle = cos(currentAngle);
 		final double sinAngle = sin(currentAngle);
 
@@ -298,9 +301,9 @@ public class DrivingSystem {
 
 	public Pair<Pose, Point2D> getSquareInformation() {
 		Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
-		SquareInformation.first.x = positionCM.x / TILE_SIZE;
-		SquareInformation.first.y = positionCM.y / TILE_SIZE;
-		SquareInformation.first.angle = positionCM.angle;
+		SquareInformation.first.x = trackingSystem.getPosition().x / TILE_SIZE;
+		SquareInformation.first.y = trackingSystem.getPosition().y / TILE_SIZE;
+		SquareInformation.first.angle = trackingSystem.getPosition().angle;
 
 		SquareInformation.second.x = SquareInformation.first.x % 1;
 		SquareInformation.second.x -= signum(SquareInformation.second.x) / 2;
