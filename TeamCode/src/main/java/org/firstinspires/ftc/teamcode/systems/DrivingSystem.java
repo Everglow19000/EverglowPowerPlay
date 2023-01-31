@@ -4,6 +4,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.atan;
 import static java.lang.Math.cos;
+import static java.lang.Math.hypot;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.lang.Math.signum;
@@ -70,13 +71,14 @@ public class DrivingSystem {
 
     private double ROBOT_LENGTH_CM;
     private double ROBOT_WIDTH_CM;
+    private double DROPOFF_DISTANCE_CM = 25;
 
     private double flPreviousTicks = 0;
     private double frPreviousTicks = 0;
     private double blPreviousTicks = 0;
     private double brPreviousTicks = 0;
 
-    private Pose positionCM = new Pose(0., 0., 0.);
+    private Pose positionCM = new Pose(0.00001, 0.00001, 0.0000001);
 
     public double maxDrivePower = 1;
 
@@ -194,26 +196,30 @@ public class DrivingSystem {
         positionCM.y = realLocation.y;
     }
 
-    /**
-     * convert the robot Location to be in squares and gives the deviation from the the center of the square that the robot is on
-     * @program The Robot's Location in squares, the deviation of the robot from the center of the square it's on between 0 and 1
-     */
-    public Pair<Pose, PointD> getSquareInformation() {
-        Pair<Pose, PointD> SquareInformation = new Pair<>(new Pose(), new PointD());
-        SquareInformation.first.x = positionCM.x / SQUARE_SIZE_CM;
-        SquareInformation.first.y = positionCM.y / SQUARE_SIZE_CM;
-        SquareInformation.first.angle = positionCM.angle;
 
-        SquareInformation.second.x = SquareInformation.first.x % 1;
-        SquareInformation.second.x -= signum(SquareInformation.second.x) / 2;
-        SquareInformation.second.x *= 2;
 
-        SquareInformation.second.y = SquareInformation.first.y % 1;
-        SquareInformation.second.y -= signum(SquareInformation.second.y) / 2;
-        SquareInformation.second.y *= 2;
-
-        return SquareInformation;
+    public PointD squareLocation() {
+        return new PointD(positionCM.x / SQUARE_SIZE_CM, positionCM.y / SQUARE_SIZE_CM);
     }
+
+    public PointD squareCenter() {
+        PointD squareLocation = squareLocation();
+        PointD squareCenter = new PointD(squareLocation.x + 0.5 * signum(squareLocation.x), squareLocation.y + 0.5 * signum(squareLocation.y));
+        round(squareCenter.x);
+        round(squareCenter.y);
+        squareCenter.x -= 0.5 * signum(squareLocation.x);
+        squareCenter.y -= 0.5 * signum(squareLocation.y);
+
+        return squareCenter;
+    }
+
+    public PointD squareDeviation() {
+        PointD squareLocation = squareLocation();
+        PointD squareCenter = squareCenter();
+        return new PointD(squareLocation.x - squareCenter.x, squareLocation.y - squareCenter.y);
+    }
+
+
 
 
     /**
@@ -371,9 +377,9 @@ public class DrivingSystem {
     public void controlledDriveByAxis(Pose Powers) {
         final double K = 0.03;
 
-        Pair<Pose, PointD> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        PointD squareDeviation = mySquareInformation.second;
+
+        PointD SquareLocation = squareLocation();
+        PointD squareDeviation = squareDeviation();
 
         if(abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
             Powers.x = 0;
@@ -407,9 +413,9 @@ public class DrivingSystem {
     public void controlledDriveByAxis2(Pose Powers) {
         final double K = 50.;
 
-        Pair<Pose, PointD> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        PointD squareDeviation = mySquareInformation.second;
+
+        PointD SquareLocation = squareLocation();
+        PointD squareDeviation = squareDeviation();
 
         if(abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
             Powers.x = 0;
@@ -448,9 +454,9 @@ public class DrivingSystem {
      * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
      */
     public void controlledDriveByAxis3(Pose Powers) {
-        Pair<Pose, PointD> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        PointD squareDeviation = mySquareInformation.second;
+
+        PointD SquareLocation = squareLocation();
+        PointD squareDeviation = squareDeviation();
 
         if(abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
             Powers.x = 0;
@@ -500,15 +506,23 @@ public class DrivingSystem {
         opMode.telemetry.addData("rot", toDegrees(positionCM.angle));
     }
 
+    public double angleTo(PointD distance) {
+        double angle = atan(distance.x / distance.y);
+        if(distance.x < 0) {
+            angle -= PI;
+        }
+        return angle;
+    }
 
-    public PointD closestJunctionLocation() {
-        Pair<Pose, PointD> mySquareInformation = getSquareInformation();
-        Pose SquareLocation = mySquareInformation.first;
-        PointD squareDeviation = mySquareInformation.second;
-        PointD squareCenter = new PointD(SquareLocation.x - squareDeviation.x, SquareLocation.y - squareDeviation.y);
+
+    public PointD closestPoleLocation() {
+        PointD squareDeviation = squareDeviation();
+        PointD squareCenter = squareCenter();
+        PointD squareLocation = squareLocation();
+
 
         PointD bestCornerPosition = new PointD();
-        double bestRating = 0;
+        double bestRating = -20;
         for(int corner = 0; corner < 4; corner++) {
             PointD cornerSquarePosition = new PointD();
             cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
@@ -516,26 +530,46 @@ public class DrivingSystem {
             cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
             cornerSquarePosition.y = round(cornerSquarePosition.y);
 
-
-            if(abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2) {
+            if(abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2 ||
+                    (cornerSquarePosition.x % 2 == 0 && cornerSquarePosition.y % 2 == 0)) {
                 continue;
             }
 
             PointD cornerDistance = new PointD();
-            cornerDistance.x = cornerSquarePosition.x - SquareLocation.x;
-            cornerDistance.y = cornerSquarePosition.y - SquareLocation.y;
+            cornerDistance.x = cornerSquarePosition.x - squareLocation.x;
+            cornerDistance.y = cornerSquarePosition.y - squareLocation.x;
 
-            double rating = sqrt(cornerDistance.x * cornerDistance.x + cornerDistance.y * cornerDistance.y); // distance to the Pole
-            rating *= (PI - normalizeAngle(SquareLocation.angle - atan(cornerDistance.x / cornerDistance.y))) / PI; // how much the robot is facing the Pole
+            double rating = -abs(angleTo(cornerDistance) - positionCM.angle);
 
             if(rating > bestRating) {
-                cornerSquarePosition.x *= SQUARE_SIZE_CM;
-                cornerSquarePosition.y *= SQUARE_SIZE_CM;
                 bestCornerPosition = cornerSquarePosition;
+                bestRating = rating;
             }
         }
 
+        bestCornerPosition.x *= SQUARE_SIZE_CM;
+        bestCornerPosition.y *= SQUARE_SIZE_CM;
+
         return bestCornerPosition;
+    }
+
+
+    public void driveToClosestPole() {
+        double Epsilon = 0.5;
+
+        PointD poleLocation = closestPoleLocation();
+        Pose divrePowers = new Pose();
+        double distance = 100, angleToPole, angleDeviation;
+        while(abs(distance) < 0.5) {
+            angleToPole = angleTo(new PointD(poleLocation.x - positionCM.x, poleLocation.y - positionCM.y));
+            angleDeviation = normalizeAngle(angleToPole - positionCM.angle);
+            distance = hypot(poleLocation.x - positionCM.x, poleLocation.y - positionCM.y) - DROPOFF_DISTANCE_CM;
+            double power = distance * 0.007 + 0.05;
+
+
+            driveByAxis(new Pose(power * sin(angleToPole), power * cos(angleToPole), angleDeviation * 0.3 + 0.07));
+        }
+
     }
 
     /**
