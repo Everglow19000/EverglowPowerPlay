@@ -31,7 +31,6 @@ import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
 import org.firstinspires.ftc.teamcode.utils.PIDController;
 import org.firstinspires.ftc.teamcode.utils.PdffController;
 import org.firstinspires.ftc.teamcode.utils.PointD;
-import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.PositionLogger;
@@ -85,13 +84,11 @@ public class DrivingSystem {
 	private static final double k_d_error = 0.005;
 	private static final double k_v = 1 / RobotParameters.MAX_V_X;
 
-
 	private static final double k_v_rot = 1 / RobotParameters.MAX_V_ROT;
 	private static final double k_a_rot_accelerating = 55./500;
 	private static final double k_a_rot_decelerating = 0;
 	private static final double k_error_rot = 25.*0.1;
 	private static final double k_d_error_rot = 10 * 0.005;
-
 
 	/**
 	 * A constant which the speed in the y direction is multiplied by
@@ -101,7 +98,6 @@ public class DrivingSystem {
 	private static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X / RobotParameters.MAX_V_Y;
 
 	private static final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
-
 
 	private final LinearOpMode opMode;
 
@@ -136,6 +132,7 @@ public class DrivingSystem {
 	private double brPreviousTicks = 0;
 
 	private final Pose positionCM = new Pose(0., 0., 0.);
+	private Pose targetPose = new Pose();
 
 	public double maxDrivePower = 1;
 
@@ -144,8 +141,6 @@ public class DrivingSystem {
 	public final PositionLogger positionLogger; // Needs to be public to save the file from the opMode.
 	private long lastCycleTime; // The time, in nanoseconds since the program began of the last time trackPosition was called.
 	private long lastCycleDuration; // The duration, in nanoseconds, of the time between when trackPosition was called the last 2 times.
-
-	private Pose targetPose = new Pose();
 
 	public Pose getTargetPosition(){
 		return new Pose(targetPose);
@@ -839,7 +834,6 @@ public class DrivingSystem {
 		driveX(Position - positionCM.x);
 	}
 
-
 	/**
 	 * Rotates the robot a given number of radians.
 	 * A positive angle means clockwise rotation, a negative angle is counterclockwise.
@@ -916,8 +910,6 @@ public class DrivingSystem {
 		resetDistance();
 
 		ElapsedTime elapsedTime = new ElapsedTime();
-
-
 		PdffController controller = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			Pose pose = getDistancesOld();
@@ -979,8 +971,6 @@ public class DrivingSystem {
 		stop();
 	}
 
-
-
 	public void rotateByAccelerationProfile(AccelerationProfile accelerationProfile){
 		final double ANGLE_DEVIATION_SCALAR = 0.;
 		resetDistance();
@@ -1020,36 +1010,49 @@ public class DrivingSystem {
 	}
 
 	public void driveByPath(Trajectory traj){
+		resetDistance();
+
 		ElapsedTime elapsedTime = new ElapsedTime();
+		PdffController xController = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PdffController yController = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PdffController rotController = new PdffController(k_v_rot, k_a_rot_accelerating, k_a_rot_decelerating, k_error_rot, k_d_error_rot);
+
+		double prev_t = 0;
+		double prev_v_x = 0;
+		double prev_v_y = 0;
+		double prev_v_rot = 0;
 
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
-			final double currentTime = elapsedTime.seconds();
-			final double k_pointDeviation = 0;
-			final double k_angleDeviation = 1/toRadians(5);
+			final double time = elapsedTime.seconds();
+			final double dt = time - prev_t;
 
-			Pose currentPose = new Pose(positionCM.x,positionCM.y,getCurrentAngle());
-			Pose targetPose = traj.getPose(currentTime);
-			Pose deviation = new Pose(
-					(targetPose.x - currentPose.x)*k_pointDeviation,
-					(targetPose.y - currentPose.y)*k_pointDeviation,
-					normalizeAngle(0 - currentPose.angle)*k_angleDeviation
-			);
+//			Getting currentPose, targetPose, and error
+			Pose currentPose = getDistancesOld();
+			targetPose = traj.getPose(time);
+			Pose error = new Pose(targetPose.x - currentPose.x, targetPose.y - currentPose.y,
+					normalizeAngle(targetPose.angle - currentPose.angle));
 
-			this.targetPose = targetPose;
+//			Velocity and acceleration poses
+			Pose velocity = traj.getVelocity(time);
+			Pose acceleration = new Pose((velocity.x - prev_v_x)/dt, (velocity.y - prev_v_y)/dt,
+					(velocity.angle - prev_v_rot)/dt);
 
-			Pose powers = traj.getPowers(elapsedTime.seconds());
-			driveByAxis(new Pose(
-					powers.x + deviation.x,
-					powers.y + deviation.y,
-					powers.angle + deviation.angle));
-//			driveMecanum(new Pose((powers.x+deviation.x), (powers.y+deviation.y), (powers.angle+deviation.angle)));
+//			Using PdffController to get power and driving
+			double xPower = xController.getPower(time,error.x,velocity.x,acceleration.x);
+			double yPower = yController.getPower(time,error.y,velocity.y,acceleration.y);
+			double rotationPower = rotController.getPower(time,error.angle,velocity.angle,acceleration.angle);
+
+			driveByAxis(new Pose(xPower, yPower, rotationPower));
+
+//			Setting the 'previous' variables
+			prev_t = time;
+			prev_v_x = velocity.x;
+			prev_v_y = velocity.y;
+			prev_v_rot = velocity.angle;
+
 			positionLogger.update();
 			printPosition();
-			opMode.telemetry.addData("track position", positionCM.x + "," + positionCM.y);
-			opMode.telemetry.update();
 		}
 		stop();
 	}
-
-
 }

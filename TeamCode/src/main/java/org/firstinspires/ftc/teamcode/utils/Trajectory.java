@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Trajectory {
     SplinePath path;
-    AccelerationProfile profile;
+    AccelerationProfile accelerationProfile;
     AccelerationProfile rotationProfile;
     List<Double> uList;
 
@@ -21,11 +21,11 @@ public class Trajectory {
         uList = getUList(path);
         pathLength = step * uList.size();
 
-        profile = new AccelerationProfile(RobotParameters.MAX_A_X, maxVelocity, pathLength);
+        accelerationProfile = new AccelerationProfile(RobotParameters.MAX_A_X, maxVelocity, pathLength);
         rotationProfile = new AccelerationProfile(RobotParameters.MAX_A_ROT,
                 RobotParameters.MAX_V_ROT, endAngle-startAngle);
 
-        totalTime = profile.finalTime();
+        totalTime = accelerationProfile.finalTime();
     }
 
     /**
@@ -49,35 +49,34 @@ public class Trajectory {
      * @param time The real time of the robot.
      * @return A Pose object.
      */
-    public Pose getPowers(double time){
-//      Finds the u value for a a given time     :
-        final double distance = profile.getPosition(time);
+    public Pose getVelocity(double time){
+//      Finds the u value for a a given time:
+        final double distance = accelerationProfile.getPosition(time);
         final int ptIndex = (int) (distance/step);
         if(ptIndex >= uList.size()) return null;
         final double nextU = uList.get(ptIndex);
 
-//      Finds the slope of x(u) and y(u) (the direction of the vector):
+//      Finds the slope of x(u) and y(u):
         PointD vector = path.getDerivative(nextU);
-        double xPower = vector.x;
-        double yPower = vector.y;
-        double maxPower = Math.max(Math.abs(xPower), Math.abs(yPower));
-        xPower /= maxPower;
-        yPower /= maxPower;
+        double xVelocity = vector.x;
+        double yVelocity = vector.y;
+        double maxPower = Math.max(Math.abs(xVelocity), Math.abs(yVelocity));
+        xVelocity /= maxPower;
+        yVelocity /= maxPower;
 
 //      Finds the size of the vector:
-        final double velocityPower = profile.getVelocity(time) / RobotParameters.MAX_V_X;
-        xPower *= velocityPower;
-        yPower *= velocityPower;
+        final double velocity = accelerationProfile.getVelocity(time);
+        xVelocity *= velocity;
+        yVelocity *= velocity;
 
 //      Finds the rotation power.
-        final double angularVelocity = rotationProfile.getVelocity(time);
-        final double rotationPower = angularVelocity/RobotParameters.MAX_V_ROT;
+        final double angularVelocity = rotationProfile.getVelocity(time);;
 
-        return new Pose(xPower, yPower, 0);
+        return new Pose(xVelocity, yVelocity, angularVelocity);
     }
 
     public Pose getPose(double time){
-        final double distance = profile.getPosition(time);
+        final double distance = accelerationProfile.getPosition(time);
         final int ptIndex = (int) (distance/step);
         if(ptIndex >= uList.size()) return null;
         double nextU = uList.get(ptIndex);
@@ -95,4 +94,11 @@ public class Trajectory {
         return totalTime;
     }
 
+    public AccelerationProfile getAccelerationProfile() {
+        return accelerationProfile;
+    }
+
+    public AccelerationProfile getRotationProfile(){ return rotationProfile; }
+
+    public SplinePath getPath(){ return path; }
 }

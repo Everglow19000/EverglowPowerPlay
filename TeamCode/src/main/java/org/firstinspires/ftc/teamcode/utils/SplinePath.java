@@ -9,7 +9,6 @@ public class SplinePath {
     public PolynomialPath[] myPath;
 
     public SplinePath(PointD[] points) {
-
         myPath = MatrixSolver.findPath(points);
     }
 
