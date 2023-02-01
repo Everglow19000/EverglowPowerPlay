@@ -29,7 +29,6 @@ public class DrivingSystem {
 	 * The current opMode running on the robot.
 	 */
 	private final LinearOpMode opMode;
-
 	/**
 	 * The front left wheel.
 	 */
@@ -48,6 +47,8 @@ public class DrivingSystem {
 	private final DcMotor backRight;
 
 	private final TrackingSystem trackingSystem;
+
+
 	private static final double ROTATION_EPSILON = toRadians(0.5);
 	public static final double TILE_SIZE = 71;
 	/**

@@ -69,7 +69,8 @@ public class TwoDriverTeleop extends LinearOpMode {
 				}
 				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
-						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1)
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP)
+//						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1)
 				);
 				systems.executeSequence(elevatorSequence);
 			} else if (gamepadB.dpad_left()) {

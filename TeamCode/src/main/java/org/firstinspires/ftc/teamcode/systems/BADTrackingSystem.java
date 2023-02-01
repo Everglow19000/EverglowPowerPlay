@@ -189,7 +189,7 @@ public class BADTrackingSystem {
 		final double frontRightDisplacement = (frCurrentTicks - frPreviousTicks) * CM_PER_TICK;
 		final double backLeftDisplacement = (blCurrentTicks - blPreviousTicks) * CM_PER_TICK;
 		final double backRightDisplacement = (brCurrentTicks - brPreviousTicks) * CM_PER_TICK;
-		final double angleChange = position.angle - orientation.firstAngle;
+		final double angleChange = orientation.firstAngle - position.angle;
 
 		// Calculating the robot's displacement and rotation
 		final double centerDisplacement = (frontLeftDisplacement + frontRightDisplacement +
