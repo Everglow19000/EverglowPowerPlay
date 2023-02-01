@@ -112,4 +112,8 @@ public class ClawSystem {
 		state.tick();
 	}
 
+	public void interrupt(){
+		state = new RestingState();
+	}
+
 }

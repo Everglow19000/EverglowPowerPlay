@@ -56,6 +56,13 @@ public class SystemCoordinator {
 		trackingSystem.tick();
 	}
 
+	public void interrupt(){
+		clawSystem.interrupt();
+		elevatorSystem.interrupt();
+		fourBarSystem.interrupt();
+		actionSequences.clear();
+	}
+
 	/**
 	 * Executes a sequence.
 	 *

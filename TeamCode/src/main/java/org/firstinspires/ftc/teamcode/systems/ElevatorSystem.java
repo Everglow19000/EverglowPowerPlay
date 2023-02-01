@@ -97,4 +97,10 @@ public class ElevatorSystem {
 		state.tick();
 	}
 
+	public void interrupt(){
+		state = new RestingState();
+		left.setTargetPosition(left.getCurrentPosition());
+		right.setTargetPosition(right.getCurrentPosition());
+	}
+
 }

@@ -57,6 +57,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			}
 
 			if (gamepadB.circle()) {
+				systems.interrupt();
 				Sequence.SequenceItem sequenceItem = systems.clawSystem.goToSequenceItem(isClawOpen
 						? ClawSystem.ClawPosition.OPEN : ClawSystem.ClawPosition.CLOSED, 1);
 				sequenceItem.runAction.run();
@@ -64,9 +65,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			} // claw toggle
 
 			if (gamepadB.dpad_down()) {
-				if (elevatorSequence != null) {
-					elevatorSequence.interrupt();
-				}
+				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP)
@@ -74,18 +73,14 @@ public class TwoDriverTeleop extends LinearOpMode {
 				);
 				systems.executeSequence(elevatorSequence);
 			} else if (gamepadB.dpad_left()) {
-				if (elevatorSequence != null) {
-					elevatorSequence.interrupt();
-				}
+				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1)
 				);
 				systems.executeSequence(elevatorSequence);
 			} else if (gamepadB.dpad_up()) {
-				if (elevatorSequence != null) {
-					elevatorSequence.interrupt();
-				}
+				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1)
@@ -94,9 +89,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			} // go to dropOff
 
 			else if (gamepadB.triangle()) {
-				if (elevatorSequence != null) {
-					elevatorSequence.interrupt();
-				}
+				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),

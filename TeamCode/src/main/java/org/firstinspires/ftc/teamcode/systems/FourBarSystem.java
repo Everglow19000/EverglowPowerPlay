@@ -140,4 +140,8 @@ public class FourBarSystem {
 		servoLeft.setPosition(position.posLeft);
 	}
 
+	public void interrupt(){
+		state = new RestingState();
+	}
+
 }
