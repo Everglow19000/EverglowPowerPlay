@@ -83,37 +83,37 @@ public class AutonomousRoutes implements Runnable {
 		final Pose pickCone = new Pose(right*lenSquere/2, 2*lenSquere, 0);//PI/2
 		final Pose putCone = new Pose(-right*lenSquere/4, 2.5*lenSquere, 0);//
 
+		Sequence sequencePickUp = new Sequence(
+				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
+				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH));
+
+		Sequence sequenceDropOff = new Sequence(
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1),
+				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
+
+		Sequence sequenceBackToStart = new Sequence(
+				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
+
+
 		while (opMode.opModeIsActive() && isTimeractive) {
 			befourAction = true;
-//			Sequence sequencePickUp = new Sequence(
-//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-//					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
-//					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-//					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH));
-//
-//			Sequence sequenceDropOff = new Sequence(
-//					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1),
-//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
-//
-//			Sequence sequenceBackToStart = new Sequence(
-//					systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-//					systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
-//					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
 
 			if (isTimeractive){
 				befourAction = false;
-				//systems.drivingSystem.move2(pickCone);
-				systems.drivingSystem.driveX(pickCone.x);
-				systems.drivingSystem.driveY(pickCone.y);
+				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle);
+				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle);
 				//systems.gWheelSystem.toggleCollect();
-				opMode.sleep(250);
+				//opMode.sleep(250);
 				//systems.gWheelSystem.toggleCollect();
 				//sequencePickUp.start();
-				opMode.sleep(250);
-				//systems.drivingSystem.move2(putCone);
-				systems.drivingSystem.driveX(putCone.x);
-				systems.drivingSystem.driveY(putCone.y);
+				//opMode.sleep(250);
+				systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle);
+				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle);
 				//sequenceDropOff.start();
 				opMode.sleep(750);
 				//sequenceBackToStart.start();
@@ -122,6 +122,7 @@ public class AutonomousRoutes implements Runnable {
 			}
 		}
 
-		systems.drivingSystem.move2(startPose);
+		systems.drivingSystem.driveSidewaysSequenceItem(startPose.x, startPose.angle);
+		systems.drivingSystem.driveStraightSequenceItem(startPose.y, startPose.angle);
 	}
 }
