@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
+import static java.lang.Math.round;
+import static java.lang.Math.signum;
 import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
 
@@ -10,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
+import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 /**
@@ -25,6 +28,10 @@ public class TrackingSystem {
 	 */
 	private static final double TICKS_PER_ROTATION = 8192;
 	/**
+	 * The size of a tile side in centimeters.
+	 */
+	public static final double TILE_SIZE = 71;
+	/**
 	 * Conversion factor from ticks to centimeters.
 	 */
 	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS * 2 * PI;
@@ -36,6 +43,15 @@ public class TrackingSystem {
 	 * The distance between the center of the robot and the back wheel.
 	 */
 	private static final double FORWARD_OFFSET = -4.5; //TODO: Measure this
+	/**
+	 * some stuff. TODO: Figure out what this is.
+	 */
+	private static final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
+
+	/**
+	 * The distance blah blah in centimeters.
+	 */
+	private final double DROPOFF_DISTANCE_CM = 25;
 
 	/**
 	 * The current opMode running on the robot.
@@ -179,6 +195,36 @@ public class TrackingSystem {
 		if (num == 0)
 			return 0;
 		return (cos(num) - 1) / num;
+	}
+
+	/**
+	 * resets the Position of the robot to another value
+	 * @program realLocation the new and correct location of the robot in the Board
+	 */
+	public void resetStartLocation(Point2D realLocation) {
+		position.x = realLocation.x;
+		position.y = realLocation.y;
+	}
+
+	public Point2D squareLocation() {
+		return new Point2D(position.x / TILE_SIZE, position.y / TILE_SIZE);
+	}
+
+	public Point2D squareCenter() {
+		Point2D squareLocation = squareLocation();
+		Point2D squareCenter = new Point2D(squareLocation.x + 0.5 * signum(squareLocation.x), squareLocation.y + 0.5 * signum(squareLocation.y));
+		round(squareCenter.x);
+		round(squareCenter.y);
+		squareCenter.x -= 0.5 * signum(squareLocation.x);
+		squareCenter.y -= 0.5 * signum(squareLocation.y);
+
+		return squareCenter;
+	}
+
+	public Point2D squareDeviation() {
+		Point2D squareLocation = squareLocation();
+		Point2D squareCenter = squareCenter();
+		return new Point2D(squareLocation.x - squareCenter.x, squareLocation.y - squareCenter.y);
 	}
 
 	/**

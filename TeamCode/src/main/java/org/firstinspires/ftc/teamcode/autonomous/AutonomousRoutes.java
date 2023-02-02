@@ -76,18 +76,18 @@ public class AutonomousRoutes implements Runnable {
 
 		Sequence sequencePickUp = new Sequence(
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH));
 
 		Sequence sequenceDropOff = new Sequence(
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF),
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
 
 		Sequence sequenceBackToStart = new Sequence(
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
 
 

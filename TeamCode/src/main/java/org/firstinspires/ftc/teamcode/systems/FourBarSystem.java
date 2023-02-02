@@ -10,40 +10,42 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
 
 /**
- * A class for handling the elevator system.
+ * A class for handling the fourBar system.
  */
 public class FourBarSystem {
+	private final DcMotor fourBar;
+	private State state = new RestingState();
 	/**
 	 * Enum encapsulating all the positions the system should reach.
 	 */
-	public enum Position {
+	public enum FourBarPosition {
 		PICKUP(0), DROPOFF(-500);
 
 		public final int desiredPosition;
 
-		Position(int desiredPosition) {
+		FourBarPosition(int desiredPosition) {
 			this.desiredPosition = desiredPosition;
 		}
 	}
 
 	/**
-	 * A state used when the robot should be moving.
+	 * A state used when the fourBar should be moving.
 	 */
 	public class ActingState implements State {
 		private static final int EPSILON = 20;
-		private final Position position;
+		private final FourBarPosition position;
 
 		/**
-		 * @param position A elevator level to move to (e.g. ElevatorLevel.GROUND).
+		 * @param position A fourBar position to move to (FourBarPosition.PICKUP or FourBarPosition.DROPOFF).
 		 */
-		public ActingState(Position position) {
+		public ActingState(FourBarPosition position) {
 			this.position = position;
-			motor.setTargetPosition(position.desiredPosition);
+			fourBar.setTargetPosition(position.desiredPosition);
 		}
 
 		public void tick() {
-			// The claw has reached its desired position
-			int error = abs(position.desiredPosition - motor.getCurrentPosition());
+			// The fourBar has reached its desired position
+			int error = abs(position.desiredPosition - fourBar.getCurrentPosition());
 			SystemCoordinator.instance.opMode.telemetry.addData("error", error);
 			SystemCoordinator.instance.opMode.telemetry.update();
 			if (error <= EPSILON) {
@@ -54,40 +56,40 @@ public class FourBarSystem {
 
 	}
 
-	private final DcMotor motor;
-	private State state = new RestingState();
-
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public FourBarSystem(OpMode opMode) {
-		motor = opMode.hardwareMap.get(DcMotor.class, "4bar");
-		motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		motor.setTargetPosition(0);
-		motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		motor.setPower(0.7);
+		fourBar = opMode.hardwareMap.get(DcMotor.class, "4bar");
+		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		fourBar.setTargetPosition(0);
+		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+		fourBar.setPower(0.7);
 	}
 
-	public Sequence.SequenceItem goToSequenceItem(Position position) {
+	public Sequence.SequenceItem goToSequenceItem(FourBarPosition fourBarPosition) {
 		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
-			state = new ActingState(position);
+			state = new ActingState(fourBarPosition);
 		});
 	}
 
 	// should only be used for testing
-	public void goToImmediate(Position position) {
-		motor.setTargetPosition(position.desiredPosition);
+	public void goToImmediate(FourBarPosition fourBarPosition) {
+		fourBar.setTargetPosition(fourBarPosition.desiredPosition);
 	}
 
 	/**
-	 * Ticks the elevator system.
+	 * Ticks the fourBar system.
 	 */
 	public void tick() {
 		state.tick();
 	}
 
+	/**
+	 * Stops the fourBar system.
+	 */
 	public void interrupt() {
 		state = new RestingState();
-		motor.setTargetPosition(motor.getCurrentPosition());
+		fourBar.setTargetPosition(fourBar.getCurrentPosition());
 	}
 }
