@@ -21,7 +21,6 @@ public class PdffController {
 	public double getPower(double t, double error, double v, double a){
 		double dt = t - prevT;
 		double d_error_dt = (error - prevError) / dt;
-
 		double k_a;
 
 		if(a * v > 0){

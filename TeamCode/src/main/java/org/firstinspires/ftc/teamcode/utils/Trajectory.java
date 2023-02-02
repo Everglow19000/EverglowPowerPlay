@@ -19,12 +19,10 @@ public class Trajectory {
         this.path = path;
         this.startAngle = startAngle;
         uList = getUList(path);
-        pathLength = step * uList.size();
+        pathLength = step * uList.size() * path.myPath.length;
 
         accelerationProfile = new AccelerationProfile(RobotParameters.MAX_A_X, maxVelocity, pathLength);
-        rotationProfile = new AccelerationProfile(RobotParameters.MAX_A_ROT,
-                RobotParameters.MAX_V_ROT, endAngle-startAngle);
-
+        rotationProfile = new AccelerationProfile(RobotParameters.MAX_A_ROT, RobotParameters.MAX_V_ROT, endAngle-startAngle);
         totalTime = accelerationProfile.finalTime();
     }
 
@@ -52,7 +50,7 @@ public class Trajectory {
     public Pose getVelocity(double time){
 //      Finds the u value for a a given time:
         final double distance = accelerationProfile.getPosition(time);
-        final int ptIndex = (int) (distance/step);
+        final int ptIndex = (int) (distance/pathLength * uList.size());
         if(ptIndex >= uList.size()) return null;
         final double nextU = uList.get(ptIndex);
 
@@ -77,7 +75,7 @@ public class Trajectory {
 
     public Pose getPose(double time){
         final double distance = accelerationProfile.getPosition(time);
-        final int ptIndex = (int) (distance/step);
+        final int ptIndex = (int) (distance/pathLength * uList.size());
         if(ptIndex >= uList.size()) return null;
         double nextU = uList.get(ptIndex);
 
@@ -93,12 +91,4 @@ public class Trajectory {
     public double getTotalTime() {
         return totalTime;
     }
-
-    public AccelerationProfile getAccelerationProfile() {
-        return accelerationProfile;
-    }
-
-    public AccelerationProfile getRotationProfile(){ return rotationProfile; }
-
-    public SplinePath getPath(){ return path; }
 }

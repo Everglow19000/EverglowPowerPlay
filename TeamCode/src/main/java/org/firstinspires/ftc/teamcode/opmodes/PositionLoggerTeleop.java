@@ -24,16 +24,14 @@ public class PositionLoggerTeleop extends LinearOpMode {
 
         if (opModeIsActive()) {
             gamepad.update();
-
-/*
+            /*
             if (gamepad1.left_stick_button) {
                 actPowers.x = -gamepad1.left_stick_x;
                 actPowers.y = -gamepad1.left_stick_y;
                 actPowers.angle = -gamepad1.right_stick_x;
             }
             drivingSystem.driveMecanum(actPowers);
-*/
-
+            */
             drivingSystem.driveStraight(250, 1);
             File fileToCreate = PositionLogger.generateLogFileName("positionLog");
             drivingSystem.positionLogger.saveTo(fileToCreate);

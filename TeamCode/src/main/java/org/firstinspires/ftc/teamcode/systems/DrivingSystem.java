@@ -1031,9 +1031,7 @@ public class DrivingSystem {
 //			Getting currentPose, targetPose, and error
 			Pose currentPose = positionCM;
 			targetPose = traj.getPose(time);
-			if (targetPose == null){
-				return;
-			}
+			if (targetPose == null){ return; }
 			Pose error = new Pose(targetPose.x - currentPose.x, targetPose.y - currentPose.y,
 					normalizeAngle(targetPose.angle - currentPose.angle));
 
@@ -1047,7 +1045,7 @@ public class DrivingSystem {
 			double yPower = yController.getPower(time,error.y,velocity.y,acceleration.y);
 			double rotationPower = rotController.getPower(time,error.angle,velocity.angle,acceleration.angle);
 
-			driveByAxis(new Pose(xPower, yPower, rotationPower));
+			driveByAxis(new Pose(xPower*2, yPower*2, rotationPower*2));
 
 //			Setting the 'previous' variables
 			prev_t = time;
