@@ -910,7 +910,6 @@ public class DrivingSystem {
 
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
 		resetDistance();
-
 		ElapsedTime elapsedTime = new ElapsedTime();
 		PdffController controller = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
@@ -926,6 +925,7 @@ public class DrivingSystem {
 			driveMecanum(new Pose(0, forwardPower, 0));
 			positionCM.y = pose.y;
 			wantedPosition = targetPosition;
+			this.targetPose = new Pose(0, wantedPosition, 0);
 			positionLogger.update();
 			printPosition();
 			multipleTelemetry.addData("wantedPosition: ", wantedPosition);
