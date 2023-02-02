@@ -76,14 +76,14 @@ public class TwoDriverTeleop extends LinearOpMode {
 				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
-						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1)
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP)
 				);
 				systems.executeSequence(elevatorSequence);
 			} else if (gamepadB.dpad_up()) {
 				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
-						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1)
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP)
 				);
 				systems.executeSequence(elevatorSequence);
 			} // go to dropOff
@@ -92,7 +92,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 				systems.interrupt();
 				elevatorSequence = new Sequence(
 						systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-						systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
 				);
 				systems.executeSequence(elevatorSequence);

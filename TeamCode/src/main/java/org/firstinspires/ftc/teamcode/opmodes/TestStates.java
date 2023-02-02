@@ -57,11 +57,11 @@ public class TestStates extends LinearOpMode {
 				sequenceItem.runAction.run();
 			}
 			if (gamepadB.dpad_down()){
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1);
+				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF);
 				sequenceItem.runAction.run();
 			}
 			if (gamepadB.dpad_up()){
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1);
+				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP);
 				sequenceItem.runAction.run();
 			}
 			systems.tick();

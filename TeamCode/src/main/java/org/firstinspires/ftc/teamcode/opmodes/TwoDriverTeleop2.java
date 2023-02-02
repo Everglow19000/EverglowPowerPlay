@@ -26,7 +26,7 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 		waitForStart();
 		Sequence sequence = new Sequence(
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1));
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP));
 		sequence.start();
 
 		while (opModeIsActive()) {
@@ -73,11 +73,11 @@ public class TwoDriverTeleop2 extends LinearOpMode {
 			}
 
 			if (gamepadB.lb()) {
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF, 1);
+				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF);
 				sequenceItem.runAction.run();
 			}
 			if (gamepadB.rb()) {
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP, 1);
+				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP);
 				sequenceItem.runAction.run();
 			}
 

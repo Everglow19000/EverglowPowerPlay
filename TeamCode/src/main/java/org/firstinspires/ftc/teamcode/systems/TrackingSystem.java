@@ -7,6 +7,8 @@ import static java.lang.Math.toDegrees;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -17,11 +19,11 @@ public class TrackingSystem {
 	/**
 	 * The radius of the odometry wheels, in centimeters.
 	 */
-	private static final double WHEEL_RADIUS = 4.8;
+	private static final double WHEEL_RADIUS = 2.53;
 	/**
 	 * The number of ticks per full revolution of the odometry wheels.
 	 */
-	private static final double TICKS_PER_ROTATION = 515;
+	private static final double TICKS_PER_ROTATION = 8192;
 	/**
 	 * Conversion factor from ticks to centimeters.
 	 */
@@ -29,11 +31,11 @@ public class TrackingSystem {
 	/**
 	 * The distance between the two front wheels.
 	 */
-	private static final double LATERAL_DISTANCE = 15; //TODO: Measure this
+	private static final double LATERAL_DISTANCE = 12.3; //TODO: Measure this
 	/**
 	 * The distance between the center of the robot and the back wheel.
 	 */
-	private static final double FORWARD_OFFSET = 0; //TODO: Measure this
+	private static final double FORWARD_OFFSET = -4.5; //TODO: Measure this
 
 	/**
 	 * The current opMode running on the robot.
@@ -53,15 +55,15 @@ public class TrackingSystem {
 	 */
 	private final DcMotor back;
 
-	// Keeps the robot's odometry wheel's previous positions
-	private double flPreviousTicks = 0;
-	private double frPreviousTicks = 0;
-	private double bPreviousTicks = 0;
-
 	/**
 	 * The robot's current position.
 	 */
 	private final Pose position = new Pose(0., 0., 0.);
+
+	// Keeps the robot's odometry wheel's previous positions
+	private double flPreviousTicks;
+	private double frPreviousTicks;
+	private double bPreviousTicks;
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -69,34 +71,24 @@ public class TrackingSystem {
 	public TrackingSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
 
-		//Get odometry pod interfaces
+		// Get odometry pod interfaces
 		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
 		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
-		back = opMode.hardwareMap.get(DcMotor.class, "back_right");
+		back = opMode.hardwareMap.get(DcMotor.class, "gWheel"); //Because there aren't enough motor slots
 
 		// Reset the distances measured by the motors
-		resetDistance();
-	}
-
-	/**
-	 * Resets the distance measured on all encoders.
-	 * Should always be called before initializing the robot.
-	 */
-	private void resetDistance() {
-		frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		back.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		flPreviousTicks = frontLeft.getCurrentPosition();
+		frPreviousTicks = frontRight.getCurrentPosition();
+		bPreviousTicks = back.getCurrentPosition();
 	}
 
 	/**
 	 * @return The robot's current position as a Pose object.
+	 * Flips the x and y values because the functions which use this method expect the x value to be the first value.
 	 */
 	public Pose getPosition() {
-		return position;
+		//noinspection SuspiciousNameCombination
+		return new Pose(position.y, position.x, position.angle);
 	}
 
 	/**
@@ -105,7 +97,6 @@ public class TrackingSystem {
 	public void tick() {
 		trackPosition();
 //		printPosition();
-//		opMode.telemetry.update();
 	}
 
 	/**
@@ -113,11 +104,17 @@ public class TrackingSystem {
 	 * Pose Exponentials Method and explanation from
 	 * <a href="https://gm0.org/en/latest/docs/software/concepts/odometry.html#using-pose-exponentials">this site</a>.
 	 */
-	public void trackPosition() {
+	private void trackPosition() {
 		// Get the current position of the odometry wheels
 		double flCurrentTicks = frontLeft.getCurrentPosition();
 		double frCurrentTicks = frontRight.getCurrentPosition();
 		double bCurrentTicks = back.getCurrentPosition();
+
+		//Log all info
+		opMode.telemetry.addData("flCurrentTicks: ", flCurrentTicks);
+		opMode.telemetry.addData("frCurrentTicks: ", frCurrentTicks);
+		opMode.telemetry.addData("bCurrentTicks: ", bCurrentTicks);
+		printPosition();
 
 		// The displacement of each wheel
 		final double frontLeftDisplacement = (flCurrentTicks - flPreviousTicks) * CM_PER_TICK;
@@ -130,14 +127,13 @@ public class TrackingSystem {
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
 		// Temp variable for readability
-		final double angleCos = cos(position.angle), angleSin = sin(position.angle),
-				angleChangeCos = cos(angleChange), angleChangeSin = sin(angleChange);
+		final double angleCos = cos(position.angle), angleSin = sin(position.angle);
 
 		// The angle was removed from the matrices and they were simplified to have only two rows
 		// because it wasn't actually used in the calculates.
 		final double[][] matrix1 = {{angleCos, -angleSin}, {angleSin, angleCos}};
-		final double[][] matrix2 = {{angleChangeSin / angleChange, (angleChangeCos - 1) / angleChange},
-				{(1 - angleChangeCos / angleChange), angleChangeSin / angleChange}};
+		final double[][] matrix2 = {{sinc(angleChange), cosc(angleChange)},
+				{-cosc(angleChange), sinc(angleChange)}};
 		final double[] matrix3 = {centerDisplacement, horizontalDisplacement};
 
 		// Multiplication of matrices 2 & 3
@@ -160,15 +156,67 @@ public class TrackingSystem {
 	}
 
 	/**
-	 * Prints the robot's current position to the telemetry.
-	 * Must call telemetry.update() after using this method.
+	 * Calculates the sin() of a number then divides the result by the number
+	 * if the number isn't equal to zero.
+	 *
+	 * @param num any number
+	 * @return a positive number under 1 or zero.
 	 */
-	public void printPosition() {
+	private double sinc(double num) {
+		if (num == 0)
+			return 1;
+		return sin(num) / num;
+	}
+
+	/**
+	 * Calculates the cos() of a number then divides the result by the number
+	 * if the number isn't equal to zero.
+	 *
+	 * @param num any number
+	 * @return a positive number under 1 or zero.
+	 */
+	private double cosc(double num) {
+		if (num == 0)
+			return 0;
+		return (cos(num) - 1) / num;
+	}
+
+	/**
+	 * Prints the robot's current position to the telemetry and the FTCDashboard.
+	 */
+	private void printPosition() {
+		final double INCH_TO_CM = 0.39;
+		final double robot_width = 38 * INCH_TO_CM;
+		final double robot_height = 47 * INCH_TO_CM;
+
+		// Note that our x and y coordinate system is flipped because we define forward as x and sideways as y, so we must unflip now
+		final double y = position.x * INCH_TO_CM;
+		final double x = position.y * INCH_TO_CM;
+
 		opMode.telemetry.addData("x", position.x);
 		opMode.telemetry.addData("y", position.y);
 		opMode.telemetry.addData("rot", toDegrees(position.angle));
-		//double cycleFrequency = 1e9 / lastCycleDuration;
-		//opMode.telemetry.addData("Cycle Frequency [Hz]: ", cycleFrequency);
+
+		TelemetryPacket packet = new TelemetryPacket();
+
+		double dx1 = robot_width * cos(position.angle);
+		double dx2 = -robot_height * sin(position.angle);
+		double dy1 = robot_width * sin(position.angle);
+		double dy2 = robot_height * cos(position.angle);
+
+		packet.fieldOverlay().fillPolygon(new double[]{
+						x + dx1 + dx2,
+						x + dx1 - dx2,
+						x - dx1 - dx2,
+						x - dx1 + dx2
+				},
+				new double[]{
+						y + dy1 + dy2,
+						y + dy1 - dy2,
+						y - dy1 - dy2,
+						y - dy1 + dy2
+				});
+		FtcDashboard.getInstance().sendTelemetryPacket(packet);
 		opMode.telemetry.update();
 	}
 }

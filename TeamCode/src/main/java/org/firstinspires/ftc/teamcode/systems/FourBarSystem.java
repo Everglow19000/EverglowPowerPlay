@@ -1,147 +1,93 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.max;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utils.RestingState;
 import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
-import org.firstinspires.ftc.teamcode.utils.RestingState;
 
 /**
- * A class for handling the four bar linkage system.
+ * A class for handling the elevator system.
  */
 public class FourBarSystem {
 	/**
-	 * Enum encapsulating the two positions the system should reach.
+	 * Enum encapsulating all the positions the system should reach.
 	 */
-	public enum FourBarPosition {
-		PICKUP(0.1, 0.), DROPOFF(0.3, 0.2);
-//		PICKUP(0.1, 0.), DROPOFF(0.6, 0.5);
+	public enum Position {
+		PICKUP(0), DROPOFF(-500);
 
-		private final double posRight;
-		private final double posLeft;
+		public final int desiredPosition;
 
-		FourBarPosition(double posRight, double posLeft) {
-			this.posRight = posRight;
-			this.posLeft = posLeft;
-		}
-
-		/*
-		 * Toggles the state of the fourBar
-		 */
-		public FourBarPosition toggle() {
-			switch (this) {
-				case PICKUP:
-					return DROPOFF;
-				case DROPOFF:
-					return PICKUP;
-				default:
-					throw new IllegalStateException();
-			}
+		Position(int desiredPosition) {
+			this.desiredPosition = desiredPosition;
 		}
 	}
-
-
-	private final Servo servoRight;
-	private final Servo servoLeft;
-	private final DcMotor fourBarMotor;
-
-	private State state = new RestingState();
 
 	/**
 	 * A state used when the robot should be moving.
 	 */
 	public class ActingState implements State {
-		private final double totalMovementTime;
-		private final double startPositionLeft;
-		private final double startPositionRight;
-		private final double velocityLeft;
-		private final ElapsedTime timer;
-		private final double velocityRight;
+		private static final int EPSILON = 20;
+		private final Position position;
 
-		private final FourBarPosition targetState;
-
-		public ActingState(FourBarPosition targetState, double velocity) {
-			startPositionRight = servoRight.getPosition();
-			startPositionLeft = servoLeft.getPosition();
-			double errorRight = targetState.posRight - startPositionRight;
-			double errorLeft = targetState.posLeft - startPositionLeft;
-			this.targetState = targetState;
-			this.totalMovementTime = max(abs(errorRight / velocity), abs(errorLeft / velocity));
-			this.timer = new ElapsedTime();
-			// Calculate position change per tick
-			this.velocityRight = errorRight / totalMovementTime;
-			this.velocityLeft = errorLeft / totalMovementTime;
+		/**
+		 * @param position A elevator level to move to (e.g. ElevatorLevel.GROUND).
+		 */
+		public ActingState(Position position) {
+			this.position = position;
+			motor.setTargetPosition(position.desiredPosition);
 		}
 
 		public void tick() {
 			// The claw has reached its desired position
-			if (timer.time() > totalMovementTime) {
-				servoRight.setPosition(targetState.posRight);
-				servoLeft.setPosition(targetState.posLeft);
-				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(Message.FOUR_BAR_DONE);
-				return;
-			}
-
-			// Otherwise, update the claw position
-			double positionRight = startPositionRight + velocityRight * timer.time();
-			double positionLeft = startPositionLeft + velocityLeft * timer.time();
-			servoRight.setPosition(positionRight);
-			servoLeft.setPosition(positionLeft);
-
-			SystemCoordinator.instance.opMode.telemetry.addData("positionRight", positionRight);
-			SystemCoordinator.instance.opMode.telemetry.addData("positionLeft", positionLeft);
+			int error = abs(position.desiredPosition - motor.getCurrentPosition());
+			SystemCoordinator.instance.opMode.telemetry.addData("error", error);
 			SystemCoordinator.instance.opMode.telemetry.update();
+			if (error <= EPSILON) {
+				state = new RestingState();
+				SystemCoordinator.instance.sendMessage(Message.ELEVATOR_DONE);
+			}
 		}
 
-		public void onReceiveMessage(State.Message message) {
-			// Do nothing
-		}
 	}
+
+	private final DcMotor motor;
+	private State state = new RestingState();
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public FourBarSystem(LinearOpMode opMode) {
-		servoRight = opMode.hardwareMap.get(Servo.class, "4bar_right");
-		servoLeft = opMode.hardwareMap.get(Servo.class, "4bar_left");
-		fourBarMotor = opMode.hardwareMap.get(DcMotor.class, "4bar");
-		servoRight.setDirection(Servo.Direction.REVERSE);
+	public FourBarSystem(OpMode opMode) {
+		motor = opMode.hardwareMap.get(DcMotor.class, "4bar");
+		motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		motor.setTargetPosition(0);
+		motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+		motor.setPower(0.7);
+	}
+
+	public Sequence.SequenceItem goToSequenceItem(Position position) {
+		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
+			state = new ActingState(position);
+		});
+	}
+
+	// should only be used for testing
+	public void goToImmediate(Position position) {
+		motor.setTargetPosition(position.desiredPosition);
 	}
 
 	/**
-	 * Ticks the fourBar system.
+	 * Ticks the elevator system.
 	 */
 	public void tick() {
 		state.tick();
 	}
 
-
-	public Sequence.SequenceItem goToSequenceItem(FourBarPosition position, double velocity) {
-		return new Sequence.SequenceItem(State.Message.FOUR_BAR_DONE, () -> {
-			state = new ActingState(position, velocity);
-		});
-	}
-
-	/**
-	 * Goes to the specified position immediately, without relying on the state machine.
-	 * Should only be used for testing.
-	 *
-	 * @param position the position to go to.
-	 */
-	public void goToImmediate(FourBarPosition position) {
-		servoRight.setPosition(position.posRight);
-		servoLeft.setPosition(position.posLeft);
-	}
-
-	public void interrupt(){
+	public void interrupt() {
 		state = new RestingState();
+		motor.setTargetPosition(motor.getCurrentPosition());
 	}
-
 }

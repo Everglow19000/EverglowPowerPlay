@@ -24,7 +24,13 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
-	private final double EPSILON = 1;
+	private static final double EPSILON = 1;
+	private static final double ROTATION_EPSILON = toRadians(0.5);
+	/**
+	 * The size of a tile side in centimeters.
+	 */
+	public static final double TILE_SIZE = 71;
+
 	/**
 	 * The current opMode running on the robot.
 	 */
@@ -46,11 +52,6 @@ public class DrivingSystem {
 	 */
 	private final DcMotor backRight;
 
-	private final TrackingSystem trackingSystem;
-
-
-	private static final double ROTATION_EPSILON = toRadians(0.5);
-	public static final double TILE_SIZE = 71;
 	/**
 	 * The current state of the the DrivingSystem.
 	 * Can be either RestingState or ActingState
@@ -129,12 +130,10 @@ public class DrivingSystem {
 		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
-
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotor.Direction.REVERSE);
 		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
-		trackingSystem = new TrackingSystem(opMode);
 		// Reset the distances measured by the motors
 		resetDistance();
 	}
@@ -149,10 +148,10 @@ public class DrivingSystem {
 		backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 	}
 
 	/**
@@ -203,7 +202,7 @@ public class DrivingSystem {
 		final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
 		final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
-		Pose Deviation = Pose.difference(targetLocation, trackingSystem.getPosition());
+		Pose Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
 		Deviation.normalizeAngle();
 		PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
@@ -212,10 +211,9 @@ public class DrivingSystem {
 						abs(Deviation.y) > epsilon.y ||
 						abs(Deviation.angle) > epsilon.angle)) {
 
-			trackingSystem.trackPosition();
 			driveByAxis(actPowers.powerByDeviation(Deviation));
 			opMode.telemetry.update();
-			Deviation = Pose.difference(targetLocation, trackingSystem.getPosition());
+			Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
 			Deviation.normalizeAngle();
 		}
 		stop();
@@ -250,43 +248,38 @@ public class DrivingSystem {
 
 	public void driveX(double distance) {
 		final double epsilon = 0.5;
-		final double xTarget = trackingSystem.getPosition().x + distance;
-		;
+		final double xTarget = SystemCoordinator.instance.trackingSystem.getPosition().x + distance;
 
 		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
-		double deviation = xTarget - trackingSystem.getPosition().x;
+		double deviation = xTarget - SystemCoordinator.instance.trackingSystem.getPosition().x;
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
-			trackingSystem.trackPosition();
 			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
-			deviation = xTarget - trackingSystem.getPosition().x;
+			deviation = xTarget - SystemCoordinator.instance.trackingSystem.getPosition().x;
 		}
 		stop();
 	}
 
 	public void driveY(double distance) {
 		final double epsilon = 0.5;
-		final double yTarget = trackingSystem.getPosition().y + distance;
-		;
+		final double yTarget = SystemCoordinator.instance.trackingSystem.getPosition().y + distance;
 
 		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
-		double deviation = yTarget - trackingSystem.getPosition().y;
+		double deviation = yTarget - SystemCoordinator.instance.trackingSystem.getPosition().y;
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
-			trackingSystem.trackPosition();
 			actPowers.y = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
-			deviation = yTarget - trackingSystem.getPosition().y;
+			deviation = yTarget - SystemCoordinator.instance.trackingSystem.getPosition().y;
 		}
-		trackingSystem.printPosition();
 		stop();
 	}
 
 	public void driveByAxis(Pose powers) {
-		final double currentAngle = trackingSystem.getPosition().angle;
+		final double currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		final double cosAngle = cos(currentAngle);
 		final double sinAngle = sin(currentAngle);
 
@@ -302,9 +295,9 @@ public class DrivingSystem {
 
 	public Pair<Pose, Point2D> getSquareInformation() {
 		Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
-		SquareInformation.first.x = trackingSystem.getPosition().x / TILE_SIZE;
-		SquareInformation.first.y = trackingSystem.getPosition().y / TILE_SIZE;
-		SquareInformation.first.angle = trackingSystem.getPosition().angle;
+		SquareInformation.first.x = SystemCoordinator.instance.trackingSystem.getPosition().x / TILE_SIZE;
+		SquareInformation.first.y = SystemCoordinator.instance.trackingSystem.getPosition().y / TILE_SIZE;
+		SquareInformation.first.angle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
 
 		SquareInformation.second.x = SquareInformation.first.x % 1;
 		SquareInformation.second.x -= signum(SquareInformation.second.x) / 2;
@@ -316,7 +309,6 @@ public class DrivingSystem {
 
 		return SquareInformation;
 	}
-
 
 
 	/**

@@ -37,10 +37,10 @@ public class ElevatorTest extends LinearOpMode {
 			}
 
 			if (gamepad.rb()){
-				fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.PICKUP);
+				fourBarSystem.goToImmediate(FourBarSystem.Position.PICKUP);
 			}
 			if (gamepad.lb()){
-				fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.DROPOFF);
+				fourBarSystem.goToImmediate(FourBarSystem.Position.DROPOFF);
 			}
 
 			leftElevator.setPower(gamepad1.left_stick_y);
