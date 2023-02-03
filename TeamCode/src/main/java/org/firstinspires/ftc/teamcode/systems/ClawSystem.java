@@ -47,7 +47,7 @@ public class ClawSystem {
 	}
 
 	/**
-	 * A state used when the robot should be moving.
+	 * A state used when the claw should be moving.
 	 */
 	public class ActingState implements State {
 		private final double totalMovementTime;
@@ -112,6 +112,9 @@ public class ClawSystem {
 		state.tick();
 	}
 
+	/**
+	 * Stops the claw system.
+	 */
 	public void interrupt(){
 		state = new RestingState();
 	}

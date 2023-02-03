@@ -13,6 +13,11 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  * A class for handling the elevator system.
  */
 public class ElevatorSystem {
+
+	private final DcMotor left;
+	private final DcMotor right;
+	private State state = new RestingState();
+
 	/**
 	 * Enum encapsulating all the positions the system should reach.
 	 */
@@ -27,7 +32,7 @@ public class ElevatorSystem {
 	}
 
 	/**
-	 * A state used when the robot should be moving.
+	 * A state used when the elevator should be moving.
 	 */
 	public class ActingState implements State {
 		private static final int EPSILON = 20;
@@ -43,7 +48,7 @@ public class ElevatorSystem {
 		}
 
 		public void tick() {
-			// The claw has reached its desired position
+			// The elevator has reached its desired position
 			int leftError = abs(level.desiredPosition - left.getCurrentPosition());
 			boolean leftArrived = leftError < EPSILON;
 			int rightError = abs(level.desiredPosition - right.getCurrentPosition());
@@ -58,10 +63,6 @@ public class ElevatorSystem {
 		}
 
 	}
-
-	private final DcMotor left;
-	private final DcMotor right;
-	private State state = new RestingState();
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -97,7 +98,10 @@ public class ElevatorSystem {
 		state.tick();
 	}
 
-	public void interrupt(){
+	/**
+	 * Stops the elevator system.
+	 */
+	public void interrupt() {
 		state = new RestingState();
 		left.setTargetPosition(left.getCurrentPosition());
 		right.setTargetPosition(right.getCurrentPosition());

@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.toRadians;
 import static java.lang.Math.cos;
-import static java.lang.Math.sin;
+import static java.lang.Math.max;
 import static java.lang.Math.signum;
+import static java.lang.Math.sin;
+import static java.lang.Math.toRadians;
 import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
-
-import androidx.core.util.Pair;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,7 +22,9 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
-	private final double EPSILON = 1;
+	private static final double EPSILON = 1;
+	private static final double ROTATION_EPSILON = toRadians(0.5);
+
 	/**
 	 * The current opMode running on the robot.
 	 */
@@ -46,11 +46,6 @@ public class DrivingSystem {
 	 */
 	private final DcMotor backRight;
 
-	private final TrackingSystem trackingSystem;
-
-
-	private static final double ROTATION_EPSILON = toRadians(0.5);
-	public static final double TILE_SIZE = 71;
 	/**
 	 * The current state of the the DrivingSystem.
 	 * Can be either RestingState or ActingState
@@ -129,12 +124,10 @@ public class DrivingSystem {
 		backLeft = opMode.hardwareMap.get(DcMotor.class, "back_left");
 		backRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
 
-
 		// Some motors are wired in reverse, so we must reverse them back.
 		frontLeft.setDirection(DcMotor.Direction.REVERSE);
 		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
-		trackingSystem = new TrackingSystem(opMode);
 		// Reset the distances measured by the motors
 		resetDistance();
 	}
@@ -149,10 +142,10 @@ public class DrivingSystem {
 		backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+		backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 	}
 
 	/**
@@ -197,13 +190,41 @@ public class DrivingSystem {
 		backLeft.setPower(backLeftPower);
 	}
 
+	/**
+	 * Makes the robot stop in place.
+	 */
+	private void stop() {
+		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		frontRight.setPower(0);
+		frontLeft.setPower(0);
+		backRight.setPower(0);
+		backLeft.setPower(0);
+	}
+
+	public void driveByAxis(Pose powers) {
+		final double currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
+		final double cosAngle = cos(currentAngle);
+		final double sinAngle = sin(currentAngle);
+
+		Pose mecanumPowers = new Pose(
+				cosAngle * powers.x - sinAngle * powers.y,
+				cosAngle * powers.y + sinAngle * powers.x,
+				powers.angle
+		);
+
+		driveMecanum(mecanumPowers);
+	}
+
 	public void move2(Pose targetLocation) {
 		final Pose Kp = new Pose(0.01, 0.01, 0.73);
 		final Pose Ki = new Pose(0, 0, 0);
 		final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
 		final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
-		Pose Deviation = Pose.difference(targetLocation, trackingSystem.getPosition());
+		Pose Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
 		Deviation.normalizeAngle();
 		PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
@@ -212,19 +233,83 @@ public class DrivingSystem {
 						abs(Deviation.y) > epsilon.y ||
 						abs(Deviation.angle) > epsilon.angle)) {
 
-			trackingSystem.trackPosition();
 			driveByAxis(actPowers.powerByDeviation(Deviation));
 			opMode.telemetry.update();
-			Deviation = Pose.difference(targetLocation, trackingSystem.getPosition());
+			Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
 			Deviation.normalizeAngle();
 		}
 		stop();
 	}
 
+	/**
+	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 */
+	public void controlledDriveByAxis(Pose Powers) {
+		final double K = 0.03;
+
+
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+
+		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
+			Powers.x = 0;
+		}
+		if (abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
+			Powers.y = 0;
+		}
+
+		if (abs(Powers.x) > abs(Powers.y)) {
+			Powers.x *= 1 - abs(squareDeviation.y);
+			Powers.y = -abs(squareDeviation.y) * squareDeviation.y * abs(Powers.x) * K;
+		} else {
+			Powers.y *= 1 - abs(squareDeviation.x);
+			Powers.x = -abs(squareDeviation.x) * squareDeviation.x * abs(Powers.y) * K;
+		}
+
+		driveByAxis(Powers);
+	}
+
+
+	/**
+	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 */
+	public void controlledDriveByAxis2(Pose Powers) {
+		final double K = 50.;
+
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+
+		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
+			Powers.x = 0;
+		}
+		if (abs(SquareLocation.y) >= 3 && signum(SquareLocation.y) == signum(Powers.y)) {
+			Powers.y = 0;
+		}
+
+		if (abs(Powers.x) > abs(Powers.y)) {
+			Powers.x *= 1 - abs(squareDeviation.y);
+			double xPartChange = squareDeviation.y * squareDeviation.y;
+			double xChange = (1 - signum(Powers.x) * squareDeviation.x) / 2;
+			Powers.x += Powers.x * xPartChange * (xChange - 1);
+			Powers.y = -squareDeviation.y * abs(squareDeviation.y) * abs(Powers.x) * K;
+		} else {
+			Powers.y *= 1 - abs(squareDeviation.x);
+			double yPartChange = squareDeviation.x * squareDeviation.x;
+			double yChange = (1 - signum(Powers.y) * squareDeviation.y) / 2;
+			Powers.y += Powers.y * yPartChange * (yChange - 1);
+			Powers.x = -squareDeviation.x * abs(squareDeviation.x) * abs(Powers.y) * K;
+		}
+
+		driveByAxis(Powers);
+	}
+
+	/**
+	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 */
 	public void controlledDriveByAxis3(Pose Powers) {
-		Pair<Pose, Point2D> mySquareInformation = getSquareInformation();
-		Pose SquareLocation = mySquareInformation.first;
-		Point2D squareDeviation = mySquareInformation.second;
+
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -239,98 +324,48 @@ public class DrivingSystem {
 			Powers.x = signum(squareDeviation.x) * abs(Powers.y) * (1 - abs(squareDeviation.y)) / (1 - abs(squareDeviation.x));
 		}
 
-		opMode.telemetry.addData("squarePosition.x", SquareLocation.x);
-		opMode.telemetry.addData("squarePosition.y", SquareLocation.y);
-		opMode.telemetry.addData("squareDeviation.x", squareDeviation.x);
-		opMode.telemetry.addData("squareDeviation.y", squareDeviation.y);
-		opMode.telemetry.update();
-
 		driveByAxis(Powers);
 	}
 
 	public void driveX(double distance) {
 		final double epsilon = 0.5;
-		final double xTarget = trackingSystem.getPosition().x + distance;
-		;
+		final double xTarget = SystemCoordinator.instance.trackingSystem.getPosition().x + distance;
 
 		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
-		double deviation = xTarget - trackingSystem.getPosition().x;
+		double deviation = xTarget - SystemCoordinator.instance.trackingSystem.getPosition().x;
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
-			trackingSystem.trackPosition();
 			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
-			deviation = xTarget - trackingSystem.getPosition().x;
+			deviation = xTarget - SystemCoordinator.instance.trackingSystem.getPosition().x;
 		}
 		stop();
 	}
 
 	public void driveY(double distance) {
 		final double epsilon = 0.5;
-		final double yTarget = trackingSystem.getPosition().y + distance;
-		;
+		final double yTarget = SystemCoordinator.instance.trackingSystem.getPosition().y + distance;
 
 		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
-		double deviation = yTarget - trackingSystem.getPosition().y;
+		double deviation = yTarget - SystemCoordinator.instance.trackingSystem.getPosition().y;
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
-			trackingSystem.trackPosition();
 			actPowers.y = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
-			deviation = yTarget - trackingSystem.getPosition().y;
+			deviation = yTarget - SystemCoordinator.instance.trackingSystem.getPosition().y;
 		}
-		trackingSystem.printPosition();
 		stop();
 	}
 
-	public void driveByAxis(Pose powers) {
-		final double currentAngle = trackingSystem.getPosition().angle;
-		final double cosAngle = cos(currentAngle);
-		final double sinAngle = sin(currentAngle);
-
-		Pose mecanumPowers = new Pose(
-				cosAngle * powers.x - sinAngle * powers.y,
-				cosAngle * powers.y + sinAngle * powers.x,
-				powers.angle
-		);
-
-		driveMecanum(mecanumPowers);
-	}
-
-
-	public Pair<Pose, Point2D> getSquareInformation() {
-		Pair<Pose, Point2D> SquareInformation = new Pair<>(new Pose(), new Point2D());
-		SquareInformation.first.x = trackingSystem.getPosition().x / TILE_SIZE;
-		SquareInformation.first.y = trackingSystem.getPosition().y / TILE_SIZE;
-		SquareInformation.first.angle = trackingSystem.getPosition().angle;
-
-		SquareInformation.second.x = SquareInformation.first.x % 1;
-		SquareInformation.second.x -= signum(SquareInformation.second.x) / 2;
-		SquareInformation.second.x *= 2;
-
-		SquareInformation.second.y = SquareInformation.first.y % 1;
-		SquareInformation.second.y -= signum(SquareInformation.second.y) / 2;
-		SquareInformation.second.y *= 2;
-
-		return SquareInformation;
-	}
-
-
-
 	/**
-	 * Makes the robot stop in place.
+	 * drives the Robot to location
+	 *
+	 * @param Distances the relative distances to the by.
 	 */
-	private void stop() {
-		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		frontRight.setPower(0);
-		frontLeft.setPower(0);
-		backRight.setPower(0);
-		backLeft.setPower(0);
+	public void moveRelativeToRobot(Pose Distances) {
+		Pose targetLocation = new Pose();
 	}
 
 	/**

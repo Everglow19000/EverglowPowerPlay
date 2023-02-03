@@ -6,25 +6,18 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name = "Test270", group = "Template")
 public class Test270 extends LinearOpMode {
-    @Override
-    public void runOpMode() {
-        waitForStart();
-        final DcMotor fourBarMotor;
-        fourBarMotor = hardwareMap.get(DcMotor.class, "4bar");
-        double samPower = 0;
-        while (opModeIsActive()) {
-            if(gamepad1.triangle) {
-                fourBarMotor.setPower(0.25);
-                samPower+=0.25;
-            }
-
-            if(gamepad1.circle) {
-                fourBarMotor.setPower(-0.25);
-                samPower-=0.25;
-            }
-            fourBarMotor.setPower(0);
-            telemetry.addData("sum power:", samPower);
-            telemetry.update();
-        }
-    }
+	@Override
+	public void runOpMode() {
+		waitForStart();
+		final DcMotor fourBarMotor;
+		fourBarMotor = hardwareMap.get(DcMotor.class, "4bar");
+		double sumPower = 0;
+		while (opModeIsActive()) {
+			double power = gamepad1.left_stick_x;
+			fourBarMotor.setPower(power);
+			sumPower += power;
+			telemetry.addData("sum power:", sumPower);
+			telemetry.update();
+		}
+	}
 }

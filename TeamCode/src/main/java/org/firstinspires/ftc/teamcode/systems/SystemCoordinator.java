@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.utils.Sequence;
 import org.firstinspires.ftc.teamcode.utils.State;
+import org.firstinspires.ftc.teamcode.utils.Sequence;
 
 import java.util.ArrayList;
 
@@ -11,7 +11,10 @@ import java.util.ArrayList;
  * A class for coordinating the all systems on the robot in a state machine.
  */
 public class SystemCoordinator {
-
+	/**
+	 * The instance of the system coordinator, for use in other classes.
+	 * This is done to avoid dependency injection.
+	 */
 	public static SystemCoordinator instance;
 
 	public final LinearOpMode opMode;
@@ -21,7 +24,7 @@ public class SystemCoordinator {
 	public final ClawSystem clawSystem;
 	public final DrivingSystem drivingSystem;
 	public final FourBarSystem fourBarSystem;
-	public final BADTrackingSystem trackingSystem;
+	public final TrackingSystem trackingSystem;
 	public final GWheelSystem gWheelSystem;
 	//There is no camera system because it runs in a separate thread.
 
@@ -33,14 +36,15 @@ public class SystemCoordinator {
 	public SystemCoordinator(LinearOpMode opMode) {
 		instance = this;
 		this.opMode = opMode;
-		//Initiate all the systems
+		// Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
 		clawSystem = new ClawSystem(opMode);
 		drivingSystem = new DrivingSystem(opMode);
 		fourBarSystem = new FourBarSystem(opMode);
-		trackingSystem = new BADTrackingSystem(opMode);
+		trackingSystem = new TrackingSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
 
+		// Initiate the list of sequences
 		actionSequences = new ArrayList<>();
 	}
 
@@ -56,7 +60,10 @@ public class SystemCoordinator {
 		trackingSystem.tick();
 	}
 
-	public void interrupt(){
+	/**
+	 * Stops the execution of all the systems and clears the queued sequences.
+	 */
+	public void interrupt() {
 		clawSystem.interrupt();
 		elevatorSystem.interrupt();
 		fourBarSystem.interrupt();
