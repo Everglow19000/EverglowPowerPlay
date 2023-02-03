@@ -34,4 +34,5 @@ public class FourBarTest extends LinearOpMode {
 			telemetry.update();
 			sleep(10);
 		}
-	}}
+	}
+}

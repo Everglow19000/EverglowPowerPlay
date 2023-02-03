@@ -26,6 +26,7 @@ dependencies {
     implementation 'junit:junit:4.12'
     implementation 'junit:junit:4.12'
     implementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
     implementation 'org.openftc:easyopencv:1.5.2'
     implementation 'org.openftc:apriltag:1.1.0'

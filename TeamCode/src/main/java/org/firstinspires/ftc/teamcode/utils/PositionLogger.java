@@ -27,11 +27,13 @@ public class PositionLogger {
 		final long time;
 		final Pose currentPose;
 		final Pose expectedPose;
+		final Pose powers;
 
-		public RobotState(long time, Pose currentPose, Pose expectedPose) {
+		public RobotState(long time, Pose currentPose, Pose expectedPose, Pose powers) {
 			this.time = time;
 			this.currentPose = currentPose;
 			this.expectedPose = expectedPose;
+			this.powers = powers;
 		}
 	}
 
@@ -44,7 +46,7 @@ public class PositionLogger {
 	public void update() {
 //        long timeSeconds = (drivingSystem.getLastCycleTime() - startTime) / 1000000000.;
 		RobotState robotState = new RobotState(drivingSystem.getLastCycleTime(), drivingSystem.getPosition(),
-				drivingSystem.getTargetPosition());
+				drivingSystem.getTargetPosition(), drivingSystem.getLastPowers());
 		robotStates.add(robotState);
 	}
 
@@ -72,20 +74,23 @@ public class PositionLogger {
 			// put the needed data in the file
 			stream = new PrintStream(new FileOutputStream(fileToCreate), true, "utf-8");
 			stream.println("time[sec], currentX[cm], currentY[cm], currentRot[degrees], " +
-					"expectedX[cm], expectedY[cm], expectedRot[degrees]");
+					"expectedX[cm], expectedY[cm], expectedRot[degrees], power_x, power_y, power_rot");
 			if (stream.checkError()) {
 				throw new IOException("Failed to write to fileToCreate.");
 			}
 
 			for (RobotState robotState : robotStates) {
-				String lineString = String.format("%s, %s, %s, %s, %s, %s, %s",
+				String lineString = String.format("%s, %s, %s, %s, %s, %s, %s %s %s %s",
 						(robotState.time - startTimeNanos) / 1e9,
 						robotState.currentPose.x,
 						robotState.currentPose.y,
 						Math.toDegrees(robotState.currentPose.angle),
 						robotState.expectedPose.x,
 						robotState.expectedPose.y,
-						Math.toDegrees(robotState.expectedPose.angle)
+						Math.toDegrees(robotState.expectedPose.angle),
+						robotState.powers.x,
+						robotState.powers.y,
+						robotState.powers.angle
 				);
 				stream.println(lineString);
 				if (stream.checkError()) {

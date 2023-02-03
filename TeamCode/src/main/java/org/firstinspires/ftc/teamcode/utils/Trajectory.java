@@ -11,7 +11,7 @@ public class Trajectory {
 
     final double maxVelocity = RobotParameters.MAX_V_X*0.5; //Temporary value for tests (vMax = 130-140 cm/sec)
     final double step = 0.01;
-    final double pathLength;
+    public final double pathLength;
     final double totalTime; //In seconds
     final double startAngle;
 

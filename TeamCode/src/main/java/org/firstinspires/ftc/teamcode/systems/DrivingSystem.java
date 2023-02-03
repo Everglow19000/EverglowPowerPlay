@@ -135,6 +135,7 @@ public class DrivingSystem {
 
 	private final Pose positionCM = new Pose(0., 0., 0.);
 	private Pose targetPose = new Pose();
+	private Pose lastPowers = new Pose();
 
 	public double maxDrivePower = 1;
 
@@ -146,6 +147,10 @@ public class DrivingSystem {
 
 	public Pose getTargetPosition(){
 		return new Pose(targetPose);
+	}
+
+	public Pose getLastPowers(){
+		return lastPowers;
 	}
 
 	public long getLastCycleTime() {
@@ -418,6 +423,8 @@ public class DrivingSystem {
 	 *               -1 <= x, y, angle <= 1.
 	 */
 	public void driveMecanum(Pose powers) {
+
+		lastPowers = powers;
 
 		// in order to make the driving the same velocity for the same power in the x and y directions,
 		// reduce the y power slightly
