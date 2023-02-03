@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
 /**
  * A class for handling the elevator system.
  */
+
 public class ElevatorSystem {
 
 	private final DcMotor left;
@@ -89,6 +90,11 @@ public class ElevatorSystem {
 		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
 			state = new ActingState(level);
 		});
+	}
+
+	public void goToImmediate(Level level){
+		left.setTargetPosition(level.desiredPosition);
+		right.setTargetPosition(level.desiredPosition);
 	}
 
 	/**

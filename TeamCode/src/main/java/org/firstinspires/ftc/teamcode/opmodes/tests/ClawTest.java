@@ -16,13 +16,11 @@ public class ClawTest extends LinearOpMode {
 //		Servo claw2 = hardwareMap.get(Servo.class, "claw2");
 //		claw2.setDirection(Servo.Direction.REVERSE);
 		double position1 = 0.5;
-		double position2 = 0.5;
 		waitForStart();
 		claw1.setPosition(position1);
 //		claw2.setPosition(position1);
 		while (opModeIsActive()) {
 			position1 += gamepad1.left_stick_y * 0.01;
-			position2 += gamepad2.left_stick_y * 0.01;
 			claw1.setPosition(position1);
 //			claw2.setPosition(position2);
 			telemetry.addData("position1", position1);

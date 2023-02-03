@@ -20,7 +20,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 		Pose actPowers = new Pose(0, 0, 0);
 
-		boolean isClawOpen = false;
+		ClawSystem.ClawPosition clawPosition = ClawSystem.ClawPosition.CLOSED;
 		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
 		waitForStart();
@@ -49,20 +49,16 @@ public class TwoDriverTeleop extends LinearOpMode {
 			systems.drivingSystem.driveMecanum(actPowers);
 
 			if (gamepadB.dpad_up()) {
-				Sequence.SequenceItem sequenceItem = systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH);
-				sequenceItem.runAction.run();
+				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.HIGH);
 			}
 			if (gamepadB.dpad_left()) {
-				Sequence.SequenceItem sequenceItem = systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID);
-				sequenceItem.runAction.run();
+				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.MID);
 			}
 			if (gamepadB.dpad_down()) {
-				Sequence.SequenceItem sequenceItem = systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW);
-				sequenceItem.runAction.run();
+				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.LOW);
 			}
 			if (gamepadB.dpad_right()) {
-				Sequence.SequenceItem sequenceItem = systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP);
-				sequenceItem.runAction.run();
+				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.PICKUP);
 			}
 
 			if (gamepadB.lt()) {
@@ -73,19 +69,14 @@ public class TwoDriverTeleop extends LinearOpMode {
 			}
 
 			if (gamepadB.lb()) {
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF);
-				sequenceItem.runAction.run();
+				systems.fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.DROPOFF);
 			}
 			if (gamepadB.rb()) {
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP);
-				sequenceItem.runAction.run();
+				systems.fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.PICKUP);
 			}
-
 			if (gamepadB.circle()) {
-				Sequence.SequenceItem sequenceItem = systems.clawSystem.goToSequenceItem(isClawOpen
-						? ClawSystem.ClawPosition.OPEN : ClawSystem.ClawPosition.CLOSED, 1);
-				sequenceItem.runAction.run();
-				isClawOpen = !isClawOpen;
+				clawPosition = clawPosition.flip();
+				systems.clawSystem.goToImmediate(clawPosition);
 			}
 			telemetry.update();
 		}

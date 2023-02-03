@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.systems;
 import static java.lang.Math.abs;
 import static java.lang.Math.signum;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -14,7 +15,12 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
 /**
  * A Class for handling the claw system.
  */
+@Config
 public class ClawSystem {
+	// configurable variables by the FtcDashboard
+	public static double OPEN_POSITION = 0.6;
+	public static double CLOSED_POSITION = 0.78;
+
 	private final Servo claw;
 	private State state = new RestingState();
 
@@ -22,13 +28,18 @@ public class ClawSystem {
 	 * Enum encapsulating the two positions the system should reach.
 	 */
 	public enum ClawPosition {
-		OPEN(0.6),
-		CLOSED(0.78);
+		OPEN(),
+		CLOSED();
 
-		public final double desiredPosition;
-
-		ClawPosition(double desiredPosition) {
-			this.desiredPosition = desiredPosition;
+		public double getDesiredPosition(){
+			switch (this){
+				case OPEN:
+					return OPEN_POSITION;
+				case CLOSED:
+					return CLOSED_POSITION;
+				default:
+					throw new IllegalStateException();
+			}
 		}
 
 		/*
@@ -62,7 +73,7 @@ public class ClawSystem {
 		public ActingState(ClawPosition finalState, double velocity) {
 			this.finalState = finalState;
 			this.startPosition = claw.getPosition();
-			double deviation = finalState.desiredPosition - startPosition;
+			double deviation = finalState.getDesiredPosition() - startPosition;
 			this.totalMovementTime = abs(deviation) / velocity;
 			this.velocity = velocity * signum(deviation);
 			this.timer = new ElapsedTime();
@@ -71,7 +82,7 @@ public class ClawSystem {
 		public void tick() {
 			// The claw has reached its desired position
 			if (timer.time() > totalMovementTime) {
-				claw.setPosition(finalState.desiredPosition);
+				claw.setPosition(finalState.getDesiredPosition());
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(Message.CLAW_DONE);
 				return;
@@ -102,7 +113,7 @@ public class ClawSystem {
 	 * @param position the position to go to.
 	 */
 	public void goToImmediate(ClawPosition position) {
-		claw.setPosition(position.desiredPosition);
+		claw.setPosition(position.getDesiredPosition());
 	}
 
 	/**
