@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;
@@ -23,11 +24,13 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
-
-	private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / PI;
-
+	/**
+	 * Some small value used to determine if the robot is close enough to the target.
+	 */
 	private static final double EPSILON = 1;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
+
+	private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / PI;
 
 	/**
 	 * The current opMode running on the robot.
@@ -132,20 +135,7 @@ public class DrivingSystem {
 		frontLeft.setDirection(DcMotor.Direction.REVERSE);
 		backLeft.setDirection(DcMotor.Direction.REVERSE);
 
-		// Reset the distances measured by the motors
-		resetDistance();
-	}
-
-	/**
-	 * Resets the distance measured on all encoders,
-	 * should always be called before initializing the robot.
-	 */
-	private void resetDistance() {
-		frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
+		// Configure motors to run without encoders, because we're using odometry wheels.
 		frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 		frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 		backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -157,7 +147,7 @@ public class DrivingSystem {
 	 * Gets called multiple times per second.
 	 *
 	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
-	 *               x is this vertical power, positive is left, negative is right.
+	 *               x is the vertical power, positive is left, negative is right.
 	 *               y is the horizontal power, positive is forward, negative is backwards.
 	 *               angle rotational power, positive is counter clockwise, negative is clockwise.
 	 *               -1 <= x, y, angle <= 1.
@@ -208,6 +198,15 @@ public class DrivingSystem {
 		backLeft.setPower(0);
 	}
 
+	/**
+	 * Drives the robot by the driver's axes.
+	 *
+	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
+	 *               x is this vertical power, positive is left of the driver, negative is right of the driver.
+	 *               y is the horizontal power, positive is away from the driver, negative is towards the driver.
+	 *               angle rotational power, positive is counter clockwise, negative is clockwise.
+	 *               -1 <= x, y, angle <= 1.
+	 */
 	public void driveByAxis(Pose powers) {
 		final double currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		final double cosAngle = cos(currentAngle);
@@ -223,6 +222,8 @@ public class DrivingSystem {
 	}
 
 	public void move2(Pose targetLocation) {
+		final double ROTATION_EPSILON = toRadians(0.5);
+
 		final Pose Kp = new Pose(0.01, 0.01, 0.73);
 		final Pose Ki = new Pose(0, 0, 0);
 		final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
@@ -246,14 +247,15 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
+	 *
+	 * @param Powers Velocity vector containing elements: x, y, and an azimuth angle.
 	 */
 	public void controlledDriveByAxis(Pose Powers) {
 		final double K = 0.03;
 
-
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -273,15 +275,16 @@ public class DrivingSystem {
 		driveByAxis(Powers);
 	}
 
-
 	/**
-	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
+	 *
+	 * @param Powers Velocity vector containing elements: x, y, and an azimuth angle.
 	 */
 	public void controlledDriveByAxis2(Pose Powers) {
 		final double K = 50.;
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -308,12 +311,14 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
+	 *
+	 * @param Powers Velocity vector containing elements: x, y, and an azimuth angle.
 	 */
 	public void controlledDriveByAxis3(Pose Powers) {
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -331,6 +336,12 @@ public class DrivingSystem {
 		driveByAxis(Powers);
 	}
 
+	/**
+	 * Drives the robot in the X direction by the given distance.
+	 *
+	 * @param distance Distance to drive in cm.
+	 * @param  robotAngle The angle the robot should be while driving   
+	 */
 	public void driveX(double distance, double robotAngle) {
 		final double epsilon = 0.5;
 		final double xTarget = SystemCoordinator.instance.trackingSystem.getPosition().x + distance;
@@ -342,11 +353,20 @@ public class DrivingSystem {
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
 			double angleDeviation = normalizeAngle(robotAngle - SystemCoordinator.instance.trackingSystem.getPosition().angle);
 			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
+			actPowers.angle = ANGLE_DEVIATION_SCALAR * angleDeviation;
 			driveByAxis(actPowers);
 			deviation = xTarget - SystemCoordinator.instance.trackingSystem.getPosition().x;
 		}
+		stop();
 	}
 
+
+	/**
+	 * Drives the robot in the Y direction by the given distance.
+	 *
+	 * @param distance Distance to drive in cm.
+	 * @param robotAngle the angle the robot should have while driving.
+	 */
 	public void driveY(double distance, double robotAngle) {
 		final double epsilon = 0.5;
 		final double yTarget = SystemCoordinator.instance.trackingSystem.getPosition().y + distance;
@@ -364,6 +384,7 @@ public class DrivingSystem {
 			SystemCoordinator.instance.tick();
 		}
 	}
+
 
 	public void rotate(double targetAngle){
 		final double powerScalar = 0.007 * 180 / PI;
