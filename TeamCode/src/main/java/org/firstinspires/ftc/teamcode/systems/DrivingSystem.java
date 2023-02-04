@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;
@@ -22,6 +23,9 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
+
+	private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / PI;
+
 	private static final double EPSILON = 1;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
 
@@ -54,7 +58,7 @@ public class DrivingSystem {
 	private State state = new RestingState();
 
 	public class DriveStraightState implements State {
-		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
+		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / PI;
 
 		private final double targetY;
 		private final double targetAngle;
@@ -83,7 +87,7 @@ public class DrivingSystem {
 	}
 
 	public class DriveSidewaysState implements State {
-		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
+		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / PI;
 
 		private final double targetX;
 		private final double targetAngle;
@@ -327,7 +331,7 @@ public class DrivingSystem {
 		driveByAxis(Powers);
 	}
 
-	public void driveX(double distance) {
+	public void driveX(double distance, double robotAngle) {
 		final double epsilon = 0.5;
 		final double xTarget = SystemCoordinator.instance.trackingSystem.getPosition().x + distance;
 
@@ -336,14 +340,14 @@ public class DrivingSystem {
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			double angleDeviation = normalizeAngle(robotAngle - SystemCoordinator.instance.trackingSystem.getPosition().angle);
 			actPowers.x = 0.003 * deviation + 0.15 * signum(deviation);
 			driveByAxis(actPowers);
 			deviation = xTarget - SystemCoordinator.instance.trackingSystem.getPosition().x;
 		}
-		stop();
 	}
 
-	public void driveY(double distance) {
+	public void driveY(double distance, double robotAngle) {
 		final double epsilon = 0.5;
 		final double yTarget = SystemCoordinator.instance.trackingSystem.getPosition().y + distance;
 
@@ -352,11 +356,33 @@ public class DrivingSystem {
 		Pose actPowers = new Pose();
 
 		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			double angleDeviation = normalizeAngle(robotAngle - SystemCoordinator.instance.trackingSystem.getPosition().angle);
 			actPowers.y = 0.003 * deviation + 0.15 * signum(deviation);
+			actPowers.angle = ANGLE_DEVIATION_SCALAR * angleDeviation;
 			driveByAxis(actPowers);
 			deviation = yTarget - SystemCoordinator.instance.trackingSystem.getPosition().y;
+			SystemCoordinator.instance.tick();
 		}
-		stop();
+	}
+
+	public void rotate(double targetAngle){
+		final double powerScalar = 0.007 * 180 / PI;
+		final double minPower = 0.2;
+
+		// Angles must always be between -PI and PI RADIANS.
+		// The function used below adds or subtracts 2PI RADIANS from the angle
+		// so that it's always in the good range.
+		double currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
+		double deviation = normalizeAngle(targetAngle - currentAngle);
+
+		while (abs(deviation) > ROTATION_EPSILON) { // once the angular error is less than ROTATION_EPSILON, we have arrived
+			currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
+			deviation = normalizeAngle(targetAngle - currentAngle);
+			// the power is proportional to the deviation, but may not go below minPower.
+			double rotatePower = deviation * powerScalar + minPower * signum(deviation);
+			driveMecanum(new Pose(0, 0, rotatePower));
+			SystemCoordinator.instance.tick();
+		}
 	}
 
 	/**

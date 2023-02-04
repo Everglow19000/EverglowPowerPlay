@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.State;
 import org.firstinspires.ftc.teamcode.utils.Sequence;
@@ -62,6 +63,7 @@ public class SystemCoordinator {
 
 	/**
 	 * Stops the execution of all the systems and clears the queued sequences.
+	 * Should often be used before excecuting a new sequence.
 	 */
 	public void interrupt() {
 		clawSystem.interrupt();
@@ -78,6 +80,39 @@ public class SystemCoordinator {
 	public void executeSequence(Sequence sequence) {
 		sequence.start();
 		actionSequences.add(sequence);
+	}
+
+	/**
+	 * Returns weather all sequences have finished executing.
+	 */
+	public boolean allSequencesDone(){
+		for (Sequence sequence : actionSequences) {
+			if (!sequence.isSequenceDone()){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Waits for all sequences to finish, and blocks until then.
+	 */
+	public void waitForSequencesDone(){
+		while (!allSequencesDone()){
+			tick();
+		}
+	}
+
+	/**
+	 * Waits a certain amount of time, while ticking the systems in the process.
+	 * opMode.sleep() should NOT be used when using state machine.
+	 * @param milliseconds how many milliseconds to wait.
+	 */
+	public void sleep(long milliseconds){
+		ElapsedTime elapsedTime = new ElapsedTime();
+		while (elapsedTime.milliseconds() < milliseconds){
+			tick();
+		}
 	}
 
 	/**
