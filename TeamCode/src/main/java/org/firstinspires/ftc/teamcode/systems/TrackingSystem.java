@@ -22,7 +22,7 @@ public class TrackingSystem {
 	/**
 	 * The radius of the odometry wheels, in centimeters.
 	 */
-	private static final double WHEEL_RADIUS = 2.53;
+	private static final double WHEEL_RADIUS = 2.5;
 	/**
 	 * The number of ticks per full revolution of the odometry wheels.
 	 */
@@ -38,20 +38,11 @@ public class TrackingSystem {
 	/**
 	 * The distance between the two front wheels.
 	 */
-	private static final double LATERAL_DISTANCE = 12.3; //TODO: Measure this
+	private static final double LATERAL_DISTANCE = 12.3;
 	/**
 	 * The distance between the center of the robot and the back wheel.
 	 */
-	private static final double FORWARD_OFFSET = -4.5; //TODO: Measure this
-	/**
-	 * some stuff. TODO: Figure out what this is.
-	 */
-	private static final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
-
-	/**
-	 * The distance blah blah in centimeters.
-	 */
-	private final double DROPOFF_DISTANCE_CM = 25;
+	private static final double FORWARD_OFFSET = -4.5;
 
 	/**
 	 * The current opMode running on the robot.
@@ -122,14 +113,14 @@ public class TrackingSystem {
 	 */
 	private void trackPosition() {
 		// Get the current position of the odometry wheels
-		double flCurrentTicks = frontLeft.getCurrentPosition();
-		double frCurrentTicks = frontRight.getCurrentPosition();
-		double bCurrentTicks = back.getCurrentPosition();
+		final double flCurrentTicks = frontLeft.getCurrentPosition();
+		final double frCurrentTicks = frontRight.getCurrentPosition();
+		final double bCurrentTicks = back.getCurrentPosition();
 
 		//Log all info
-		opMode.telemetry.addData("flCurrentTicks: ", flCurrentTicks);
-		opMode.telemetry.addData("frCurrentTicks: ", frCurrentTicks);
-		opMode.telemetry.addData("bCurrentTicks: ", bCurrentTicks);
+		opMode.telemetry.addData("fl location: ", flCurrentTicks * CM_PER_TICK);
+		opMode.telemetry.addData("fr location: ", frCurrentTicks * CM_PER_TICK);
+		opMode.telemetry.addData("b location: ", bCurrentTicks * CM_PER_TICK);
 		printPosition();
 
 		// The displacement of each wheel
@@ -198,33 +189,35 @@ public class TrackingSystem {
 	}
 
 	/**
-	 * resets the Position of the robot to another value
-	 * @program realLocation the new and correct location of the robot in the Board
+	 * @return The robot's current position as a Point2D object, measured in tiles.
 	 */
-	public void resetStartLocation(Point2D realLocation) {
-		position.x = realLocation.x;
-		position.y = realLocation.y;
-	}
-
-	public Point2D squareLocation() {
+	public Point2D getTileLocation() {
 		return new Point2D(position.x / TILE_SIZE, position.y / TILE_SIZE);
 	}
 
-	public Point2D squareCenter() {
-		Point2D squareLocation = squareLocation();
-		Point2D squareCenter = new Point2D(squareLocation.x + 0.5 * signum(squareLocation.x), squareLocation.y + 0.5 * signum(squareLocation.y));
-		round(squareCenter.x);
-		round(squareCenter.y);
-		squareCenter.x -= 0.5 * signum(squareLocation.x);
-		squareCenter.y -= 0.5 * signum(squareLocation.y);
+	/**
+	 * @return The center of the tile the robot is currently on.
+	 */
+	public Point2D getTileCenter() {
+		final Point2D tileLocation = getTileLocation();
 
-		return squareCenter;
+		Point2D tileCenter = new Point2D(tileLocation.x + 0.5 * signum(tileLocation.x), tileLocation.y + 0.5 * signum(tileLocation.y));
+		tileCenter.x = round(tileCenter.x);
+		tileCenter.y = round(tileCenter.y);
+		tileCenter.x -= 0.5 * signum(tileLocation.x);
+		tileCenter.y -= 0.5 * signum(tileLocation.y);
+
+		return tileCenter;
 	}
 
-	public Point2D squareDeviation() {
-		Point2D squareLocation = squareLocation();
-		Point2D squareCenter = squareCenter();
-		return new Point2D(squareLocation.x - squareCenter.x, squareLocation.y - squareCenter.y);
+	/**
+	 * @return The robot's deviation from the center of the tile it is currently on.
+	 */
+	public Point2D getTileDeviation() {
+		final Point2D tileLocation = getTileLocation();
+		final Point2D tileCenter = getTileCenter();
+
+		return new Point2D(tileLocation.x - tileCenter.x, tileLocation.y - tileCenter.y);
 	}
 
 	/**
@@ -239,9 +232,9 @@ public class TrackingSystem {
 		final double y = position.x * INCH_TO_CM;
 		final double x = position.y * INCH_TO_CM;
 
-		opMode.telemetry.addData("x", position.x);
-		opMode.telemetry.addData("y", position.y);
-		opMode.telemetry.addData("rot", toDegrees(position.angle));
+		opMode.telemetry.addData("x: ", position.x);
+		opMode.telemetry.addData("y: ", position.y);
+		opMode.telemetry.addData("Angle: ", toDegrees(position.angle));
 
 		TelemetryPacket packet = new TelemetryPacket();
 
