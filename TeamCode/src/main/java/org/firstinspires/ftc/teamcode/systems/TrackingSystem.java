@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.atan;
 import static java.lang.Math.cos;
 import static java.lang.Math.round;
 import static java.lang.Math.signum;
@@ -71,6 +73,9 @@ public class TrackingSystem {
 	private double flPreviousTicks;
 	private double frPreviousTicks;
 	private double bPreviousTicks;
+
+	// position matrix for the tile corners
+	double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -258,4 +263,51 @@ public class TrackingSystem {
 		FtcDashboard.getInstance().sendTelemetryPacket(packet);
 		opMode.telemetry.update();
 	}
+
+	public double angleTo(Point2D distance) {
+		double angle = atan(distance.x / distance.y);
+		if (distance.x < 0) {
+			angle -= PI;
+		}
+		return angle;
+	}
+
+	public Point2D closestPoleLocation() {
+		Point2D squareDeviation = getTileDeviation();
+		Point2D squareCenter = getTileCenter();
+		Point2D squareLocation = getTileLocation();
+
+
+		Point2D bestCornerPosition = new Point2D();
+		double smallestAngle = 2 * PI;
+		for(int corner = 0; corner < 4; corner++) {
+			Point2D cornerSquarePosition = new Point2D();
+			cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
+			cornerSquarePosition.x = round(cornerSquarePosition.x);
+
+			cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
+			cornerSquarePosition.y = round(cornerSquarePosition.y);
+
+			if(abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2 ||
+					(cornerSquarePosition.x % 2 == 0 && cornerSquarePosition.y % 2 == 0)) {
+				continue;
+			}
+
+			Point2D cornerDistance = new Point2D(cornerSquarePosition.x - position.x, cornerSquarePosition.y - position.y);
+
+			double angleTo = abs(angleTo(cornerDistance) - position.angle);
+			if(angleTo < smallestAngle) {
+				bestCornerPosition = cornerSquarePosition;
+				smallestAngle = angleTo;
+			}
+		}
+
+		bestCornerPosition.x *= TILE_SIZE;
+		bestCornerPosition.y *= TILE_SIZE;
+
+		return bestCornerPosition;
+	}
+
 }
+
+

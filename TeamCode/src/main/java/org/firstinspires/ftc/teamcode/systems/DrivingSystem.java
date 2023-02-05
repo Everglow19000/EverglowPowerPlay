@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
+import static java.lang.Math.hypot;
 import static java.lang.Math.max;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.teamcode.utils.Sequence;
 public class DrivingSystem {
 	private static final double EPSILON = 1;
 	private static final double ROTATION_EPSILON = toRadians(0.5);
+	private static final double DROP_OFF_DISTANCE = 25;
 
 	/**
 	 * The current opMode running on the robot.
@@ -218,6 +220,30 @@ public class DrivingSystem {
 		driveMecanum(mecanumPowers);
 	}
 
+
+
+
+	public void driveToClosestPole() {
+		double Epsilon = 0.5;
+
+		Point2D poleLocation = SystemCoordinator.instance.trackingSystem.closestPoleLocation();
+		Pose divrePowers = new Pose();
+		double angleToPole = SystemCoordinator.instance.trackingSystem.angleTo(poleLocation);
+		Pose currentPosition = SystemCoordinator.instance.trackingSystem.getPosition();
+		double angleDeviation = normalizeAngle(angleToPole - currentPosition.angle);
+		double distance = hypot(poleLocation.x - currentPosition.x, poleLocation.y - currentPosition.y) - DROP_OFF_DISTANCE;
+		while(abs(distance) < 0.5) {
+			double power = distance * 0.007 + 0.05;
+			driveByAxis(new Pose(power * sin(angleToPole), power * cos(angleToPole), angleDeviation * 0.3 + 0.07));
+
+			angleToPole = SystemCoordinator.instance.trackingSystem.angleTo(poleLocation);
+			currentPosition = SystemCoordinator.instance.trackingSystem.getPosition();
+			angleDeviation = normalizeAngle(angleToPole - currentPosition.angle);
+			distance = hypot(poleLocation.x - currentPosition.x, poleLocation.y - currentPosition.y) - DROP_OFF_DISTANCE;
+		}
+	}
+
+
 	public void move2(Pose targetLocation) {
 		final Pose Kp = new Pose(0.01, 0.01, 0.73);
 		final Pose Ki = new Pose(0, 0, 0);
@@ -248,8 +274,8 @@ public class DrivingSystem {
 		final double K = 0.03;
 
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -276,8 +302,8 @@ public class DrivingSystem {
 	public void controlledDriveByAxis2(Pose Powers) {
 		final double K = 50.;
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -308,8 +334,8 @@ public class DrivingSystem {
 	 */
 	public void controlledDriveByAxis3(Pose Powers) {
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.squareLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.squareDeviation();
+		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -358,6 +384,8 @@ public class DrivingSystem {
 		}
 		stop();
 	}
+
+
 
 	/**
 	 * drives the Robot to location
