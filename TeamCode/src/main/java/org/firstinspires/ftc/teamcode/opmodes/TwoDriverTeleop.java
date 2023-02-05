@@ -49,16 +49,23 @@ public class TwoDriverTeleop extends LinearOpMode {
 			systems.drivingSystem.driveMecanum(actPowers);
 
 			if (gamepadB.dpad_up()) {
-				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.HIGH);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH);
 			}
 			if (gamepadB.dpad_left()) {
-				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.MID);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID);
 			}
 			if (gamepadB.dpad_down()) {
-				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.LOW);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW);
 			}
 			if (gamepadB.dpad_right()) {
-				systems.elevatorSystem.goToImmediate(ElevatorSystem.Level.PICKUP);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP);
+			}
+
+			if (gamepadB.lb()) {
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF);
+			}
+			if (gamepadB.rb()) {
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP);
 			}
 
 			if (gamepadB.lt()) {
@@ -68,17 +75,10 @@ public class TwoDriverTeleop extends LinearOpMode {
 				systems.gWheelSystem.toggleCollect();
 			}
 
-			if (gamepadB.lb()) {
-				systems.fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.DROPOFF);
-			}
-			if (gamepadB.rb()) {
-				systems.fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.PICKUP);
-			}
 			if (gamepadB.circle()) {
 				clawPosition = clawPosition.flip();
-				systems.clawSystem.goToImmediate(clawPosition);
+				systems.clawSystem.goToSequenceItem(clawPosition, 1);
 			}
-			telemetry.update();
 		}
 	}
 }
