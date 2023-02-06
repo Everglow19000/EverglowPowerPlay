@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  */
 @Config
 public class ClawSystem {
-	// configurable variables by the FtcDashboard
+	// Variables configurable by the FtcDashboard
 	public static double OPEN_POSITION = 0.6;
 	public static double CLOSED_POSITION = 0.78;
 
@@ -31,8 +31,8 @@ public class ClawSystem {
 		OPEN(),
 		CLOSED();
 
-		public double getDesiredPosition(){
-			switch (this){
+		public double getDesiredPosition() {
+			switch (this) {
 				case OPEN:
 					return OPEN_POSITION;
 				case CLOSED:
@@ -100,9 +100,29 @@ public class ClawSystem {
 		claw = opMode.hardwareMap.get(Servo.class, "claw");
 	}
 
+	/**
+	 * Ticks the claw system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
+	/**
+	 * Stops the claw system.
+	 */
+	public void interrupt() {
+		state = new RestingState();
+	}
+
 	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double velocity) {
 		return new Sequence.SequenceItem(State.Message.CLAW_DONE, () -> {
 			state = new ActingState(position, velocity);
+		});
+	}
+
+	public Sequence.SequenceItem goToSequenceItem(ClawPosition position) {
+		return new Sequence.SequenceItem(State.Message.CLAW_DONE, () -> {
+			state = new ActingState(position, 1);
 		});
 	}
 
@@ -115,19 +135,4 @@ public class ClawSystem {
 	public void goToImmediate(ClawPosition position) {
 		claw.setPosition(position.getDesiredPosition());
 	}
-
-	/**
-	 * Ticks the claw system.
-	 */
-	public void tick() {
-		state.tick();
-	}
-
-	/**
-	 * Stops the claw system.
-	 */
-	public void interrupt(){
-		state = new RestingState();
-	}
-
 }

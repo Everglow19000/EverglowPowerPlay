@@ -14,9 +14,17 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
  */
 
 public class ElevatorSystem {
-
+	/**
+	 * The left elevator motor.
+	 */
 	private final DcMotor left;
+	/**
+	 * The right elevator motor.
+	 */
 	private final DcMotor right;
+	/**
+	 * The current state of the the DrivingSystem.
+	 */
 	private State state = new RestingState();
 
 	/**
@@ -75,26 +83,12 @@ public class ElevatorSystem {
 		left.setDirection(DcMotor.Direction.REVERSE);
 		left.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		right.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
 		left.setTargetPosition(0);
 		right.setTargetPosition(0);
-
 		left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 		right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
 		left.setPower(0.7);
 		right.setPower(0.7);
-	}
-
-	public Sequence.SequenceItem goToSequenceItem(ElevatorSystem.Level level) {
-		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
-			state = new ActingState(level);
-		});
-	}
-
-	public void goToImmediate(Level level){
-		left.setTargetPosition(level.desiredPosition);
-		right.setTargetPosition(level.desiredPosition);
 	}
 
 	/**
@@ -113,4 +107,20 @@ public class ElevatorSystem {
 		right.setTargetPosition(right.getCurrentPosition());
 	}
 
+	public Sequence.SequenceItem goToSequenceItem(ElevatorSystem.Level level) {
+		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
+			state = new ActingState(level);
+		});
+	}
+
+	/**
+	 * Goes to the specified position immediately, without relying on the state machine.
+	 * Should only be used for testing.
+	 *
+	 * @param level the level to go it.
+	 */
+	public void goToImmediate(Level level) {
+		left.setTargetPosition(level.desiredPosition);
+		right.setTargetPosition(level.desiredPosition);
+	}
 }
