@@ -1052,7 +1052,7 @@ public class DrivingSystem {
 			double yPower = yController.getPower(time,error.y,velocity.y,acceleration.y);
 			double rotationPower = rotController.getPower(time,error.angle,velocity.angle,acceleration.angle);
 
-			driveByAxis(new Pose(xPower*2, yPower*2, rotationPower*2));
+			driveByAxis(new Pose(xPower, yPower, rotationPower));
 
 //			Setting the 'previous' variables
 			prev_t = time;
