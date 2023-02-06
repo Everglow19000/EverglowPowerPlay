@@ -44,18 +44,20 @@ public class TwoDriverTeleop extends LinearOpMode {
 
 			// Apply calculated velocity to mecanum wheels
 			systems.drivingSystem.driveMecanum(actPowers);
+			systems.elevatorSystem.setPower(gamepad2.left_stick_y * 0.25);
+
 
 			if (gamepadB.dpad_up()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH).runAction.run();
+			//	systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH).runAction.run();
 			}
 			if (gamepadB.dpad_left()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID).runAction.run();
+				//systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID).runAction.run();
 			}
 			if (gamepadB.dpad_down()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW).runAction.run();
+				//systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW).runAction.run();
 			}
 			if (gamepadB.dpad_right()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP).runAction.run();
+				//systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP).runAction.run();
 			}
 
 			if(gamepadB.square()) {
@@ -78,7 +80,8 @@ public class TwoDriverTeleop extends LinearOpMode {
 
 			if (gamepadB.circle()) {
 				clawPosition = clawPosition.flip();
-				systems.clawSystem.goToSequenceItem(clawPosition, 1).runAction.run();
+				Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(clawPosition, 1));
+				systems.executeSequence(clawSequence);
 			}
 
 			telemetry.update();

@@ -21,7 +21,7 @@ public class FourBarSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum FourBarPosition {
-		START(0), PICKUP(850), DROPOFF(3000);
+		START(0), PICKUP(-987), DROPOFF(-3100);
 
 		public final int desiredPosition;
 

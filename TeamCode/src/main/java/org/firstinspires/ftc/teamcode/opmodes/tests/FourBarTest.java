@@ -8,14 +8,18 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class FourBarTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		DcMotor fourBarMotor = hardwareMap.get(DcMotor.class, "4bar");
-		fourBarMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		fourBarMotor.setTargetPosition(0);
+		DcMotor fourBar = hardwareMap.get(DcMotor.class, "4bar");
+		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+		fourBar.setTargetPosition(0);
+		fourBar.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		fourBar.setPower(0);
+		fourBar.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 		waitForStart();
 
 		while (opModeIsActive()) {
-			fourBarMotor.setPower(-gamepad1.left_stick_y * 0.25);
-			telemetry.addData("position", fourBarMotor.getCurrentPosition());
+			fourBar.setPower(-gamepad1.left_stick_y * 0.25);
+			telemetry.addData("position", fourBar.getCurrentPosition());
 			telemetry.update();
 		}
 	}

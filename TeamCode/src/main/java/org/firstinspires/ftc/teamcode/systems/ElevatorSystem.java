@@ -113,6 +113,16 @@ public class ElevatorSystem {
 		});
 	}
 
+	public void goToTicks(int ticks) {
+		left.setTargetPosition(ticks);
+		right.setTargetPosition(ticks);
+	}
+
+	public void setPower(double power) {
+		left.setPower(power);
+		right.setPower(power);
+	}
+
 	/**
 	 * Goes to the specified position immediately, without relying on the state machine.
 	 * Should only be used for testing.

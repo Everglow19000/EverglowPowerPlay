@@ -18,8 +18,8 @@ import org.firstinspires.ftc.teamcode.utils.RestingState;
 @Config
 public class ClawSystem {
 	// Variables configurable by the FtcDashboard
-	public static double OPEN_POSITION = 0.6;
-	public static double CLOSED_POSITION = 0.78;
+	public static double OPEN_POSITION = 0.001;
+	public static double CLOSED_POSITION = 0.44;
 
 	private final Servo claw;
 	private State state = new RestingState();
