@@ -8,7 +8,7 @@ public class SplinePath {
 
     public PolynomialPath[] myPath;
 
-    public SplinePath(PointD[] points) {
+    public SplinePath(Point2D[] points) {
         myPath = MatrixSolver.findPath(points);
     }
 
@@ -17,7 +17,7 @@ public class SplinePath {
      * @param providedU A value ranging from 0 to length of the 'polynomials' array.
      * @return A Point2D object which contains the calculated x and y values.
      */
-    public PointD getPoint(double providedU) {
+    public Point2D getPoint(double providedU) {
         providedU *= myPath.length;
         int indexU = (int) providedU;
         if(indexU > 1) indexU = myPath.length - 1;
@@ -26,10 +26,10 @@ public class SplinePath {
         double x = myPath[indexU].x(providedU - indexU);
         double y = myPath[indexU].y(providedU - indexU);
 
-        return new PointD(x,y);
+        return new Point2D(x,y);
     }
 
-    public PointD getDerivative(double providedU) {
+    public Point2D getDerivative(double providedU) {
         providedU *= myPath.length;
         int indexU = (int) providedU;
         if(indexU > 1) indexU = myPath.length - 1;
@@ -38,7 +38,7 @@ public class SplinePath {
         double xTag = myPath[indexU].xTag(providedU - indexU);
         double yTag = myPath[indexU].yTag(providedU - indexU);
 
-        return new PointD(xTag,yTag);
+        return new Point2D(xTag,yTag);
     }
 }
 

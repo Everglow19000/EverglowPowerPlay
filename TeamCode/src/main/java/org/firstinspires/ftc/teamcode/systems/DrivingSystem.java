@@ -7,17 +7,27 @@ import static java.lang.Math.max;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
+import static org.firstinspires.ftc.teamcode.RobotParameters.DRIVE_Y_FACTOR;
+import static org.firstinspires.ftc.teamcode.RobotParameters.k_a_accelerating;
+import static org.firstinspires.ftc.teamcode.RobotParameters.k_a_decelerating;
+import static org.firstinspires.ftc.teamcode.RobotParameters.k_d_error;
+import static org.firstinspires.ftc.teamcode.RobotParameters.k_error;
+import static org.firstinspires.ftc.teamcode.RobotParameters.k_v;
 import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
+import org.firstinspires.ftc.teamcode.utils.PdffController;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PosePIDController;
 import org.firstinspires.ftc.teamcode.utils.State;
 import org.firstinspires.ftc.teamcode.utils.RestingState;
 import org.firstinspires.ftc.teamcode.utils.Sequence;
+import org.firstinspires.ftc.teamcode.utils.Trajectory;
 
 /**
  * A class for handling moving the robot through space.
@@ -54,6 +64,12 @@ public class DrivingSystem {
 	 * (temporarily also DriveStraightState and DriveSidewaysState).
 	 */
 	private State state = new RestingState();
+
+	private Pose targetPosition = new Pose();
+
+	public Pose getTargetPosition(){
+		return new Pose(targetPosition);
+	}
 
 	public class DriveStraightState implements State {
 		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
@@ -168,6 +184,9 @@ public class DrivingSystem {
 		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 		backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
+		powers = new Pose(powers);
+		powers.y *= DRIVE_Y_FACTOR;
+
 		// Determine how much power each motor should receive.
 		double frontRightPower = powers.y + powers.x + powers.angle;
 		double frontLeftPower = powers.y - powers.x - powers.angle;
@@ -272,8 +291,6 @@ public class DrivingSystem {
 	 */
 	public void controlledDriveByAxis(Pose Powers) {
 		final double K = 0.03;
-
-
 		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
 		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
@@ -414,4 +431,72 @@ public class DrivingSystem {
 			state = new DriveSidewaysState(targetX, targetAngle);
 		});
 	}
+
+	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
+		resetDistance();
+		ElapsedTime elapsedTime = new ElapsedTime();
+		PdffController controller = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+			SystemCoordinator.instance.tick();
+			Pose pose = SystemCoordinator.instance.trackingSystem.getPosition();
+			final double currentTime = elapsedTime.seconds();
+			double targetPosition = accelerationProfile.getPosition(currentTime);
+			double targetVelocity = accelerationProfile.getVelocity(currentTime);
+			double targetAcceleration = accelerationProfile.acceleration(currentTime);
+			double error = targetPosition - pose.y;
+
+			double forwardPower = controller.getPower(currentTime, error, targetVelocity, targetAcceleration);
+			driveMecanum(new Pose(0, forwardPower, 0));
+		}
+		stop();
+	}
+
+
+	public void driveByPath(Trajectory traj, double targetAngle, double anglePowerScalar){
+		resetDistance();
+
+		ElapsedTime elapsedTime = new ElapsedTime();
+		PdffController xController = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PdffController yController = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+
+		double prev_t = 0;
+		double prev_v_x = 0;
+		double prev_v_y = 0;
+		double prev_v_rot = 0;
+
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
+			SystemCoordinator.instance.tick();
+			final double time = elapsedTime.seconds();
+			final double dt = time - prev_t;
+
+//			Getting currentPose, targetPose, and error
+			Pose currentPose = SystemCoordinator.instance.trackingSystem.getPosition();
+			Pose targetPose = traj.getPose(time);
+			if (targetPose == null){ return; }
+			targetPose.angle = targetAngle;
+			this.targetPosition = targetPose;
+			Pose error = new Pose(targetPose.x - currentPose.x, targetPose.y - currentPose.y,
+					normalizeAngle(targetPose.angle - currentPose.angle));
+
+//			Velocity and acceleration poses
+			Pose velocity = traj.getVelocity(time);
+			Pose acceleration = new Pose((velocity.x - prev_v_x)/dt, (velocity.y - prev_v_y)/dt,
+					(velocity.angle - prev_v_rot)/dt);
+
+//			Using PdffController to get power and driving
+			double xPower = xController.getPower(time,error.x,velocity.x,acceleration.x);
+			double yPower = yController.getPower(time,error.y,velocity.y,acceleration.y);
+			double rotationPower = error.angle * anglePowerScalar;
+
+			driveByAxis(new Pose(xPower, yPower, rotationPower));
+
+//			Setting the 'previous' variables
+			prev_t = time;
+			prev_v_x = velocity.x;
+			prev_v_y = velocity.y;
+			prev_v_rot = velocity.angle;
+		}
+		stop();
+	}
+
 }

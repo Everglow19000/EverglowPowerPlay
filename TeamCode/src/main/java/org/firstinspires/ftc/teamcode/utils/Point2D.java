@@ -29,4 +29,9 @@ public class Point2D {
 		this.x = x;
 		this.y = y;
 	}
+
+	public static Point2D difference(Point2D p1, Point2D p2){
+		return new Point2D(p1.x - p2.x, p1.y - p2.y);
+	}
+
 }

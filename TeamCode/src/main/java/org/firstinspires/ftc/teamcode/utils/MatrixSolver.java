@@ -10,7 +10,7 @@ public abstract class MatrixSolver {
      * @param points The points through which the robot needs to pass through.
      * @return An array of polynomial paths.
      */
-    public static PolynomialPath[] findPath(PointD[] points) {
+    public static PolynomialPath[] findPath(Point2D[] points) {
 
         PolynomialPath[] polynomials = new PolynomialPath[points.length - 1];
 
@@ -59,7 +59,7 @@ public abstract class MatrixSolver {
      * @param m0Y    The slope of the Y parameter equation in the first point.
      * @param m1Y    The slope of the Y parameter equation in the second point.
      */
-    public static PolynomialPath findPolynomial(PointD point0, double m0X, double m0Y, PointD point1, double m1X, double m1Y) {
+    public static PolynomialPath findPolynomial(Point2D point0, double m0X, double m0Y, Point2D point1, double m1X, double m1Y) {
 
         //Declaring the x and y matrices of parameters a and b.
         double[][] yMatrix = new double[2][3];

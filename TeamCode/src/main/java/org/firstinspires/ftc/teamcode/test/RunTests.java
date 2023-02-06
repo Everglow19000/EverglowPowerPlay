@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.test;
 
 import org.firstinspires.ftc.teamcode.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
-import org.firstinspires.ftc.teamcode.utils.PointD;
+import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.SplinePath;
 import org.firstinspires.ftc.teamcode.utils.Trajectory;
@@ -42,26 +42,26 @@ public class RunTests {
 
     @org.junit.Test
     public void testSpline(){
-        PointD[] pts = {
-                new PointD(0,0),
-                new PointD(0,100),
-                new PointD(0,200)
+        Point2D[] pts = {
+                new Point2D(0,0),
+                new Point2D(0,100),
+                new Point2D(0,200)
         };
         SplinePath spline = new SplinePath(pts);
-        Trajectory trajectory = new Trajectory(spline, 0, 0.0001);
+        Trajectory trajectory = new Trajectory(spline, RobotParameters.MAX_V_X);
         System.out.println(trajectory.pathLength);
 
     }
 
     @Test
     public void test3(){
-        PointD[] pts = {
-                new PointD(0,0),
-                new PointD(0,75),
-                new PointD(0,150),
+        Point2D[] pts = {
+                new Point2D(0,0),
+                new Point2D(0,75),
+                new Point2D(0,150),
         };
         SplinePath spline = new SplinePath(pts);
-        Trajectory trajectory = new Trajectory(spline, 0, 0.0001);
+        Trajectory trajectory = new Trajectory(spline, RobotParameters.MAX_V_X);
         for (double t = 0; t < 10; t += 0.01)
         {
             Pose pose = trajectory.getPose(t);

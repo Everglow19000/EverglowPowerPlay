@@ -27,9 +27,16 @@ public class SystemCoordinator {
 	public final FourBarSystem fourBarSystem;
 	public final TrackingSystem trackingSystem;
 	public final GWheelSystem gWheelSystem;
+	public final PositionLogger positionLogger;
 	//There is no camera system because it runs in a separate thread.
 
 	private final ArrayList<Sequence> actionSequences;
+
+	private long lastCycleTime;
+
+	public long getLastCycleTime(){
+		return lastCycleTime;
+	}
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -37,6 +44,9 @@ public class SystemCoordinator {
 	public SystemCoordinator(LinearOpMode opMode) {
 		instance = this;
 		this.opMode = opMode;
+
+		lastCycleTime = System.nanoTime();
+
 		// Initiate all the systems
 		elevatorSystem = new ElevatorSystem(opMode);
 		clawSystem = new ClawSystem(opMode);
@@ -44,21 +54,25 @@ public class SystemCoordinator {
 		fourBarSystem = new FourBarSystem(opMode);
 		trackingSystem = new TrackingSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
+		positionLogger = new PositionLogger(drivingSystem, opMode);
 
 		// Initiate the list of sequences
 		actionSequences = new ArrayList<>();
+
 	}
 
 	/**
 	 * Each system should be ticked in an epsilon amount of time.
 	 */
 	public void tick() {
+		lastCycleTime = System.nanoTime();
 		//Tick each system
 		clawSystem.tick();
 		drivingSystem.tick();
 		elevatorSystem.tick();
 		fourBarSystem.tick();
 		trackingSystem.tick();
+		positionLogger.tick();
 	}
 
 	/**

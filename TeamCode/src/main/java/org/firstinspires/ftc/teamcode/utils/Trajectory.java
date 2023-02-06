@@ -6,23 +6,20 @@ import java.util.List;
 public class Trajectory {
     SplinePath path;
     AccelerationProfile accelerationProfile;
-    AccelerationProfile rotationProfile;
     List<Double> uList;
 
-    final double maxVelocity = RobotParameters.MAX_V_X*0.5; //Temporary value for tests (vMax = 130-140 cm/sec)
+    final double maxVelocity;
     final double step = 0.01;
     public final double pathLength;
     final double totalTime; //In seconds
-    final double startAngle;
 
-    public Trajectory(SplinePath path, double startAngle, double endAngle) {
+    public Trajectory(SplinePath path, double maxVelocity) {
+        this.maxVelocity = maxVelocity;
         this.path = path;
-        this.startAngle = startAngle;
         uList = getUList(path);
         pathLength = step * uList.size() * path.myPath.length;
 
         accelerationProfile = new AccelerationProfile(RobotParameters.MAX_A_X, maxVelocity, pathLength);
-        rotationProfile = new AccelerationProfile(RobotParameters.MAX_A_ROT, RobotParameters.MAX_V_ROT, endAngle-startAngle);
         totalTime = accelerationProfile.finalTime();
     }
 
@@ -35,7 +32,7 @@ public class Trajectory {
         int xEnd = 1;
 
         OdeSolver.Function f = (o) ->{
-            PointD p = spline.getDerivative(o);
+            Point2D p = spline.getDerivative(o);
             return 1. / Math.sqrt(Math.pow(p.x, 2) + Math.pow(p.y, 2));
         };
 
@@ -55,7 +52,7 @@ public class Trajectory {
         final double nextU = uList.get(ptIndex);
 
 //      Finds the slope of x(u) and y(u):
-        PointD vector = path.getDerivative(nextU);
+        Point2D vector = path.getDerivative(nextU);
         double xVelocity = vector.x;
         double yVelocity = vector.y;
         double maxPower = Math.max(Math.abs(xVelocity), Math.abs(yVelocity));
@@ -67,10 +64,7 @@ public class Trajectory {
         xVelocity *= velocity;
         yVelocity *= velocity;
 
-//      Finds the rotation power.
-        final double angularVelocity = rotationProfile.getVelocity(time);;
-
-        return new Pose(xVelocity, yVelocity, angularVelocity);
+        return new Pose(xVelocity, yVelocity, 0);
     }
 
     public Pose getPose(double time){
@@ -79,10 +73,8 @@ public class Trajectory {
         if(ptIndex >= uList.size()) return null;
         double nextU = uList.get(ptIndex);
 
-        PointD position = path.getPoint(nextU);
-        double angle = rotationProfile.getPosition(time);
+        Point2D position = path.getPoint(nextU);
 
-//      return new Pose(position.x,position.y,angle + startAngle);
         return new Pose(position.x,position.y,0);
     }
 

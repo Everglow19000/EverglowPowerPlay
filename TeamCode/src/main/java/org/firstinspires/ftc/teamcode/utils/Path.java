@@ -21,14 +21,14 @@ public abstract class Path {
      * @param u The "tick" value of the path (0 <= u <= 1).
      * @return A Point2D object with the x and y velocities.
      */
-    private PointD VelocityAtPoint(double u) {
+    private Point2D VelocityAtPoint(double u) {
         double yVelocity = yTag(u);
         double xVelocity = xTag(u);
         double max = max(abs(yVelocity), abs(xVelocity));
         yVelocity /= max;
         xVelocity /= max;
 
-        return new PointD(xVelocity, yVelocity);
+        return new Point2D(xVelocity, yVelocity);
     }
 
     /**
@@ -38,7 +38,7 @@ public abstract class Path {
      * @param uPrevious The previous u value.
      * @return The next u value.
      */
-    private double NearestPointU(PointD location, double uPrevious) {
+    private double NearestPointU(Point2D location, double uPrevious) {
         //A small value to add to the u value to try to get as close as possible to the path
         double alpha = 1E-4, u = uPrevious, epsilon = -1E-7;
 
@@ -58,7 +58,7 @@ public abstract class Path {
      * @param location The current location of the robot in a Point2D obj.
      * @return The derivative of the distance squared between the previous point and the path.
      */
-    private double errorTag(double u, PointD location) {
+    private double errorTag(double u, Point2D location) {
         return 2 * (x(u) - location.x) * xTag(u) + 2 * (y(u) - location.y) * yTag(u);
     }
 
@@ -70,10 +70,10 @@ public abstract class Path {
      * @param uPrevious The previous u value.
      * @return A Pair<Point2D, Double> object with the x and y velocities as a Point2D and the new u value.
      */
-    public Pair<PointD, Double> VelocityForPoint(PointD location, double uPrevious) {
+    public Pair<Point2D, Double> VelocityForPoint(Point2D location, double uPrevious) {
         double u = NearestPointU(location, uPrevious);
-        PointD velocity = VelocityAtPoint(u);
-        PointD error = new PointD(x(u) - location.x, y(u) - location.y);
+        Point2D velocity = VelocityAtPoint(u);
+        Point2D error = new Point2D(x(u) - location.x, y(u) - location.y);
         double alpha = 0.4;
 
         velocity.x += alpha * error.x;

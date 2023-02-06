@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.utils.PathTypes;
 
 import org.firstinspires.ftc.teamcode.utils.Path;
-import org.firstinspires.ftc.teamcode.utils.PointD;
+import org.firstinspires.ftc.teamcode.utils.Point2D;
 
 public class CirclePath extends Path {
 
     private final double radius;
-    private final PointD startPoint;
+    private final Point2D startPoint;
 
     /**
      * Creates a circle path.
@@ -14,9 +14,9 @@ public class CirclePath extends Path {
      * @param radius The radius of the circle the robot should travel.
      * @param center The center of the circle the robot should travel.
      */
-    public CirclePath(double radius, PointD center) {
+    public CirclePath(double radius, Point2D center) {
         this.radius = radius;
-        this.startPoint = PointD.difference(center, new PointD(radius, 0));
+        this.startPoint = Point2D.difference(center, new Point2D(radius, 0));
     }
 
     @Override
