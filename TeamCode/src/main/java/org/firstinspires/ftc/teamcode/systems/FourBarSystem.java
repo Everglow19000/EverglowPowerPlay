@@ -16,8 +16,9 @@ import org.firstinspires.ftc.teamcode.utils.State;
 @Config
 public class FourBarSystem {
 
-	public static int DROPOFF_POSITION = -500;
-	public static int PICKUP_POSITION = 0;
+	public static int DROPOFF_POSITION = -500; // not calibrated
+	public static int PICKUP_POSITION = 0; // not calibrated
+	public static int PICKUP_LEFT_POSITION = 0; // not calibrated
 	public static double MOTOR_POWER = 0.7;
 
 	private final DcMotor fourBar;
@@ -26,7 +27,7 @@ public class FourBarSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum FourBarPosition {
-		PICKUP, DROPOFF;
+		PICKUP, DROPOFF, PICKUP_BACK;
 
 		public int getDesiredPosition(){
 			switch (this){
@@ -34,6 +35,8 @@ public class FourBarSystem {
 					return PICKUP_POSITION;
 				case DROPOFF:
 					return DROPOFF_POSITION;
+				case PICKUP_BACK:
+					return PICKUP_LEFT_POSITION;
 				default:
 					throw new IllegalStateException();
 			}

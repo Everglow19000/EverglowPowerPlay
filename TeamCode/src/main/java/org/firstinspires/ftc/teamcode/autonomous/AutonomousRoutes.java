@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import android.os.Build;
 
@@ -23,12 +24,13 @@ public class AutonomousRoutes implements Runnable {
 	private SystemCoordinator systems;
 	private CameraSystem cameraSystem;
 	private boolean isTimeractive = false;
-	private boolean befourAction = true;
+	boolean isRightAutonomous;
 
-	public AutonomousRoutes(LinearOpMode opMode) {
+	public AutonomousRoutes(LinearOpMode opMode, boolean isRightAutonomous) {
 		this.opMode = opMode;
 		cameraSystem = new CameraSystem(opMode);
 		systems = new SystemCoordinator(opMode);
+		this.isRightAutonomous = isRightAutonomous;
 	}
 
 	/**
@@ -37,26 +39,15 @@ public class AutonomousRoutes implements Runnable {
 
 	@RequiresApi(api = Build.VERSION_CODES.O)
 	public void run(){
+		isTimeractive = true;
+		ElapsedTime elapsedTime = new ElapsedTime();
+		while (opMode.opModeIsActive() && elapsedTime.seconds()<22){
 
-		int startSec = LocalTime.now().getSecond();
-		int nowSec = LocalTime.now().getSecond();
-		double deltaTime = nowSec - startSec;
-		double deltaTimeRelativeToAction = deltaTime;
-		while (opMode.opModeIsActive() && deltaTimeRelativeToAction<20){
-			nowSec = LocalTime.now().getSecond();
-			deltaTime = nowSec - startSec;
-			if (befourAction){
-				deltaTimeRelativeToAction = deltaTime+5;
-			}
-			else{
-				deltaTimeRelativeToAction = deltaTime;
-			}
 		}
 		isTimeractive = false;
-		return;
 	}
 
-	public void putConesAndBack(boolean isRightAutonomous){
+	public void putConesAndBack(){
 		Thread timerThread = new Thread();
 		timerThread.run();
 
@@ -72,48 +63,98 @@ public class AutonomousRoutes implements Runnable {
 
 		final Pose startPose = systems.trackingSystem.getPosition();
 		final Pose pickCone = new Pose(right*lenSquere/2, 2*lenSquere, 0);//PI/2
-		final Pose putCone = new Pose(-right*lenSquere/4, 2.5*lenSquere, 0);//
+		final Pose putCone = new Pose(-right*lenSquere/4, 2.5*lenSquere, 0);//PI/2
 
+		//starting Squence
+		Sequence preperePickUp = new Sequence(
+			systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
+			systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
+			systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP_BACK));
+
+		Sequence toCone = new Sequence(
+				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle),
+				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle));
+
+		Sequence toPole = new Sequence(
+				systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle),
+				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle));
 		Sequence sequencePickUp = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH));
-
-		Sequence sequenceDropOff = new Sequence(
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF),
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
-
-		Sequence sequenceBackToStart = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
 
+		Sequence prepereDropOff = new Sequence(
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF));
+
+
+		Sequence dropOff = new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
+
+		Sequence prepereForAnoutherRep = new Sequence(systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP));
 
 		while (opMode.opModeIsActive() && isTimeractive) {
-			befourAction = true;
 
-			if (isTimeractive){
-				befourAction = false;
-				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle);
-				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle);
-				//systems.gWheelSystem.toggleCollect();
-				//opMode.sleep(250);
-				//systems.gWheelSystem.toggleCollect();
-				//sequencePickUp.start();
-				//opMode.sleep(250);
-				systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle);
-				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle);
-				//sequenceDropOff.start();
-				opMode.sleep(750);
-				//sequenceBackToStart.start();
-			}else {
-				break;
+			systems.executeSequence(toCone);
+			while (!toCone.isSequenceDone() && opMode.opModeIsActive()){ // may to upsideDown Sequence
+				systems.tick();
+				systems.executeSequence(preperePickUp);
+				while (!preperePickUp.isSequenceDone() && opMode.opModeIsActive()){
+					systems.tick();
+				}
+			}
+
+			systems.executeSequence(sequencePickUp);
+			while (!sequencePickUp.isSequenceDone() && opMode.opModeIsActive()){
+				systems.tick();
+			}
+
+			systems.executeSequence(prepereDropOff);
+			while (!prepereDropOff.isSequenceDone() && opMode.opModeIsActive()){
+				systems.tick();
+				systems.executeSequence(toPole);
+				while (!toPole.isSequenceDone() && opMode.opModeIsActive()){
+					systems.tick();
+				}
+			}
+
+			systems.executeSequence(prepereForAnoutherRep);
+			while (!prepereForAnoutherRep.isSequenceDone() && opMode.opModeIsActive()){
+				systems.tick();
 			}
 		}
 
-		systems.drivingSystem.driveSidewaysSequenceItem(startPose.x, startPose.angle);
-		systems.drivingSystem.driveStraightSequenceItem(startPose.y, startPose.angle);
+		Sequence waitForPark = new Sequence(
+				systems.drivingSystem.driveSidewaysSequenceItem(startPose.x, startPose.angle),
+				systems.drivingSystem.driveStraightSequenceItem(startPose.y, startPose.angle));
+
+		systems.executeSequence(waitForPark);
+		while (!waitForPark.isSequenceDone() && opMode.opModeIsActive()){
+			systems.tick();
+		}
+	}
+
+	public void park(CameraSystem.AprilTagType tagType){
+		double sidewaysDistance;
+		switch (tagType){
+			case TAG_1:
+				sidewaysDistance = 65;
+				break;
+			case TAG_2:
+			default:
+				sidewaysDistance = 0;
+				break;
+			case TAG_3:
+				sidewaysDistance = -65;
+				break;
+		}
+
+		Sequence sequence = new Sequence(
+				systems.drivingSystem.driveSidewaysSequenceItem(sidewaysDistance, 0),
+				systems.drivingSystem.driveStraightSequenceItem(90, 0)
+		);
+		systems.executeSequence(sequence);
+		while (opMode.opModeIsActive() && !sequence.isSequenceDone()){
+			systems.tick();
+		}
 	}
 }

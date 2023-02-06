@@ -10,7 +10,7 @@ public class TemplateTeleop extends LinearOpMode {
 		waitForStart();
 
 		while (opModeIsActive()) {
-			//Code goes here
+
 		}
 	}
 }
