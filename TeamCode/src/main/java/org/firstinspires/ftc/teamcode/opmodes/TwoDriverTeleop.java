@@ -24,10 +24,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 		final double speedDivisor = 4.5; // the amount to divide the speed when finner controls are activated
 
 		waitForStart();
-		Sequence sequence = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP));
-		sequence.start();
+
 
 		while (opModeIsActive()) {
 			gamepadA.update();
@@ -49,23 +46,27 @@ public class TwoDriverTeleop extends LinearOpMode {
 			systems.drivingSystem.driveMecanum(actPowers);
 
 			if (gamepadB.dpad_up()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH).runAction.run();
 			}
 			if (gamepadB.dpad_left()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID).runAction.run();
 			}
 			if (gamepadB.dpad_down()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW).runAction.run();
 			}
 			if (gamepadB.dpad_right()) {
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP);
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP).runAction.run();
+			}
+
+			if(gamepadB.square()) {
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.START).runAction.run();
 			}
 
 			if (gamepadB.lb()) {
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF);
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF).runAction.run();
 			}
 			if (gamepadB.rb()) {
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP);
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP).runAction.run();
 			}
 
 			if (gamepadB.lt()) {
@@ -77,8 +78,11 @@ public class TwoDriverTeleop extends LinearOpMode {
 
 			if (gamepadB.circle()) {
 				clawPosition = clawPosition.flip();
-				systems.clawSystem.goToSequenceItem(clawPosition, 1);
+				systems.clawSystem.goToSequenceItem(clawPosition, 1).runAction.run();
 			}
+
+			telemetry.update();
+			systems.tick();
 		}
 	}
 }

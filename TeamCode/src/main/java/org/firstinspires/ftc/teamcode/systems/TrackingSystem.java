@@ -228,7 +228,7 @@ public class TrackingSystem {
 	/**
 	 * Prints the robot's current position to the telemetry and the FTCDashboard.
 	 */
-	private void printPosition() {
+	public void printPosition() {
 		final double INCH_TO_CM = 0.39;
 		final double robot_width = 38 * INCH_TO_CM;
 		final double robot_height = 47 * INCH_TO_CM;
@@ -261,7 +261,6 @@ public class TrackingSystem {
 						y - dy1 + dy2
 				});
 		FtcDashboard.getInstance().sendTelemetryPacket(packet);
-		opMode.telemetry.update();
 	}
 
 	public double angleTo(Point2D distance) {
