@@ -16,7 +16,7 @@ public class ConeAutonomous2 extends LinearOpMode {
     public void runOpMode() {
         SystemCoordinator systems = new SystemCoordinator(this);
         CameraSystem cameraSystem = new CameraSystem(this);
-        AutonomousRoutes autonomousRoutes = new AutonomousRoutes(this);
+        //AutonomousRoutes autonomousRoutes = new AutonomousRoutes(this);
 
         double sidewaysDistance;
         int coneNumber = 1, pickUpTicks = 700, pickUpTicksDifference = 150;
