@@ -135,7 +135,9 @@ public class TrackingSystem {
 
 		// Calculating the robot's displacement and rotation
 		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
+
 		final double centerDisplacement = (frontLeftDisplacement + frontRightDisplacement) / 2;
+
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
 		// Temp variable for readability

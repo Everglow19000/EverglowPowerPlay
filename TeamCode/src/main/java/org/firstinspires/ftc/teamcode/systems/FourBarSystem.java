@@ -13,27 +13,30 @@ import org.firstinspires.ftc.teamcode.utils.State;
 /**
  * A class for handling the fourBar system.
  */
+@Config
 public class FourBarSystem {
+
+	public static int DROPOFF_POSITION = -500; // not calibrated
+	public static int PICKUP_POSITION = 0; // not calibrated
+	public static int PICKUP_LEFT_POSITION = 0; // not calibrated
+	public static double MOTOR_POWER = 0.7;
+
 	private final DcMotor fourBar;
 	private State state = new RestingState();
-
 	/**
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum FourBarPosition {
-		START(0), PICKUP(-987), DROPOFF(-3100);
+		PICKUP, DROPOFF, PICKUP_BACK;
 
-		public final int desiredPosition;
-
-		FourBarPosition(int desiredPosition) {
-			this.desiredPosition = desiredPosition;
-		}
-
-		public int getDesiredPosition() {
-			switch (this) {
+		public int getDesiredPosition(){
+			switch (this){
 				case PICKUP:
+					return PICKUP_POSITION;
 				case DROPOFF:
-					return desiredPosition;
+					return DROPOFF_POSITION;
+				case PICKUP_BACK:
+					return PICKUP_LEFT_POSITION;
 				default:
 					throw new IllegalStateException();
 			}
@@ -77,7 +80,18 @@ public class FourBarSystem {
 		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		fourBar.setTargetPosition(0);
 		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		fourBar.setPower(0.5);
+		fourBar.setPower(MOTOR_POWER);
+	}
+
+	public Sequence.SequenceItem goToSequenceItem(FourBarPosition fourBarPosition) {
+		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
+			state = new ActingState(fourBarPosition);
+		});
+	}
+
+	// should only be used for testing
+	public void goToImmediate(FourBarPosition fourBarPosition) {
+		fourBar.setTargetPosition(fourBarPosition.getDesiredPosition());
 	}
 
 	/**
@@ -93,21 +107,5 @@ public class FourBarSystem {
 	public void interrupt() {
 		state = new RestingState();
 		fourBar.setTargetPosition(fourBar.getCurrentPosition());
-	}
-
-	public Sequence.SequenceItem goToSequenceItem(FourBarPosition fourBarPosition) {
-		return new Sequence.SequenceItem(State.Message.FOUR_BAR_DONE, () -> {
-			state = new ActingState(fourBarPosition);
-		});
-	}
-
-	/**
-	 * Goes to the specified position immediately, without relying on the state machine.
-	 * Should only be used for testing.
-	 *
-	 * @param level the level to go it.
-	 */
-	public void goToImmediate(FourBarSystem.FourBarPosition level) {
-		fourBar.setTargetPosition(level.desiredPosition);
 	}
 }

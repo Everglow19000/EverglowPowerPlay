@@ -61,7 +61,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 			}
 
 			if(gamepadB.square()) {
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.START).runAction.run();
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP_BACK).runAction.run();
 			}
 
 			if (gamepadB.lb()) {
