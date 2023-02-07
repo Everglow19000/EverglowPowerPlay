@@ -20,15 +20,15 @@ import java.util.List;
 public class ConeDetector {
 	private OpMode opmode;
 	private Mat hsv;
-	private Mat redMask1;
-	private Mat redMask2;
-	private Mat redMask;
+	private Mat yellowMask1;
+	private Mat yellowMask2;
+	private Mat yellowMask;
 
 	// thresholds for detection by color
-	private static final Scalar RED_THRESHOLD_1_LOWER = new Scalar(0, 100, 20);
-	private static final Scalar RED_THRESHOLD_1_UPPER = new Scalar(10, 255, 255);
-	private static final Scalar RED_THRESHOLD_2_LOWER = new Scalar(160, 100, 20);
-	private static final Scalar RED_THRESHOLD_2_UPPER = new Scalar(180, 255, 255);
+	private static final Scalar YELLOW_THRESHOLD_1_LOWER = new Scalar(0, 100, 20);
+	private static final Scalar YELLOW_THRESHOLD_1_UPPER = new Scalar(10, 255, 255);
+	private static final Scalar YELLOW_THRESHOLD_2_LOWER = new Scalar(160, 100, 20);
+	private static final Scalar YELLOW_THRESHOLD_2_UPPER = new Scalar(180, 255, 255);
 
 	public ConeDetector(OpMode opmode) {
 		this.opmode = opmode;
@@ -36,15 +36,15 @@ public class ConeDetector {
 
 	public void init(Mat mat) {
 		hsv = Mat.zeros(mat.size(), mat.type());
-		redMask1 = Mat.zeros(mat.size(), CvType.CV_8U);
-		redMask2 = Mat.zeros(mat.size(), CvType.CV_8U);
-		redMask = Mat.zeros(mat.size(), CvType.CV_8U);
+		yellowMask1 = Mat.zeros(mat.size(), CvType.CV_8U);
+		yellowMask2 = Mat.zeros(mat.size(), CvType.CV_8U);
+		yellowMask = Mat.zeros(mat.size(), CvType.CV_8U);
 	}
 
 	public Point2D detect(Mat mat) {
 		generateConeMask(mat);
 
-		List<MatOfPoint> contours = getContours(redMask);
+		List<MatOfPoint> contours = getContours(yellowMask);
 		MatOfPoint largestContour = largestContour(contours);
 		Point lowestPoint = getLowestPointOfContour(largestContour);
 
@@ -60,15 +60,15 @@ public class ConeDetector {
 
 	private void generateConeMask(Mat mat) {
 		Imgproc.cvtColor(mat, hsv, Imgproc.COLOR_RGB2HSV);
-		Core.inRange(hsv, RED_THRESHOLD_1_LOWER, RED_THRESHOLD_1_UPPER, redMask1);
-		Core.inRange(hsv, RED_THRESHOLD_2_LOWER, RED_THRESHOLD_2_UPPER, redMask2);
-		Core.bitwise_or(redMask1, redMask2, redMask);
+		Core.inRange(hsv, YELLOW_THRESHOLD_1_LOWER, YELLOW_THRESHOLD_1_UPPER, yellowMask1);
+		Core.inRange(hsv, YELLOW_THRESHOLD_2_LOWER, YELLOW_THRESHOLD_2_UPPER, yellowMask2);
+		Core.bitwise_or(yellowMask1, yellowMask2, yellowMask);
 	}
 
 	private List<MatOfPoint> getContours(Mat mat) {
 		List<MatOfPoint> contours = new ArrayList<>();
 		Mat hierarchy = new Mat();
-		Imgproc.findContours(redMask, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+		Imgproc.findContours(yellowMask, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
 		return contours;
 	}
