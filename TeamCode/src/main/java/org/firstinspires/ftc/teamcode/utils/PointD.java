@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.utils;
 /**
  * A class that represents a point in 2D space.
  */
-public class Point2D {
+public class PointD {
 	/**
 	 * Position on the sideways-axis.
 	 */
@@ -16,7 +16,7 @@ public class Point2D {
 	/**
 	 * Given no values, sets the properties' values to 0.
 	 */
-	public Point2D() {
+	public PointD() {
 		this.x = 0;
 		this.y = 0;
 	}
@@ -25,13 +25,12 @@ public class Point2D {
 	 * @param x position on the sideways-axis.
 	 * @param y position on the forward-axis.
 	 */
-	public Point2D(double x, double y) {
+	public PointD(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	public static Point2D difference(Point2D p1, Point2D p2){
-		return new Point2D(p1.x - p2.x, p1.y - p2.y);
+	public static PointD difference(PointD p1, PointD p2) {
+		return new PointD(p1.x - p2.x, p1.y - p2.y);
 	}
-
 }

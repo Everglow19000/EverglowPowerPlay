@@ -14,19 +14,17 @@ public class ElevatorTest extends LinearOpMode {
 	public void runOpMode() {
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 		ClawSystem claw = new ClawSystem(this);
-		FourBarSystem fourBarSystem = new FourBarSystem(this);
+		FourBarSystem fourBar = new FourBarSystem(this);
 		DcMotor leftElevator = hardwareMap.get(DcMotor.class, "left_elevator");
 		DcMotor rightElevator = hardwareMap.get(DcMotor.class, "right_elevator");
+
 		leftElevator.setDirection(DcMotor.Direction.REVERSE);
 		leftElevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		rightElevator.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-		leftElevator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		rightElevator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 		leftElevator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 		rightElevator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 		waitForStart();
-
 		while (opModeIsActive()) {
 			gamepad.update();
 			if (gamepad.square()) {
@@ -36,17 +34,18 @@ public class ElevatorTest extends LinearOpMode {
 				claw.goToImmediate(ClawSystem.ClawPosition.OPEN);
 			}
 
-			if (gamepad.rb()){
-				fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.PICKUP);
+			if (gamepad.rb()) {
+				fourBar.goToImmediate(FourBarSystem.Position.PICKUP);
 			}
-			if (gamepad.lb()){
-				fourBarSystem.goToImmediate(FourBarSystem.FourBarPosition.DROPOFF);
+			if (gamepad.lb()) {
+				fourBar.goToImmediate(FourBarSystem.Position.DROPOFF);
 			}
 
 			leftElevator.setPower(gamepad1.left_stick_y);
 			rightElevator.setPower(gamepad1.left_stick_y);
 			telemetry.addData("left position", leftElevator.getCurrentPosition());
 			telemetry.addData("right position", rightElevator.getCurrentPosition());
+
 			telemetry.update();
 		}
 	}

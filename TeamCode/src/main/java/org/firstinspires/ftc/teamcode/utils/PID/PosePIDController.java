@@ -1,4 +1,6 @@
-package org.firstinspires.ftc.teamcode.utils;
+package org.firstinspires.ftc.teamcode.utils.PID;
+
+import org.firstinspires.ftc.teamcode.utils.Pose;
 
 public class PosePIDController {
 	private final PIDController x, y, angle;

@@ -1,29 +1,28 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import java.time.LocalTime;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
 import org.firstinspires.ftc.teamcode.systems.ElevatorSystem;
 import org.firstinspires.ftc.teamcode.systems.FourBarSystem;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.Pose;
-import org.firstinspires.ftc.teamcode.utils.Sequence;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
 /**
  * A class that contains all of the autonomous routes for the robot.
  */
 public class AutonomousRoutes implements Runnable {
 	private final LinearOpMode opMode;
-	private SystemCoordinator systems;
-	private CameraSystem cameraSystem;
-	private boolean isTimeractive = false;
+	private final SystemCoordinator systems;
+	private final CameraSystem cameraSystem;
+	private boolean isTimerActive = false;
 	boolean isRightAutonomous;
 
 	public AutonomousRoutes(LinearOpMode opMode, boolean isRightAutonomous) {
@@ -36,45 +35,42 @@ public class AutonomousRoutes implements Runnable {
 	/**
 	 * A test method that drives the robot forwards or sideways, depending on the value the AprilTag.
 	 */
-
 	@RequiresApi(api = Build.VERSION_CODES.O)
-	public void run(){
-		isTimeractive = true;
+	public void run() {
+		isTimerActive = true;
 		ElapsedTime elapsedTime = new ElapsedTime();
-		while (opMode.opModeIsActive() && elapsedTime.seconds()<22){
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < 22) {
 
 		}
-		isTimeractive = false;
+		isTimerActive = false;
 	}
 
-	public void putConesAndBack(){
+	public void putConesAndBack() {
 		Thread timerThread = new Thread();
-		timerThread.run();
+		timerThread.start();
 
-		isTimeractive = true;
-		final double lenSquere = 64;
+		isTimerActive = true;
+		final double lenSquare = 64;
 
 		final int right;
-		if (isRightAutonomous){
+		if (isRightAutonomous) {
 			right = 1;
-		}else {
-			right =-1;
+		} else {
+			right = -1;
 		}
 
 		final Pose startPose = systems.trackingSystem.getPosition();
-		final Pose pickCone = new Pose(right*lenSquere/2, 2*lenSquere, 0);//PI/2
-		final Pose putCone = new Pose(-right*lenSquere/4, 2.5*lenSquere, 0);//PI/2
+		final Pose pickCone = new Pose(right * lenSquare / 2, 2 * lenSquare, 0);//PI/2
+		final Pose putCone = new Pose(-right * lenSquare / 4, 2.5 * lenSquare, 0);//PI/2
 
-		//starting Squence
-		Sequence preperePickUp = new Sequence(
-			systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
-			systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
-			systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP_BACK));
-
+		//starting Sequence
+		Sequence preparePickUp = new Sequence(
+				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP_BACK));
 		Sequence toCone = new Sequence(
 				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle),
 				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle));
-
 		Sequence toPole = new Sequence(
 				systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle),
 				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle));
@@ -82,43 +78,42 @@ public class AutonomousRoutes implements Runnable {
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
-
-		Sequence prepereDropOff = new Sequence(
+		Sequence prepareDropOff = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.DROPOFF));
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF));
 
 
 		Sequence dropOff = new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
 
-		Sequence prepereForAnoutherRep = new Sequence(systems.fourBarSystem.goToSequenceItem(FourBarSystem.FourBarPosition.PICKUP));
+		Sequence prepareForAnotherRep = new Sequence(systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP));
 
-		while (opMode.opModeIsActive() && isTimeractive) {
+		while (opMode.opModeIsActive() && isTimerActive) {
 
 			systems.executeSequence(toCone);
-			while (!toCone.isSequenceDone() && opMode.opModeIsActive()){ // may to upsideDown Sequence
+			while (!toCone.isSequenceDone() && opMode.opModeIsActive()) { // may to upsideDown Sequence
 				systems.tick();
-				systems.executeSequence(preperePickUp);
-				while (!preperePickUp.isSequenceDone() && opMode.opModeIsActive()){
+				systems.executeSequence(preparePickUp);
+				while (!preparePickUp.isSequenceDone() && opMode.opModeIsActive()) {
 					systems.tick();
 				}
 			}
 
 			systems.executeSequence(sequencePickUp);
-			while (!sequencePickUp.isSequenceDone() && opMode.opModeIsActive()){
+			while (!sequencePickUp.isSequenceDone() && opMode.opModeIsActive()) {
 				systems.tick();
 			}
 
-			systems.executeSequence(prepereDropOff);
-			while (!prepereDropOff.isSequenceDone() && opMode.opModeIsActive()){
+			systems.executeSequence(prepareDropOff);
+			while (!prepareDropOff.isSequenceDone() && opMode.opModeIsActive()) {
 				systems.tick();
 				systems.executeSequence(toPole);
-				while (!toPole.isSequenceDone() && opMode.opModeIsActive()){
+				while (!toPole.isSequenceDone() && opMode.opModeIsActive()) {
 					systems.tick();
 				}
 			}
 
-			systems.executeSequence(prepereForAnoutherRep);
-			while (!prepereForAnoutherRep.isSequenceDone() && opMode.opModeIsActive()){
+			systems.executeSequence(prepareForAnotherRep);
+			while (!prepareForAnotherRep.isSequenceDone() && opMode.opModeIsActive()) {
 				systems.tick();
 			}
 		}
@@ -128,14 +123,14 @@ public class AutonomousRoutes implements Runnable {
 				systems.drivingSystem.driveStraightSequenceItem(startPose.y, startPose.angle));
 
 		systems.executeSequence(waitForPark);
-		while (!waitForPark.isSequenceDone() && opMode.opModeIsActive()){
+		while (!waitForPark.isSequenceDone() && opMode.opModeIsActive()) {
 			systems.tick();
 		}
 	}
 
-	public void park(CameraSystem.AprilTagType tagType){
+	public void park(CameraSystem.AprilTagType tagType) {
 		double sidewaysDistance;
-		switch (tagType){
+		switch (tagType) {
 			case TAG_1:
 				sidewaysDistance = 65;
 				break;
@@ -153,7 +148,7 @@ public class AutonomousRoutes implements Runnable {
 				systems.drivingSystem.driveStraightSequenceItem(90, 0)
 		);
 		systems.executeSequence(sequence);
-		while (opMode.opModeIsActive() && !sequence.isSequenceDone()){
+		while (opMode.opModeIsActive() && !sequence.isSequenceDone()) {
 			systems.tick();
 		}
 	}

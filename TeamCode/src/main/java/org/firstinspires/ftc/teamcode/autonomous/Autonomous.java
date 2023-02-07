@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
-import org.firstinspires.ftc.teamcode.utils.Sequence;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous")
 public class Autonomous extends LinearOpMode {

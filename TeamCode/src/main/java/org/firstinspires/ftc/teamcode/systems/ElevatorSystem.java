@@ -5,14 +5,14 @@ import static java.lang.Math.abs;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.utils.Sequence;
-import org.firstinspires.ftc.teamcode.utils.State;
-import org.firstinspires.ftc.teamcode.utils.RestingState;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.State;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.RestingState;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
 
 /**
  * A class for handling the elevator system.
  */
-
 public class ElevatorSystem {
 	/**
 	 * The left elevator motor.
@@ -23,7 +23,7 @@ public class ElevatorSystem {
 	 */
 	private final DcMotor right;
 	/**
-	 * The current state of the the DrivingSystem.
+	 * The current state of the the Elevator System.
 	 */
 	private State state = new RestingState();
 
@@ -37,6 +37,25 @@ public class ElevatorSystem {
 
 		Level(int desiredPosition) {
 			this.desiredPosition = desiredPosition;
+		}
+	}
+
+	public class ElevatorRestingState implements State {
+
+		public ElevatorRestingState() {
+			left.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+			right.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+			left.setPower(0);
+			right.setPower(0);
+			left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+			right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		}
+
+		/**
+		 * Keep the elevator at the desired position
+		 */
+		public void tick() {
+			// Do nothing
 		}
 	}
 
@@ -67,10 +86,9 @@ public class ElevatorSystem {
 			SystemCoordinator.instance.opMode.telemetry.update();
 			if (leftArrived && rightArrived) {
 				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(Message.ELEVATOR_DONE);
+				SystemCoordinator.instance.sendMessage(StateMessages.ELEVATOR_DONE);
 			}
 		}
-
 	}
 
 	/**
@@ -87,6 +105,8 @@ public class ElevatorSystem {
 		right.setTargetPosition(0);
 		left.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 		right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+		left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+		right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 		left.setPower(0.7);
 		right.setPower(0.7);
 	}
@@ -108,19 +128,9 @@ public class ElevatorSystem {
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(ElevatorSystem.Level level) {
-		return new Sequence.SequenceItem(State.Message.ELEVATOR_DONE, () -> {
+		return new Sequence.SequenceItem(StateMessages.ELEVATOR_DONE, () -> {
 			state = new ActingState(level);
 		});
-	}
-
-	public void goToTicks(int ticks) {
-		left.setTargetPosition(ticks);
-		right.setTargetPosition(ticks);
-	}
-
-	public void setPower(double power) {
-		left.setPower(power);
-		right.setPower(power);
 	}
 
 	/**

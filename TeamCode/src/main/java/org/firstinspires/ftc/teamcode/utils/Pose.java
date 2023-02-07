@@ -38,23 +38,14 @@ public class Pose {
 	}
 
 	/**
+	 * Creates a pose based on values from the another pose's values.
+	 *
 	 * @param other another Pose object to copy.
 	 */
 	public Pose(Pose other) {
 		this.x = other.x;
 		this.y = other.y;
 		this.angle = other.angle;
-	}
-
-	/**
-	 * Sets the pose's values to the given pose's values.
-	 *
-	 * @param pose A given pose.
-	 */
-	public void setValue(Pose pose) {
-		this.x = pose.x;
-		this.y = pose.y;
-		this.angle = pose.angle;
 	}
 
 	/**

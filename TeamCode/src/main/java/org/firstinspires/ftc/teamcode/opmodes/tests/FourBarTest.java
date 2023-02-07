@@ -16,7 +16,6 @@ public class FourBarTest extends LinearOpMode {
 		fourBar.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 		waitForStart();
-
 		while (opModeIsActive()) {
 			fourBar.setPower(-gamepad1.left_stick_y * 0.25);
 			telemetry.addData("position", fourBar.getCurrentPosition());

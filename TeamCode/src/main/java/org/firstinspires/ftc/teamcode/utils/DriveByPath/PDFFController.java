@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.utils;
+package org.firstinspires.ftc.teamcode.utils.DriveByPath;
 
-public class PdffController {
+public class PDFFController {
 	private final double k_v;
 	private final double k_a_accelerating;
 	private final double k_a_decelerating;
@@ -10,7 +10,7 @@ public class PdffController {
 	private double prevT = 0;
 	private double prevError = 0;
 
-	public PdffController(double k_v, double k_a_accelerating, double k_a_decelerating, double k_error, double k_d_error) {
+	public PDFFController(double k_v, double k_a_accelerating, double k_a_decelerating, double k_error, double k_d_error) {
 		this.k_v = k_v;
 		this.k_a_accelerating = k_a_accelerating;
 		this.k_a_decelerating = k_a_decelerating;
@@ -18,16 +18,16 @@ public class PdffController {
 		this.k_d_error = k_d_error;
 	}
 
-	public double getPower(double t, double error, double v, double a){
+	public double getPower(double t, double error, double v, double a) {
 		double dt = t - prevT;
 		double d_error_dt = (error - prevError) / dt;
 		double k_a;
 
-		if(a * v > 0){
+		if (a * v > 0) {
 			k_a = k_a_accelerating;
-		}else if (a * v < 0){
+		} else if (a * v < 0) {
 			k_a = k_a_decelerating;
-		}else {
+		} else {
 			k_a = 0;
 		}
 

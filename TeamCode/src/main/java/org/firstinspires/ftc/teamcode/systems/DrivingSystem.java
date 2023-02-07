@@ -7,35 +7,35 @@ import static java.lang.Math.max;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
-import static org.firstinspires.ftc.teamcode.RobotParameters.DRIVE_Y_FACTOR;
-import static org.firstinspires.ftc.teamcode.RobotParameters.k_a_accelerating;
-import static org.firstinspires.ftc.teamcode.RobotParameters.k_a_decelerating;
-import static org.firstinspires.ftc.teamcode.RobotParameters.k_d_error;
-import static org.firstinspires.ftc.teamcode.RobotParameters.k_error;
-import static org.firstinspires.ftc.teamcode.RobotParameters.k_v;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.DRIVE_Y_FACTOR;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.DROP_OFF_DISTANCE;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_a_accelerating;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_a_decelerating;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_d_error;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_error;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_v;
 import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
-import org.firstinspires.ftc.teamcode.utils.PdffController;
-import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.DriveByPath.AccelerationProfile;
+import org.firstinspires.ftc.teamcode.utils.DriveByPath.PDFFController;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
-import org.firstinspires.ftc.teamcode.utils.PosePIDController;
-import org.firstinspires.ftc.teamcode.utils.State;
-import org.firstinspires.ftc.teamcode.utils.RestingState;
-import org.firstinspires.ftc.teamcode.utils.Sequence;
-import org.firstinspires.ftc.teamcode.utils.Trajectory;
+import org.firstinspires.ftc.teamcode.utils.PID.PosePIDController;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.State;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.RestingState;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
+import org.firstinspires.ftc.teamcode.utils.DriveByPath.Trajectory;
 
 /**
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
 	private static final double EPSILON = 1;
-	private static final double ROTATION_EPSILON = toRadians(0.5);
-	private static final double DROP_OFF_DISTANCE = 25;
 
 	/**
 	 * The current opMode running on the robot.
@@ -67,7 +67,7 @@ public class DrivingSystem {
 
 	private Pose targetPosition = new Pose();
 
-	public Pose getTargetPosition(){
+	public Pose getTargetPosition() {
 		return new Pose(targetPosition);
 	}
 
@@ -93,7 +93,7 @@ public class DrivingSystem {
 			if (abs(yDeviation) < EPSILON) {
 				stop();
 				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(Message.DRIVING_DONE);
+				SystemCoordinator.instance.sendMessage(StateMessages.DRIVING_DONE);
 			} else {
 				driveMecanum(new Pose(0, yPower, rotPower));
 			}
@@ -122,7 +122,7 @@ public class DrivingSystem {
 			if (abs(xDeviation) < EPSILON) {
 				stop();
 				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(Message.DRIVING_DONE);
+				SystemCoordinator.instance.sendMessage(StateMessages.DRIVING_DONE);
 			} else {
 				driveMecanum(new Pose(xPower, 0, rotPower));
 			}
@@ -225,6 +225,18 @@ public class DrivingSystem {
 		backLeft.setPower(0);
 	}
 
+	/**
+	 * Ticks the driving system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
+	/**
+	 * Drives by the axes of the field.
+	 *
+	 * @param powers Velocity vector containing elements: x, y, and an azimuth angle.
+	 */
 	public void driveByAxis(Pose powers) {
 		final double currentAngle = SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		final double cosAngle = cos(currentAngle);
@@ -239,19 +251,18 @@ public class DrivingSystem {
 		driveMecanum(mecanumPowers);
 	}
 
-
-
-
+	/**
+	 * Drives to the dropoff distance from the pole that the robot is closest to.
+	 */
 	public void driveToClosestPole() {
-		double Epsilon = 0.5;
-
-		Point2D poleLocation = SystemCoordinator.instance.trackingSystem.closestPoleLocation();
-		Pose divrePowers = new Pose();
-		double angleToPole = SystemCoordinator.instance.trackingSystem.angleTo(poleLocation);
+		PointD poleLocation = SystemCoordinator.instance.trackingSystem.getClosestPoleLocation();
 		Pose currentPosition = SystemCoordinator.instance.trackingSystem.getPosition();
+
+		double angleToPole = SystemCoordinator.instance.trackingSystem.angleTo(poleLocation);
 		double angleDeviation = normalizeAngle(angleToPole - currentPosition.angle);
 		double distance = hypot(poleLocation.x - currentPosition.x, poleLocation.y - currentPosition.y) - DROP_OFF_DISTANCE;
-		while(abs(distance) < 0.5) {
+
+		while (abs(distance) < 0.5) {
 			double power = distance * 0.007 + 0.05;
 			driveByAxis(new Pose(power * sin(angleToPole), power * cos(angleToPole), angleDeviation * 0.3 + 0.07));
 
@@ -262,13 +273,12 @@ public class DrivingSystem {
 		}
 	}
 
-
 	public void move2(Pose targetLocation) {
 		final Pose Kp = new Pose(0.01, 0.01, 0.73);
 		final Pose Ki = new Pose(0, 0, 0);
 		final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
-		final Pose epsilon = new Pose(-0.5, -1, -ROTATION_EPSILON);
+		final Pose epsilon = new Pose(-0.5, -1, -toRadians(0.5));
 		Pose Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
 		Deviation.normalizeAngle();
 		PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
@@ -287,12 +297,12 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
 	 */
 	public void controlledDriveByAxis(Pose Powers) {
 		final double K = 0.03;
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
+		PointD SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		PointD squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -312,15 +322,14 @@ public class DrivingSystem {
 		driveByAxis(Powers);
 	}
 
-
 	/**
-	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
 	 */
 	public void controlledDriveByAxis2(Pose Powers) {
 		final double K = 50.;
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
+		PointD SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		PointD squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -347,12 +356,12 @@ public class DrivingSystem {
 	}
 
 	/**
-	 * Drives the robot in the given orientation i the driver's axis and keeps track of it's position.
+	 * Drives the robot in the given orientation in the driver's axis and keeps track of it's position.
 	 */
 	public void controlledDriveByAxis3(Pose Powers) {
 
-		Point2D SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
-		Point2D squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
+		PointD SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
+		PointD squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
 
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
@@ -402,40 +411,10 @@ public class DrivingSystem {
 		stop();
 	}
 
-
-
-	/**
-	 * drives the Robot to location
-	 *
-	 * @param Distances the relative distances to the by.
-	 */
-	public void moveRelativeToRobot(Pose Distances) {
-		Pose targetLocation = new Pose();
-	}
-
-	/**
-	 * Ticks the driving system.
-	 */
-	public void tick() {
-		state.tick();
-	}
-
-	public Sequence.SequenceItem driveStraightSequenceItem(double targetY, double targetAngle) {
-		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, () -> {
-			state = new DriveStraightState(targetY, targetAngle);
-		});
-	}
-
-	public Sequence.SequenceItem driveSidewaysSequenceItem(double targetX, double targetAngle) {
-		return new Sequence.SequenceItem(State.Message.DRIVING_DONE, () -> {
-			state = new DriveSidewaysState(targetX, targetAngle);
-		});
-	}
-
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
 		resetDistance();
 		ElapsedTime elapsedTime = new ElapsedTime();
-		PdffController controller = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PDFFController controller = new PDFFController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			SystemCoordinator.instance.tick();
 			Pose pose = SystemCoordinator.instance.trackingSystem.getPosition();
@@ -451,13 +430,12 @@ public class DrivingSystem {
 		stop();
 	}
 
-
-	public void driveByPath(Trajectory traj, double targetAngle, double anglePowerScalar){
+	public void driveByPath(Trajectory traj, double targetAngle, double anglePowerScalar) {
 		resetDistance();
 
 		ElapsedTime elapsedTime = new ElapsedTime();
-		PdffController xController = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
-		PdffController yController = new PdffController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PDFFController xController = new PDFFController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PDFFController yController = new PDFFController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 
 		double prev_t = 0;
 		double prev_v_x = 0;
@@ -469,28 +447,29 @@ public class DrivingSystem {
 			final double time = elapsedTime.seconds();
 			final double dt = time - prev_t;
 
-//			Getting currentPose, targetPose, and error
+			// Getting currentPose, targetPose, and error
 			Pose currentPose = SystemCoordinator.instance.trackingSystem.getPosition();
 			Pose targetPose = traj.getPose(time);
-			if (targetPose == null){ return; }
+			if (targetPose == null) return;
+
 			targetPose.angle = targetAngle;
 			this.targetPosition = targetPose;
 			Pose error = new Pose(targetPose.x - currentPose.x, targetPose.y - currentPose.y,
 					normalizeAngle(targetPose.angle - currentPose.angle));
 
-//			Velocity and acceleration poses
+			// Velocity and acceleration poses
 			Pose velocity = traj.getVelocity(time);
-			Pose acceleration = new Pose((velocity.x - prev_v_x)/dt, (velocity.y - prev_v_y)/dt,
-					(velocity.angle - prev_v_rot)/dt);
+			Pose acceleration = new Pose((velocity.x - prev_v_x) / dt, (velocity.y - prev_v_y) / dt,
+					(velocity.angle - prev_v_rot) / dt);
 
-//			Using PdffController to get power and driving
-			double xPower = xController.getPower(time,error.x,velocity.x,acceleration.x);
-			double yPower = yController.getPower(time,error.y,velocity.y,acceleration.y);
+			// Using PDFFController to get power and driving
+			double xPower = xController.getPower(time, error.x, velocity.x, acceleration.x);
+			double yPower = yController.getPower(time, error.y, velocity.y, acceleration.y);
 			double rotationPower = error.angle * anglePowerScalar;
 
 			driveByAxis(new Pose(xPower, yPower, rotationPower));
 
-//			Setting the 'previous' variables
+			// Setting the 'previous' variables
 			prev_t = time;
 			prev_v_x = velocity.x;
 			prev_v_y = velocity.y;
@@ -499,4 +478,15 @@ public class DrivingSystem {
 		stop();
 	}
 
+	public Sequence.SequenceItem driveStraightSequenceItem(double targetY, double targetAngle) {
+		return new Sequence.SequenceItem(StateMessages.DRIVING_DONE, () -> {
+			state = new DriveStraightState(targetY, targetAngle);
+		});
+	}
+
+	public Sequence.SequenceItem driveSidewaysSequenceItem(double targetX, double targetAngle) {
+		return new Sequence.SequenceItem(StateMessages.DRIVING_DONE, () -> {
+			state = new DriveSidewaysState(targetX, targetAngle);
+		});
+	}
 }

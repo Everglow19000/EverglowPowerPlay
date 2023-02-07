@@ -8,9 +8,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.utils.Sequence;
-import org.firstinspires.ftc.teamcode.utils.State;
-import org.firstinspires.ftc.teamcode.utils.RestingState;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.State;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.RestingState;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
 
 /**
  * A Class for handling the claw system.
@@ -21,7 +22,13 @@ public class ClawSystem {
 	public static double OPEN_POSITION = 0.001;
 	public static double CLOSED_POSITION = 0.44;
 
+	/**
+	 * The claw servo.
+	 */
 	private final Servo claw;
+	/**
+	 * The current state of the the Claw System.
+	 */
 	private State state = new RestingState();
 
 	/**
@@ -84,7 +91,7 @@ public class ClawSystem {
 			if (timer.time() > totalMovementTime) {
 				claw.setPosition(finalState.getDesiredPosition());
 				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(Message.CLAW_DONE);
+				SystemCoordinator.instance.sendMessage(StateMessages.CLAW_DONE);
 				return;
 			}
 
@@ -115,13 +122,13 @@ public class ClawSystem {
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(ClawPosition position, double velocity) {
-		return new Sequence.SequenceItem(State.Message.CLAW_DONE, () -> {
+		return new Sequence.SequenceItem(StateMessages.CLAW_DONE, () -> {
 			state = new ActingState(position, velocity);
 		});
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(ClawPosition position) {
-		return new Sequence.SequenceItem(State.Message.CLAW_DONE, () -> {
+		return new Sequence.SequenceItem(StateMessages.CLAW_DONE, () -> {
 			state = new ActingState(position, 1);
 		});
 	}

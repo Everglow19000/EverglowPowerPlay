@@ -8,44 +8,23 @@ import static java.lang.Math.round;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.CM_PER_TICK;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.FORWARD_OFFSET;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.LATERAL_DISTANCE;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
-import org.firstinspires.ftc.teamcode.utils.Point2D;
+import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
 /**
  * A class for handling tracking the robot's position.
  */
 public class TrackingSystem {
-	/**
-	 * The radius of the odometry wheels, in centimeters.
-	 */
-	private static final double WHEEL_RADIUS = 2.5;
-	/**
-	 * The number of ticks per full revolution of the odometry wheels.
-	 */
-	private static final double TICKS_PER_ROTATION = 8192;
-	/**
-	 * The size of a tile side in centimeters.
-	 */
-	public static final double TILE_SIZE = 71;
-	/**
-	 * Conversion factor from ticks to centimeters.
-	 */
-	private static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS * 2 * PI;
-	/**
-	 * The distance between the two front wheels.
-	 */
-	private static final double LATERAL_DISTANCE = 12.3;
-	/**
-	 * The distance between the center of the robot and the back wheel.
-	 */
-	private static final double FORWARD_OFFSET = -4.5;
-
 	/**
 	 * The current opMode running on the robot.
 	 */
@@ -69,13 +48,15 @@ public class TrackingSystem {
 	 */
 	private final Pose position = new Pose(0., 0., 0.);
 
+	/**
+	 * Position matrix for the tile corners.
+	 */
+	private final double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
+
 	// Keeps the robot's odometry wheel's previous positions
 	private double flPreviousTicks;
 	private double frPreviousTicks;
 	private double bPreviousTicks;
-
-	// position matrix for the tile corners
-	double[][] cornersRelativePosition = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
 
 	/**
 	 * @param opMode The current opMode running on the robot.
@@ -98,17 +79,16 @@ public class TrackingSystem {
 	 * @return The robot's current position as a Pose object.
 	 * Flips the x and y values because the functions which use this method expect the x value to be the first value.
 	 */
+	@SuppressWarnings("SuspiciousNameCombination")
 	public Pose getPosition() {
-		//noinspection SuspiciousNameCombination
 		return new Pose(position.y, position.x, position.angle);
 	}
 
 	/**
-	 * Ticks the driving system.
+	 * Ticks the tracking system.
 	 */
 	public void tick() {
 		trackPosition();
-//		printPosition();
 	}
 
 	/**
@@ -135,9 +115,7 @@ public class TrackingSystem {
 
 		// Calculating the robot's displacement and rotation
 		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
-
 		final double centerDisplacement = (frontLeftDisplacement + frontRightDisplacement) / 2;
-
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
 		// Temp variable for readability
@@ -173,7 +151,7 @@ public class TrackingSystem {
 	 * Calculates the sin() of a number then divides the result by the number
 	 * if the number isn't equal to zero.
 	 *
-	 * @param num any number
+	 * @param num any number.
 	 * @return a positive number under 1 or zero.
 	 */
 	private double sinc(double num) {
@@ -186,7 +164,7 @@ public class TrackingSystem {
 	 * Calculates the cos() of a number then divides the result by the number
 	 * if the number isn't equal to zero.
 	 *
-	 * @param num any number
+	 * @param num any number.
 	 * @return a positive number under 1 or zero.
 	 */
 	private double cosc(double num) {
@@ -196,19 +174,31 @@ public class TrackingSystem {
 	}
 
 	/**
+	 * Get the angle of a point on the board in relation to the robot.
+	 *
+	 * @param distance The distance between the robot and the target in the field axis.
+	 * @return The angle of the target relative to the robot in the board axis.
+	 */
+	public double angleTo(PointD distance) {
+		double angle = atan(distance.x / distance.y);
+		if (distance.x < 0) angle -= PI;
+		return angle;
+	}
+
+	/**
 	 * @return The robot's current position as a Point2D object, measured in tiles.
 	 */
-	public Point2D getTileLocation() {
-		return new Point2D(position.x / TILE_SIZE, position.y / TILE_SIZE);
+	public PointD getTileLocation() {
+		return new PointD(position.x / TILE_SIZE, position.y / TILE_SIZE);
 	}
 
 	/**
 	 * @return The center of the tile the robot is currently on.
 	 */
-	public Point2D getTileCenter() {
-		final Point2D tileLocation = getTileLocation();
+	public PointD getTileCenter() {
+		final PointD tileLocation = getTileLocation();
 
-		Point2D tileCenter = new Point2D(tileLocation.x + 0.5 * signum(tileLocation.x), tileLocation.y + 0.5 * signum(tileLocation.y));
+		PointD tileCenter = new PointD(tileLocation.x + 0.5 * signum(tileLocation.x), tileLocation.y + 0.5 * signum(tileLocation.y));
 		tileCenter.x = round(tileCenter.x);
 		tileCenter.y = round(tileCenter.y);
 		tileCenter.x -= 0.5 * signum(tileLocation.x);
@@ -220,17 +210,53 @@ public class TrackingSystem {
 	/**
 	 * @return The robot's deviation from the center of the tile it is currently on.
 	 */
-	public Point2D getTileDeviation() {
-		final Point2D tileLocation = getTileLocation();
-		final Point2D tileCenter = getTileCenter();
+	public PointD getTileDeviation() {
+		final PointD tileLocation = getTileLocation();
+		final PointD tileCenter = getTileCenter();
 
-		return new Point2D(tileLocation.x - tileCenter.x, tileLocation.y - tileCenter.y);
+		return new PointD(tileLocation.x - tileCenter.x, tileLocation.y - tileCenter.y);
+	}
+
+	/**
+	 * @return The location of the closest pole to the robot.
+	 */
+	public PointD getClosestPoleLocation() {
+		PointD squareCenter = getTileCenter();
+		PointD bestCornerPosition = new PointD();
+
+		double smallestAngle = 2 * PI;
+		for (int corner = 0; corner < 4; corner++) {
+			PointD cornerSquarePosition = new PointD();
+			cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
+			cornerSquarePosition.x = round(cornerSquarePosition.x);
+
+			cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
+			cornerSquarePosition.y = round(cornerSquarePosition.y);
+
+			if (abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2 ||
+					(cornerSquarePosition.x % 2 == 0 && cornerSquarePosition.y % 2 == 0)) {
+				continue;
+			}
+
+			PointD cornerDistance = new PointD(cornerSquarePosition.x - position.x, cornerSquarePosition.y - position.y);
+
+			double angleTo = abs(angleTo(cornerDistance) - position.angle);
+			if (angleTo < smallestAngle) {
+				bestCornerPosition = cornerSquarePosition;
+				smallestAngle = angleTo;
+			}
+		}
+
+		bestCornerPosition.x *= TILE_SIZE;
+		bestCornerPosition.y *= TILE_SIZE;
+
+		return bestCornerPosition;
 	}
 
 	/**
 	 * Prints the robot's current position to the telemetry and the FTCDashboard.
 	 */
-	public void printPosition() {
+	private void printPosition() {
 		final double INCH_TO_CM = 0.39;
 		final double robot_width = 38 * INCH_TO_CM;
 		final double robot_height = 47 * INCH_TO_CM;
@@ -264,51 +290,6 @@ public class TrackingSystem {
 				});
 		FtcDashboard.getInstance().sendTelemetryPacket(packet);
 	}
-
-	public double angleTo(Point2D distance) {
-		double angle = atan(distance.x / distance.y);
-		if (distance.x < 0) {
-			angle -= PI;
-		}
-		return angle;
-	}
-
-	public Point2D closestPoleLocation() {
-		Point2D squareDeviation = getTileDeviation();
-		Point2D squareCenter = getTileCenter();
-		Point2D squareLocation = getTileLocation();
-
-
-		Point2D bestCornerPosition = new Point2D();
-		double smallestAngle = 2 * PI;
-		for(int corner = 0; corner < 4; corner++) {
-			Point2D cornerSquarePosition = new Point2D();
-			cornerSquarePosition.x = squareCenter.x + cornersRelativePosition[corner][0] / 2;
-			cornerSquarePosition.x = round(cornerSquarePosition.x);
-
-			cornerSquarePosition.y = squareCenter.y + cornersRelativePosition[corner][1] / 2;
-			cornerSquarePosition.y = round(cornerSquarePosition.y);
-
-			if(abs(cornerSquarePosition.x) > 2 || abs(cornerSquarePosition.x) > 2 ||
-					(cornerSquarePosition.x % 2 == 0 && cornerSquarePosition.y % 2 == 0)) {
-				continue;
-			}
-
-			Point2D cornerDistance = new Point2D(cornerSquarePosition.x - position.x, cornerSquarePosition.y - position.y);
-
-			double angleTo = abs(angleTo(cornerDistance) - position.angle);
-			if(angleTo < smallestAngle) {
-				bestCornerPosition = cornerSquarePosition;
-				smallestAngle = angleTo;
-			}
-		}
-
-		bestCornerPosition.x *= TILE_SIZE;
-		bestCornerPosition.y *= TILE_SIZE;
-
-		return bestCornerPosition;
-	}
-
 }
 
 

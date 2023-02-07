@@ -1,5 +1,9 @@
-package org.firstinspires.ftc.teamcode.utils;
+package org.firstinspires.ftc.teamcode.utils.DriveByPath;
 
+/**
+ * A class that creates an acceleration profile which controls how the robot accelerates and decelerates.
+ * It's used in order to minimize drift in sharp curves.
+ */
 public class AccelerationProfile {
 	private final double a;
 	private final double vMax;
@@ -17,7 +21,7 @@ public class AccelerationProfile {
 
 		this.reachMaxSpeedEh = (d / 2 > Math.pow(vMax, 2) / a);
 		if (reachMaxSpeedEh) {
-			this.t1 =  vMax/a;
+			this.t1 = vMax / a;
 			this.x1 = 0.5 * a * Math.pow(t1, 2);
 			this.x2 = d - 2 * x1;
 			this.t2 = x2 / vMax;
@@ -84,10 +88,12 @@ public class AccelerationProfile {
 		if (t < t1)
 			return 0.5 * a * Math.pow(t, 2);
 		else if (t < tEnd)
-			return x1  + a * t1 * (t - t1) - 0.5 * a * Math.pow(t - t1, 2);
+			return x1 + a * t1 * (t - t1) - 0.5 * a * Math.pow(t - t1, 2);
 		else
 			return d;
 	}
 
-	public double finalTime() { return tEnd; }
+	public double finalTime() {
+		return tEnd;
+	}
 }

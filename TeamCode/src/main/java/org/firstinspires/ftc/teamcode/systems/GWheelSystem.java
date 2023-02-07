@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * A class for handling the grabbing wheel.
  */
 public class GWheelSystem {
+	/**
+	 * The grabbing wheel motor.
+	 */
 	private final DcMotor gWheel;
 	private final static double POWER = 0.65;
 

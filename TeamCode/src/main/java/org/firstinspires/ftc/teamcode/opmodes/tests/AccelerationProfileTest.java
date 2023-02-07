@@ -1,15 +1,15 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.RobotParameters;
+import org.firstinspires.ftc.teamcode.utils.RobotParameters;
 import org.firstinspires.ftc.teamcode.systems.PositionLogger;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
-import org.firstinspires.ftc.teamcode.utils.AccelerationProfile;
+import org.firstinspires.ftc.teamcode.utils.DriveByPath.AccelerationProfile;
 
-@TeleOp(name = "SimpleAccelerationProfile", group = ".Main")
-public class TestAccelerationProfile extends LinearOpMode {
+@TeleOp(name = "AccelerationProfileTest", group = ".Main")
+public class AccelerationProfileTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		SystemCoordinator systemCoordinator = new SystemCoordinator(this);

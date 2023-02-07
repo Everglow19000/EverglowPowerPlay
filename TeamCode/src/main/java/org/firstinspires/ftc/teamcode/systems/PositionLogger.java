@@ -2,11 +2,9 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import androidx.annotation.NonNull;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.utils.AndroidUtils;
 import org.firstinspires.ftc.teamcode.utils.Pose;
+import org.firstinspires.ftc.teamcode.utils.Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,12 +20,10 @@ import java.util.Locale;
 public class PositionLogger {
 	private final DrivingSystem drivingSystem;
 	private final List<RobotState> robotStates;
-	private final LinearOpMode opMode;
 
 	private static class RobotState {
 		final long time;
-		final Pose currentPose;
-		final Pose expectedPose;
+		final Pose currentPose, expectedPose;
 
 		public RobotState(long time, Pose currentPose, Pose expectedPose) {
 			this.time = time;
@@ -36,9 +32,8 @@ public class PositionLogger {
 		}
 	}
 
-	public PositionLogger(DrivingSystem drivingSystem, LinearOpMode opMode) {
+	public PositionLogger(DrivingSystem drivingSystem) {
 		this.drivingSystem = drivingSystem;
-		this.opMode = opMode;
 		robotStates = new ArrayList<>();
 	}
 
@@ -50,13 +45,11 @@ public class PositionLogger {
 	}
 
 
-	public void saveTo(File fileToCreate)  {
-		if (robotStates.isEmpty()) {
-			return;
-		}
-		double startTimeNanos = robotStates.get(0).time;
+	public void saveTo(File fileToCreate) {
+		if (robotStates.isEmpty()) return;
 
 		PrintStream stream = null;
+		final double startTime = robotStates.get(0).time;
 
 		try {
 			// Create the directories containing the file if they don't already exist.
@@ -80,7 +73,7 @@ public class PositionLogger {
 
 			for (RobotState robotState : robotStates) {
 				String lineString = String.format("%s, %s, %s, %s, %s, %s, %s",
-						(robotState.time - startTimeNanos) / 1e9,
+						(robotState.time - startTime) / 1e9,
 						robotState.currentPose.x,
 						robotState.currentPose.y,
 						Math.toDegrees(robotState.currentPose.angle),
@@ -93,10 +86,9 @@ public class PositionLogger {
 					throw new IOException("Failed to write to fileToCreate.");
 				}
 			}
-		} catch (IOException e){
-			throw new RuntimeException(e);
-		}
-		finally {
+		} catch (IOException err) {
+			throw new RuntimeException(err);
+		} finally {
 			if (stream != null) {
 				stream.close();
 			}
@@ -110,7 +102,7 @@ public class PositionLogger {
 	@NonNull
 	public static File generateLogFileName(String baseName) {
 		File positionLogsDir = new File(AppUtil.FIRST_FOLDER, "Everglow_position_logs");
-		String filename = String.format(Locale.US, "%s-%s.csv", AndroidUtils.timestampString(), baseName);
+		String filename = String.format(Locale.US, "%s-%s.csv", Utils.timestampString(), baseName);
 		return /* Current Log: */ new File(positionLogsDir, filename);
 	}
 }

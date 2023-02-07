@@ -1,12 +1,10 @@
-package org.firstinspires.ftc.teamcode.utils;
+package org.firstinspires.ftc.teamcode.utils.StateMachine;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A class for creating a sequence of actions.
@@ -18,15 +16,15 @@ public class Sequence {
 	 * Takes an action in the form of a Runnable.
 	 */
 	public static class SequenceItem {
-		public final HashSet<State.Message> messagesToWait;
+		public final HashSet<StateMessages> messagesToWait;
 		public final Runnable runAction;
 
-		public SequenceItem(HashSet<State.Message> messagesToWait, Runnable runAction) {
+		public SequenceItem(HashSet<StateMessages> messagesToWait, Runnable runAction) {
 			this.messagesToWait = messagesToWait;
 			this.runAction = runAction;
 		}
 
-		public SequenceItem(State.Message message, Runnable runAction) {
+		public SequenceItem(StateMessages message, Runnable runAction) {
 			this(new HashSet<>(Collections.singletonList(message)), runAction);
 		}
 	}
@@ -70,7 +68,7 @@ public class Sequence {
 	 *
 	 * @param message The message to be handled.
 	 */
-	public void handleMessage(State.Message message) {
+	public void handleMessage(StateMessages message) {
 		if (isSequenceDone()) {
 			return;
 		}

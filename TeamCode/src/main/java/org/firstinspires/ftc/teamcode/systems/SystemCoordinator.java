@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import java.util.ArrayList;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.utils.State;
-import org.firstinspires.ftc.teamcode.utils.Sequence;
-
-import java.util.ArrayList;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
+import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
 
 /**
  * A class for coordinating the all systems on the robot in a state machine.
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class SystemCoordinator {
 	/**
 	 * The instance of the system coordinator, for use in other classes.
-	 * This is done to avoid dependency injection.
+	 * It is used to avoid dependency injection.
 	 */
 	public static SystemCoordinator instance;
 
@@ -34,7 +34,7 @@ public class SystemCoordinator {
 
 	private long lastCycleTime;
 
-	public long getLastCycleTime(){
+	public long getLastCycleTime() {
 		return lastCycleTime;
 	}
 
@@ -54,7 +54,7 @@ public class SystemCoordinator {
 		fourBarSystem = new FourBarSystem(opMode);
 		trackingSystem = new TrackingSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
-		positionLogger = new PositionLogger(drivingSystem, opMode);
+		positionLogger = new PositionLogger(drivingSystem);
 
 		// Initiate the list of sequences
 		actionSequences = new ArrayList<>();
@@ -77,7 +77,7 @@ public class SystemCoordinator {
 
 	/**
 	 * Stops the execution of all the systems and clears the queued sequences.
-	 * Should often be used before excecuting a new sequence.
+	 * Should often be used before executing a new sequence.
 	 */
 	public void interrupt() {
 		clawSystem.interrupt();
@@ -99,9 +99,9 @@ public class SystemCoordinator {
 	/**
 	 * Returns weather all sequences have finished executing.
 	 */
-	public boolean allSequencesDone(){
+	public boolean allSequencesDone() {
 		for (Sequence sequence : actionSequences) {
-			if (!sequence.isSequenceDone()){
+			if (!sequence.isSequenceDone()) {
 				return false;
 			}
 		}
@@ -111,8 +111,8 @@ public class SystemCoordinator {
 	/**
 	 * Waits for all sequences to finish, and blocks until then.
 	 */
-	public void waitForSequencesDone(){
-		while (!allSequencesDone()){
+	public void waitForSequencesDone() {
+		while (!allSequencesDone()) {
 			tick();
 		}
 	}
@@ -120,11 +120,12 @@ public class SystemCoordinator {
 	/**
 	 * Waits a certain amount of time, while ticking the systems in the process.
 	 * opMode.sleep() should NOT be used when using state machine.
+	 *
 	 * @param milliseconds how many milliseconds to wait.
 	 */
-	public void sleep(long milliseconds){
+	public void sleep(long milliseconds) {
 		ElapsedTime elapsedTime = new ElapsedTime();
-		while (elapsedTime.milliseconds() < milliseconds){
+		while (elapsedTime.milliseconds() < milliseconds) {
 			tick();
 		}
 	}
@@ -134,7 +135,7 @@ public class SystemCoordinator {
 	 *
 	 * @param message The message to be broadcasted.
 	 */
-	public void sendMessage(State.Message message) {
+	public void sendMessage(StateMessages message) {
 		//TODO: remove the sequences if they are done. This isn't critical but should probably be done for elegance.
 		for (Sequence sequence : actionSequences) {
 			sequence.handleMessage(message);
