@@ -80,10 +80,10 @@ public class DrivingSystem {
 	// Variables used in the acceleration profile.
 	private static final double k_a_accelerating = 1. / 500.;
 	private static final double k_a_decelerating = 1. / 1000.;
-	private static final double k_error = 0;
-	private static final double k_d_error = 0;
-//	private static final double k_error = 0.1;
-//	private static final double k_d_error = 0.005;
+//	private static final double k_error = 0;
+//	private static final double k_d_error = 0;
+	private static final double k_error = 0.1;
+	private static final double k_d_error = 0.005;
 	private static final double k_v = 1 / RobotParameters.MAX_V_X;
 
 	private static final double k_v_rot = 1 / RobotParameters.MAX_V_ROT;
@@ -1028,26 +1028,22 @@ public class DrivingSystem {
 			final double time = elapsedTime.seconds();
 			final double dt = time - prev_t;
 
-//			Getting currentPose, targetPose, and error
 			Pose currentPose = positionCM;
 			targetPose = traj.getPose(time);
 			if (targetPose == null){ return; }
 			Pose error = new Pose(targetPose.x - currentPose.x, targetPose.y - currentPose.y,
 					normalizeAngle(targetPose.angle - currentPose.angle));
 
-//			Velocity and acceleration poses
 			Pose velocity = traj.getVelocity(time);
 			Pose acceleration = new Pose((velocity.x - prev_v_x)/dt, (velocity.y - prev_v_y)/dt,
 					(velocity.angle - prev_v_rot)/dt);
 
-//			Using PdffController to get power and driving
 			double xPower = xController.getPower(time,error.x,velocity.x,acceleration.x);
 			double yPower = yController.getPower(time,error.y,velocity.y,acceleration.y);
 			double rotationPower = rotController.getPower(time,error.angle,velocity.angle,acceleration.angle);
 
 			driveByAxis(new Pose(xPower, yPower, rotationPower));
 
-//			Setting the 'previous' variables
 			prev_t = time;
 			prev_v_x = velocity.x;
 			prev_v_y = velocity.y;

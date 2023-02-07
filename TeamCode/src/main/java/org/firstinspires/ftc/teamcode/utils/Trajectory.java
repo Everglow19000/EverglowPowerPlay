@@ -9,7 +9,7 @@ public class Trajectory {
     AccelerationProfile rotationProfile;
     List<Double> uList;
 
-    final double maxVelocity = RobotParameters.MAX_V_X*0.5; //Temporary value for tests (vMax = 130-140 cm/sec)
+    final double maxVelocity = RobotParameters.MAX_V_X; //Temporary value for tests (vMax = 130-140 cm/sec)
     final double step = 0.01;
     final double pathLength;
     final double totalTime; //In seconds
@@ -82,11 +82,9 @@ public class Trajectory {
         PointD position = path.getPoint(nextU);
         double angle = rotationProfile.getPosition(time);
 
-//      return new Pose(position.x,position.y,angle + startAngle);
+//        return new Pose(position.x,position.y,angle + startAngle);
         return new Pose(position.x,position.y,0);
     }
-
-//  Getters & Setters:
 
     public double getTotalTime() {
         return totalTime;

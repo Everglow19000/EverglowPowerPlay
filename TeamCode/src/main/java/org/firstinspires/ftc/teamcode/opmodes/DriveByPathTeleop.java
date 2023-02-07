@@ -14,12 +14,12 @@ public class DriveByPathTeleop extends LinearOpMode {
 	public void runOpMode() {
 		PointD[] pts = {
 				new PointD(0,0),
-				new PointD(0,75),
-				new PointD(0,150),
+				new PointD(0,65),
+				new PointD(110,65),
 		};
 
 		SplinePath spline = new SplinePath(pts);
-		Trajectory traj = new Trajectory(spline, 0 , 0.0001);
+		Trajectory traj = new Trajectory(spline, 0 , 0.001);
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 
 		waitForStart();
