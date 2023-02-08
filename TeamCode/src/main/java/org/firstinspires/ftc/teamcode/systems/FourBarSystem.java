@@ -56,7 +56,7 @@ public class FourBarSystem {
 			int error = abs(position.desiredPosition - fourBar.getCurrentPosition());
 			if (error <= EPSILON) {
 				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(StateMessages.FOUR_BAR_DONE);
+				SystemCoordinator.instance.sendMessage(StateMessages.FOURBAR_DONE);
 			}
 		}
 
@@ -71,11 +71,11 @@ public class FourBarSystem {
 		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		fourBar.setTargetPosition(0);
 		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		fourBar.setPower(0.3);
+		fourBar.setPower(0.4);
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(Position position) {
-		return new Sequence.SequenceItem(StateMessages.FOUR_BAR_DONE, () -> {
+		return new Sequence.SequenceItem(StateMessages.FOURBAR_DONE, () -> {
 			state = new ActingState(position);
 		});
 	}

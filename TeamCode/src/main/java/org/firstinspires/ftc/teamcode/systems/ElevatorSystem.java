@@ -31,7 +31,7 @@ public class ElevatorSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Level {
-		PRE_PICKUP(0), PICKUP(480),
+		PRE_PICKUP(0), PICKUP(490),
 		LOW(-350), MID(-1550), HIGH(-2250);
 
 		public final int desiredPosition;
@@ -64,7 +64,7 @@ public class ElevatorSystem {
 	 * A state used when the elevator should be moving.
 	 */
 	public class ActingState implements State {
-		private static final int EPSILON = 20;
+		private static final int EPSILON = 10;
 		private final Level level;
 
 		/**

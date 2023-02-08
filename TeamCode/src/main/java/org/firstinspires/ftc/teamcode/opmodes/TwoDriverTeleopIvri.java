@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.utils.EverglowGamepad;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
-@TeleOp(name = "TwoDriverTeleop2", group = ".Main")
-public class TwoDriverTeleop2 extends LinearOpMode {
+@TeleOp(name = "TwoDriverTeleopIvri", group = ".Main")
+public class TwoDriverTeleopIvri extends LinearOpMode {
     /**
      * A number to divide the speed by when finner controls are activated.
      */
