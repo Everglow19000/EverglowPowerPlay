@@ -60,7 +60,7 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 			if (gamepadB.circle()) {
 				systems.interrupt();
 				systems.executeSequence(new Sequence(systems.clawSystem.goToSequenceItem(isClawOpen
-						? ClawSystem.ClawPosition.OPEN : ClawSystem.ClawPosition.CLOSED, 1)));
+						? ClawSystem.Position.OPEN : ClawSystem.Position.CLOSED, 1)));
 				isClawOpen = !isClawOpen;
 			}
 
@@ -88,7 +88,7 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 			else if (gamepadB.triangle()) {
 				systems.interrupt();
 				sequence = new Sequence(
-						systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP));
 				systems.executeSequence(sequence);

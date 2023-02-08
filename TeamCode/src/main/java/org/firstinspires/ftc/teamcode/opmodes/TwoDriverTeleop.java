@@ -25,7 +25,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 		Pose actPowers = new Pose(0, 0, 0);
 
-		ClawSystem.ClawPosition clawPosition = ClawSystem.ClawPosition.CLOSED;
+		ClawSystem.Position position = ClawSystem.Position.CLOSED;
 
 		waitForStart();
 		while (opModeIsActive()) {
@@ -75,7 +75,7 @@ public class TwoDriverTeleop extends LinearOpMode {
 				systems.executeSequence(new Sequence(sequenceItem));
 			}
 			if (gamepadB.square()) {
-				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP_BACK);
+				Sequence.SequenceItem sequenceItem = systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.START);
 				systems.executeSequence(new Sequence(sequenceItem));
 			}
 
@@ -89,8 +89,8 @@ public class TwoDriverTeleop extends LinearOpMode {
 
 			// Claw
 			if (gamepadB.circle()) {
-				clawPosition = clawPosition.flip();
-				Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(clawPosition, 1));
+				position = position.flip();
+				Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(position, 1));
 				systems.executeSequence(clawSequence);
 			}
 

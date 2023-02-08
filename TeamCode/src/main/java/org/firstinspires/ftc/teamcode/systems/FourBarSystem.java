@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static java.lang.Math.abs;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -14,14 +13,7 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
 /**
  * A class for handling the fourBar system.
  */
-@Config
 public class FourBarSystem {
-	// Variables configurable by the FtcDashboard
-	public static int DROPOFF_POSITION = -500; // not calibrated
-	public static int PICKUP_POSITION = 0; // not calibrated
-	public static int PICKUP_LEFT_POSITION = 0; // not calibrated
-	public static double MOTOR_POWER = 0.7;
-
 	/**
 	 * The fourBar motor.
 	 */
@@ -35,19 +27,12 @@ public class FourBarSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Position {
-		PICKUP, DROPOFF, PICKUP_BACK;
+		START(170), PICKUP(65), DROPOFF(-170);
 
-		public int getDesiredPosition() {
-			switch (this) {
-				case PICKUP:
-					return PICKUP_POSITION;
-				case DROPOFF:
-					return DROPOFF_POSITION;
-				case PICKUP_BACK:
-					return PICKUP_LEFT_POSITION;
-				default:
-					throw new IllegalStateException();
-			}
+		public final int desiredPosition;
+
+		Position(int desiredPosition) {
+			this.desiredPosition = desiredPosition;
 		}
 	}
 
@@ -63,14 +48,12 @@ public class FourBarSystem {
 		 */
 		public ActingState(Position position) {
 			this.position = position;
-			fourBar.setTargetPosition(position.getDesiredPosition());
+			fourBar.setTargetPosition(position.desiredPosition);
 		}
 
 		public void tick() {
 			// The fourBar has reached its desired position
-			int error = abs(position.getDesiredPosition() - fourBar.getCurrentPosition());
-			SystemCoordinator.instance.opMode.telemetry.addData("error", error);
-			SystemCoordinator.instance.opMode.telemetry.update();
+			int error = abs(position.desiredPosition - fourBar.getCurrentPosition());
 			if (error <= EPSILON) {
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(StateMessages.FOUR_BAR_DONE);
@@ -88,18 +71,18 @@ public class FourBarSystem {
 		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		fourBar.setTargetPosition(0);
 		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		fourBar.setPower(MOTOR_POWER);
+		fourBar.setPower(0.3);
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(Position position) {
-		return new Sequence.SequenceItem(StateMessages.ELEVATOR_DONE, () -> {
+		return new Sequence.SequenceItem(StateMessages.FOUR_BAR_DONE, () -> {
 			state = new ActingState(position);
 		});
 	}
 
 	// should only be used for testing
 	public void goToImmediate(Position position) {
-		fourBar.setTargetPosition(position.getDesiredPosition());
+		fourBar.setTargetPosition(position.desiredPosition);
 	}
 
 	/**

@@ -65,9 +65,9 @@ public class AutonomousRoutes implements Runnable {
 
 		//starting Sequence
 		Sequence preparePickUp = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1),
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
-				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP_BACK));
+				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.START));
 		Sequence toCone = new Sequence(
 				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle),
 				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle));
@@ -76,14 +76,14 @@ public class AutonomousRoutes implements Runnable {
 				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle));
 		Sequence sequencePickUp = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
 		Sequence prepareDropOff = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF));
 
 
-		Sequence dropOff = new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1));
+		Sequence dropOff = new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
 
 		Sequence prepareForAnotherRep = new Sequence(systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP));
 

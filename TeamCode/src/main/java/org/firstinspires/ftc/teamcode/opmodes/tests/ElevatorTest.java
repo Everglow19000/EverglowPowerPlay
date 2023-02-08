@@ -28,10 +28,10 @@ public class ElevatorTest extends LinearOpMode {
 		while (opModeIsActive()) {
 			gamepad.update();
 			if (gamepad.square()) {
-				claw.goToImmediate(ClawSystem.ClawPosition.CLOSED);
+				claw.goToImmediate(ClawSystem.Position.CLOSED);
 			}
 			if (gamepad.circle()) {
-				claw.goToImmediate(ClawSystem.ClawPosition.OPEN);
+				claw.goToImmediate(ClawSystem.Position.OPEN);
 			}
 
 			if (gamepad.rb()) {

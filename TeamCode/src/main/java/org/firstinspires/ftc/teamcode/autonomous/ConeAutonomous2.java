@@ -28,14 +28,14 @@ public class ConeAutonomous2 extends LinearOpMode {
 		Sequence startSequence = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.OPEN, 1)
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
 		);
 		Sequence pickUpSequence = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
 		);
 		Sequence dropOffSequence = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.ClawPosition.CLOSED, 1),
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
 		);
 

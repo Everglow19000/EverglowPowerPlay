@@ -31,7 +31,8 @@ public class ElevatorSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Level {
-		PICKUP(0), PRE_PICKUP(-1833), LOW(-1833), MID(-2914), HIGH(-2914);
+		PRE_PICKUP(0), PICKUP(480),
+		LOW(-350), MID(-1550), HIGH(-2250);
 
 		public final int desiredPosition;
 
@@ -81,9 +82,6 @@ public class ElevatorSystem {
 			boolean leftArrived = leftError < EPSILON;
 			int rightError = abs(level.desiredPosition - right.getCurrentPosition());
 			boolean rightArrived = rightError < EPSILON;
-			SystemCoordinator.instance.opMode.telemetry.addData("leftError", leftError);
-			SystemCoordinator.instance.opMode.telemetry.addData("rightError", rightError);
-			SystemCoordinator.instance.opMode.telemetry.update();
 			if (leftArrived && rightArrived) {
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(StateMessages.ELEVATOR_DONE);
