@@ -25,7 +25,7 @@ public class TwoDriverTeleopBasic extends LinearOpMode {
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 		Pose actPowers = new Pose(0, 0, 0);
 
-		ClawSystem.Position claw = ClawSystem.Position.CLOSED;
+		ClawSystem.Position claw = ClawSystem.Position.OPEN;
 
 		waitForStart();
 		while (opModeIsActive()) {

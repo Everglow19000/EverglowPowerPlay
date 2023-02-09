@@ -31,8 +31,8 @@ public class ElevatorSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Level {
-		PRE_PICKUP(0), PICKUP(490),
-		LOW(-350), MID(-1550), HIGH(-2250), START(0),
+		START(0), PICKUP(-260),
+		LOW(-1000), MID(-2150), HIGH(-3330),
 		CONE1(-1), CONE2(-1), CONE3(-1), CONE4(-1), CONE5(-1);
 
 		public final int desiredPosition;

@@ -27,7 +27,8 @@ public class FourBarSystem {
 	 * Enum encapsulating all the positions the system should reach.
 	 */
 	public enum Position {
-		BACK(170), PICKUP(65), DROPOFF(-170), START(0);
+		//START(170), PICKUP(65), DROPOFF(-170);
+		BACK(30), START(0), PICKUP(-75), DROPOFF(-325);
 
 		public final int desiredPosition;
 
@@ -71,7 +72,7 @@ public class FourBarSystem {
 		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		fourBar.setTargetPosition(0);
 		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		fourBar.setPower(0.4);
+		fourBar.setPower(0.5);
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(Position position) {

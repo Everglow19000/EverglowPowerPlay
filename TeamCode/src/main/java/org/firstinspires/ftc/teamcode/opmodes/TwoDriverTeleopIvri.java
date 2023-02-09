@@ -94,7 +94,7 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 sequence = new Sequence(
                         systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 0.5),
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
-                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.START)
                 );
                 systems.executeSequence(sequence);
             }

@@ -74,6 +74,7 @@ public class SystemCoordinator {
 		fourBarSystem.tick();
 		trackingSystem.tick();
 		positionLogger.tick();
+		sleepingSystem.tick();
 	}
 
 	/**

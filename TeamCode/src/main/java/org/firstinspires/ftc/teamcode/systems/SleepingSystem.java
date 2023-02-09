@@ -8,14 +8,17 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.State;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
 
+/**
+ * A class for handling sleep - when one needs to wait a bit before an action.
+ */
 public class SleepingSystem {
 	/**
-	 * The current state of the the Elevator System.
+	 * The current state of the the Sleeping System.
 	 */
 	private State state = new RestingState();
 
 	/**
-	 * A state used when the elevator should be moving.
+	 * A state used when the robot should wait for a certain amount of time.
 	 */
 	public class SleepingState implements State {
 		/**
@@ -41,14 +44,20 @@ public class SleepingSystem {
 		}
 	}
 
-
-
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public SleepingSystem(LinearOpMode opMode) {
 
 	}
+
+	/**
+	 * Ticks the sleeping system.
+	 */
+	public void tick() {
+		state.tick();
+	}
+
 
 	public Sequence.SequenceItem goToSequenceItem(int time) {
 		return new Sequence.SequenceItem(StateMessages.SLEEP_DONE, () -> {
