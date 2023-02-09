@@ -70,7 +70,6 @@ public class SystemCoordinator {
 		lastCycleTime = System.nanoTime();
 		//Tick each system
 		clawSystem.tick();
-		drivingSystem.tick();
 		elevatorSystem.tick();
 		fourBarSystem.tick();
 		trackingSystem.tick();

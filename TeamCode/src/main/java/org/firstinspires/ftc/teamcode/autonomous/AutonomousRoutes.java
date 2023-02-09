@@ -68,11 +68,11 @@ public class AutonomousRoutes implements Runnable {
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.START));
 		Sequence toCone = new Sequence(
-				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle),
-				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle));
+				/*systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle),
+				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle)*/);
 		Sequence toPole = new Sequence(
-				systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle),
-				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle));
+				/*systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle),
+				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle)*/);
 		Sequence sequencePickUp = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
@@ -118,8 +118,8 @@ public class AutonomousRoutes implements Runnable {
 		}
 
 		Sequence waitForPark = new Sequence(
-				systems.drivingSystem.driveSidewaysSequenceItem(startPose.x, startPose.angle),
-				systems.drivingSystem.driveStraightSequenceItem(startPose.y, startPose.angle));
+				/*systems.drivingSystem.driveSidewaysSequenceItem(startPose.x, startPose.angle),
+				systems.drivingSystem.driveStraightSequenceItem(startPose.y, startPose.angle)*/);
 
 		systems.executeSequence(waitForPark);
 		while (!waitForPark.isSequenceDone() && opMode.opModeIsActive()) {
@@ -143,9 +143,8 @@ public class AutonomousRoutes implements Runnable {
 		}
 
 		Sequence sequence = new Sequence(
-				systems.drivingSystem.driveSidewaysSequenceItem(sidewaysDistance, 0),
-				systems.drivingSystem.driveStraightSequenceItem(90, 0)
-		);
+				/*systems.drivingSystem.driveSidewaysSequenceItem(sidewaysDistance, 0),
+				systems.drivingSystem.driveStraightSequenceItem(90, 0)*/);
 		systems.executeSequence(sequence);
 		while (opMode.opModeIsActive() && !sequence.isSequenceDone()) {
 			systems.tick();

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
-@Autonomous(name = "ConeAutonomous2")
+@Autonomous(name = "ConeAutonomous", group = "Cone")
 public class ConeAutonomous extends LinearOpMode {
 	@Override
 	public void runOpMode() {
@@ -32,13 +32,15 @@ public class ConeAutonomous extends LinearOpMode {
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
 		);
 		Sequence pickUpSequence = new Sequence(
-				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
 		);
 		Sequence dropOffSequence = new Sequence(
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
 		);
+
+		telemetry.addData("Ready", coneNumber);
+		telemetry.update();
 
 		waitForStart();
 
@@ -55,17 +57,30 @@ public class ConeAutonomous extends LinearOpMode {
 				break;
 		}
 
-		// TODO: elevator sequence
+		systems.executeSequence(startSequence);
+		systems.drivingSystem.driveY(TILE_SIZE * 2 + 10);
+		systems.waitForSequencesDone();
 
-		systems.drivingSystem.driveStraightSequenceItem(TILE_SIZE * 2 + 10, 0);
 		for (int i = 0; i < coneNumber; i++) {
+
 			systems.drivingSystem.move2(pickUpLocation);
-			// systems.executeSequence(pickUpSequence);
+			systems.waitForSequencesDone();
+
+			systems.executeSequence(new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1)));
+			systems.waitForSequencesDone();
+
+			systems.executeSequence(pickUpSequence);
 			systems.drivingSystem.move2(dropOffLocation);
-			// Wait for the previous sequence to finish
-			// systems.executeSequence(dropOffSequence);
+			systems.waitForSequencesDone();
+
+			systems.executeSequence(new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1)));
+			systems.waitForSequencesDone();
+
+			if(i != coneNumber - 1) {
+				systems.executeSequence(dropOffSequence);
+			}
 		}
 
-		systems.drivingSystem.driveSidewaysSequenceItem(sidewaysDistance, 0);
+		systems.drivingSystem.driveToX(sidewaysDistance);
 	}
 }

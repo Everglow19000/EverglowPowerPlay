@@ -35,8 +35,6 @@ import org.firstinspires.ftc.teamcode.utils.DriveByPath.Trajectory;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
-	private static final double EPSILON = 1;
-
 	/**
 	 * The current opMode running on the robot.
 	 */
@@ -59,75 +57,12 @@ public class DrivingSystem {
 	private final DcMotor backRight;
 
 	/**
-	 * The current state of the the DrivingSystem.
-	 * Can be either RestingState or ActingState
-	 * (temporarily also DriveStraightState and DriveSidewaysState).
+	 * Used in drive by path.
 	 */
-	private State state = new RestingState();
-
 	private Pose targetPosition = new Pose();
 
 	public Pose getTargetPosition() {
 		return new Pose(targetPosition);
-	}
-
-	public class DriveStraightState implements State {
-		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
-
-		private final double targetY;
-		private final double targetAngle;
-
-		public DriveStraightState(double targetY, double targetAngle) {
-			this.targetY = targetY;
-			this.targetAngle = targetAngle;
-
-		}
-
-		@Override
-		public void tick() {
-			Pose position = SystemCoordinator.instance.trackingSystem.getPosition();
-			double yDeviation = targetY - position.y;
-			double angleDeviation = normalizeAngle(targetAngle - position.angle);
-			double yPower = 0.03 * yDeviation + 0.15 * signum(yDeviation);
-			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
-			if (abs(yDeviation) < EPSILON) {
-				stop();
-				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(StateMessages.DRIVING_DONE);
-			} else {
-				driveMecanum(new Pose(0, yPower, rotPower));
-			}
-		}
-	}
-
-	public class DriveSidewaysState implements State {
-		private static final double ANGLE_DEVIATION_SCALAR = 0.05 * 180 / Math.PI;
-
-		private final double targetX;
-		private final double targetAngle;
-
-		public DriveSidewaysState(double targetX, double targetAngle) {
-			this.targetX = targetX;
-			this.targetAngle = targetAngle;
-
-		}
-
-		@Override
-		public void tick() {
-			Pose position = SystemCoordinator.instance.trackingSystem.getPosition();
-			double xDeviation = targetX - position.x;
-			double angleDeviation = normalizeAngle(targetAngle - position.angle);
-			double xPower = 0.03 * xDeviation + 0.15 * signum(xDeviation);
-			double rotPower = ANGLE_DEVIATION_SCALAR * angleDeviation;
-			if (abs(xDeviation) < EPSILON) {
-				stop();
-				state = new RestingState();
-				SystemCoordinator.instance.sendMessage(StateMessages.DRIVING_DONE);
-			} else {
-				driveMecanum(new Pose(xPower, 0, rotPower));
-			}
-
-		}
 	}
 
 	/**
@@ -223,13 +158,6 @@ public class DrivingSystem {
 		frontLeft.setPower(0);
 		backRight.setPower(0);
 		backLeft.setPower(0);
-	}
-
-	/**
-	 * Ticks the driving system.
-	 */
-	public void tick() {
-		state.tick();
 	}
 
 	/**
@@ -395,6 +323,10 @@ public class DrivingSystem {
 		stop();
 	}
 
+	public void driveToX(double targetX) {
+		driveX(targetX - SystemCoordinator.instance.trackingSystem.getPosition().x);
+	}
+
 	public void driveY(double distance) {
 		final double epsilon = 0.5;
 		final double yTarget = SystemCoordinator.instance.trackingSystem.getPosition().y + distance;
@@ -409,6 +341,10 @@ public class DrivingSystem {
 			deviation = yTarget - SystemCoordinator.instance.trackingSystem.getPosition().y;
 		}
 		stop();
+	}
+
+	public void driveToY(double targetY) {
+		driveY(targetY - SystemCoordinator.instance.trackingSystem.getPosition().y);
 	}
 
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
@@ -478,15 +414,4 @@ public class DrivingSystem {
 		stop();
 	}
 
-	public Sequence.SequenceItem driveStraightSequenceItem(double targetY, double targetAngle) {
-		return new Sequence.SequenceItem(StateMessages.DRIVING_DONE, () -> {
-			state = new DriveStraightState(targetY, targetAngle);
-		});
-	}
-
-	public Sequence.SequenceItem driveSidewaysSequenceItem(double targetX, double targetAngle) {
-		return new Sequence.SequenceItem(StateMessages.DRIVING_DONE, () -> {
-			state = new DriveSidewaysState(targetX, targetAngle);
-		});
-	}
 }
