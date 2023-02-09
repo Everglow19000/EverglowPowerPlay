@@ -21,12 +21,13 @@ public class SystemCoordinator {
 	public final LinearOpMode opMode;
 
 	//Create a new instance of each system
-	public final ElevatorSystem elevatorSystem;
-	public final ClawSystem clawSystem;
 	public final DrivingSystem drivingSystem;
-	public final FourBarSystem fourBarSystem;
 	public final TrackingSystem trackingSystem;
+	public final ClawSystem clawSystem;
+	public final FourBarSystem fourBarSystem;
+	public final ElevatorSystem elevatorSystem;
 	public final GWheelSystem gWheelSystem;
+	public final SleepingSystem sleepingSystem;
 	public final PositionLogger positionLogger;
 	//There is no camera system because it runs in a separate thread.
 
@@ -48,12 +49,13 @@ public class SystemCoordinator {
 		lastCycleTime = System.nanoTime();
 
 		// Initiate all the systems
-		elevatorSystem = new ElevatorSystem(opMode);
-		clawSystem = new ClawSystem(opMode);
 		drivingSystem = new DrivingSystem(opMode);
-		fourBarSystem = new FourBarSystem(opMode);
 		trackingSystem = new TrackingSystem(opMode);
+		clawSystem = new ClawSystem(opMode);
+		fourBarSystem = new FourBarSystem(opMode);
+		elevatorSystem = new ElevatorSystem(opMode);
 		gWheelSystem = new GWheelSystem(opMode);
+		sleepingSystem = new SleepingSystem(opMode);
 		positionLogger = new PositionLogger(drivingSystem);
 
 		// Initiate the list of sequences
@@ -119,7 +121,8 @@ public class SystemCoordinator {
 
 	/**
 	 * Waits a certain amount of time, while ticking the systems in the process.
-	 * opMode.sleep() should NOT be used when using state machine.
+	 * This function should be used in autonomous.
+	 * This is used because opMode.sleep() should NOT be used when using state machine.
 	 *
 	 * @param milliseconds how many milliseconds to wait.
 	 */

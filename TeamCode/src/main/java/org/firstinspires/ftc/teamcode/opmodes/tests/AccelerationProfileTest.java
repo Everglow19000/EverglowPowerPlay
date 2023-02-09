@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.systems.PositionLogger;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.DriveByPath.AccelerationProfile;
 
-@TeleOp(name = "AccelerationProfileTest", group = ".Main")
+@TeleOp(name = "AccelerationProfileTest", group = "Test")
 public class AccelerationProfileTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {

@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * A Class for handling the image processing for camera.
  */
 public class CameraSystem {
-	private final LinearOpMode opMode;
 	private final CameraPipeline cameraPipeline;
 	private final OpenCvCamera camera;
 
@@ -47,7 +46,6 @@ public class CameraSystem {
 
 		private final LinearOpMode opMode; // The OpMode that's currently running
 		private boolean isCapturingImage = false;
-		private boolean isDetectingAprilTag = false;
 
 		public AtomicReference<AprilTagType> aprilTagId = new AtomicReference<>(AprilTagType.UNIDENTIFIED);
 
@@ -147,17 +145,16 @@ public class CameraSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public CameraSystem(LinearOpMode opMode) {
-		this.opMode = opMode;
 
 		// Initiate camera pipeline
 		cameraPipeline = new CameraPipeline(opMode);
+		WebcamName camName = opMode.hardwareMap.get(WebcamName.class, "webcam");
 		int cameraMonitorViewId =
-				this.opMode.hardwareMap.appContext.getResources()
-						.getIdentifier("cameraMonitorViewId", "id", this.opMode.hardwareMap.appContext.getPackageName());
-		WebcamName webcamName =
-				this.opMode.hardwareMap.get(WebcamName.class, "webcam");
+				opMode.hardwareMap.appContext.getResources()
+						.getIdentifier("cameraMonitorViewId", "id",
+								opMode.hardwareMap.appContext.getPackageName());
 
-		camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+		camera = OpenCvCameraFactory.getInstance().createWebcam(camName, cameraMonitorViewId);
 		camera.setPipeline(cameraPipeline);
 
 		camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {

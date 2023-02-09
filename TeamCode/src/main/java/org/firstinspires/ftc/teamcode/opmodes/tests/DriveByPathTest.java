@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.DriveByPath.SplinePath;
 import org.firstinspires.ftc.teamcode.utils.DriveByPath.Trajectory;
 
-@TeleOp(name = "DriveByPathTest", group = ".Main")
+@TeleOp(name = "DriveByPathTest", group = "Test")
 public class DriveByPathTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {

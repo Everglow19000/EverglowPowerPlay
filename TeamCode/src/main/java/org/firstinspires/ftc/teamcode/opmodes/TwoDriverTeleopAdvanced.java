@@ -49,27 +49,56 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 			systems.drivingSystem.driveByAxis(powers);
 
 
+			// Gwheel controls
 			if (gamepadB.lt()) {
 				systems.gWheelSystem.toggleSpit();
 			} else if (gamepadB.rt()) {
 				systems.gWheelSystem.toggleCollect();
 			}
 
-			if (gamepadB.rb()) {
+			// Get ready for pickup
+			if (gamepadB.triangle()) {
 				systems.interrupt();
 				sequence = new Sequence(
-						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
-						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
-						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
 				systems.executeSequence(sequence);
-			} else if (gamepadB.lb()) {
+			}
+			// Pickup
+			else if (gamepadB.circle()) {
 				systems.interrupt();
 				sequence = new Sequence(
-						systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
+						systems.sleepingSystem.goToSequenceItem(200),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1));
+				systems.executeSequence(sequence);
+			}
+			// Drop on low
+			else if (gamepadB.dpad_down()) {
+				systems.interrupt();
+				sequence = new Sequence(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
+				systems.executeSequence(sequence);
+			}
+			// Drop on low
+			else if (gamepadB.dpad_left()) {
+				systems.interrupt();
+				sequence = new Sequence(
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
-						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW));
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
+				systems.executeSequence(sequence);
+			}
+			// Drop on low
+			else if (gamepadB.dpad_up()) {
+				systems.interrupt();
+				sequence = new Sequence(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
 				systems.executeSequence(sequence);
 			}
 			systems.tick();

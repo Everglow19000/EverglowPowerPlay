@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "Autonomous")
-public class Autonomous extends LinearOpMode {
+@Autonomous(name = "Autonomous")
+public class MainAutonomous extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		SystemCoordinator systemCoordinator = new SystemCoordinator(this);

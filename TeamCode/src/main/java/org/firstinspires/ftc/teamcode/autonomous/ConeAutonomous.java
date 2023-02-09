@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.systems.ClawSystem;
@@ -12,8 +13,8 @@ import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "ConeAutonomous2")
-public class ConeAutonomous2 extends LinearOpMode {
+@Autonomous(name = "ConeAutonomous2")
+public class ConeAutonomous extends LinearOpMode {
 	@Override
 	public void runOpMode() {
 		SystemCoordinator systems = new SystemCoordinator(this);
