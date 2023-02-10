@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.CM_PER_TICK;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.FORWARD_OFFSET;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.LATERAL_DISTANCE;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.atan;
@@ -8,16 +12,18 @@ import static java.lang.Math.round;
 import static java.lang.Math.signum;
 import static java.lang.Math.sin;
 import static java.lang.Math.toDegrees;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.CM_PER_TICK;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.FORWARD_OFFSET;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.LATERAL_DISTANCE;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 
@@ -58,6 +64,61 @@ public class TrackingSystem {
 	private double frPreviousTicks;
 	private double bPreviousTicks;
 
+	private BNO055IMU imu;
+
+	/**
+	 * Creates an IMU object and calibrates it correctly to the current orientation.
+	 *
+	 * @param opMode the current opMode.
+	 * @return an BNO055IMU object.
+	 */
+	private static BNO055IMU initializeImu(LinearOpMode opMode) {
+		// Create the IMU
+		BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+		parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+		parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+		parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+		parameters.loggingEnabled = false;
+
+		// Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+		// on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+		// and named "imu".
+		BNO055IMU imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
+		imu.initialize(parameters);
+		// armadillo and new robot require extra configuration for its IMU.
+		// copied from https://ftcforum.firstinspires.org/forum/ftc-technology/53812-mounting-the-revhub-vertically
+
+		byte axisMapConfigByte; //This is what to write to the AXIS_MAP_CONFIG register to swap the needed axis
+
+		byte X_AXIS = 0b0;
+		byte Y_AXIS = 0b01;
+		byte Z_AXIS = 0b10;
+
+		// IMU configuration explained in: https://cdn-shop.adafruit.com/datasheets/BST_BNO055_DS000_12.pdf, page 24
+
+		axisMapConfigByte = (byte) (X_AXIS | Z_AXIS << 2 | Y_AXIS << 4); // swap z and y axis
+
+		byte AXIS_MAP_SIGN_BYTE = 0x0; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
+		// Need to be in CONFIG mode to write to registers
+		imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal);
+		opMode.sleep(100); //Changing modes requires a delay before doing anything else
+		//Write to the AXIS_MAP_CONFIG register
+		imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, axisMapConfigByte);
+		//Write to the AXIS_MAP_SIGN register
+		imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE);
+		//Need to change back into the IMU mode to use the gyro
+		imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal);
+		opMode.sleep(100); // Changing modes again requires a delay
+
+		ElapsedTime elapsedTime = new ElapsedTime();
+
+		while (!imu.isGyroCalibrated() && elapsedTime.milliseconds() < 2000) {
+			// wait for the gyroscope calibration
+			opMode.sleep(10);
+		}
+		return imu;
+	}
+
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
@@ -73,6 +134,14 @@ public class TrackingSystem {
 		flPreviousTicks = frontLeft.getCurrentPosition();
 		frPreviousTicks = frontRight.getCurrentPosition();
 		bPreviousTicks = back.getCurrentPosition();
+
+		// todo: remove
+		imu = initializeImu(opMode);
+	}
+
+	public double getImuAngle() {
+		Orientation orientation = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.RADIANS);
+		return orientation.firstAngle;
 	}
 
 	/**
@@ -124,8 +193,10 @@ public class TrackingSystem {
 		// The angle was removed from the matrices and they were simplified to have only two rows
 		// because it wasn't actually used in the calculates.
 		final double[][] matrix1 = {{angleCos, -angleSin}, {angleSin, angleCos}};
-		final double[][] matrix2 = {{sinc(angleChange), cosc(angleChange)},
-				{-cosc(angleChange), sinc(angleChange)}};
+		final double[][] matrix2 = {
+				{sinc(angleChange), cosc(angleChange)},
+				{-cosc(angleChange), sinc(angleChange)}
+		};
 		final double[] matrix3 = {centerDisplacement, horizontalDisplacement};
 
 		// Multiplication of matrices 2 & 3
@@ -268,6 +339,7 @@ public class TrackingSystem {
 		opMode.telemetry.addData("x: ", position.x);
 		opMode.telemetry.addData("y: ", position.y);
 		opMode.telemetry.addData("Angle: ", toDegrees(position.angle));
+		opMode.telemetry.addData("Imu Angle: ", toDegrees(getImuAngle()));
 
 		TelemetryPacket packet = new TelemetryPacket();
 

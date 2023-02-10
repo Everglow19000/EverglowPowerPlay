@@ -114,6 +114,7 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 				systems.executeSequence(clawSequence);
 			}
 			systems.tick();
+			telemetry.update();
 		}
 	}
 }

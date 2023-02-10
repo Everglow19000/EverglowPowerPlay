@@ -50,7 +50,7 @@ public class RobotParameters {
 	/**
 	 * The distance between the two front odometry wheels, in centimeters.
 	 */
-	public static final double LATERAL_DISTANCE = 13.5;
+	public static final double LATERAL_DISTANCE = 13.5 * 1840./1801;
 	/**
 	 * The distance between the center of the robot and the back odometry wheel, in centimeters.
 	 */
