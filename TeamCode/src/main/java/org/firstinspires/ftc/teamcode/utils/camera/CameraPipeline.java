@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils.camera;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
@@ -45,12 +46,16 @@ public class CameraPipeline extends OpenCvPipeline {
 
 
 	//// Image Detection ////
-	public final static double CAM_HEIGHT = 46;
-	public final static double CAM_ANGLE = 52;
+	public final static double CAM_HEIGHT = 42; // cm
+	public final static double CAM_ANGLE = Math.toRadians(57); // Radians - 0 is down
 	public final static double F1 = 1385.92, F2 = 1385.92;
 	public final static double CX = 951.982, CY = 534.084;
 
+	public final static double CENTER_MASS_X_OFFSET = -13.5, CENTER_MASS_Y_OFFSET = -11;
+
 	private final ConeDetector coneDetector;
+//	private final PoleDetector poleDetector;
+
 
 	// mats used for image detection
 	private static final Mat cameraMatrix = new Mat(3, 3, CvType.CV_64F);
@@ -79,11 +84,16 @@ public class CameraPipeline extends OpenCvPipeline {
 		double[] coe = {0.117627, -0.248549, 0, 0, 0.107441, 0, 0, 0}; // short for coeffs
 		coeffs.put(0,0, coe);
 
-		double[] rmtx = {Math.cos(CAM_ANGLE), 0, -Math.sin(CAM_ANGLE),
-				0, 1, 0, Math.sin(CAM_ANGLE), 0, Math.cos(CAM_ANGLE)};
+		double[] rmtx = {1,0,0,
+			0, Math.cos(CAM_ANGLE), -Math.sin(CAM_ANGLE),
+			0, Math.sin(CAM_ANGLE), 0, Math.cos(CAM_ANGLE)};
+//		double[] rmtx = {Math.cos(CAM_ANGLE), 0, Math.sin(CAM_ANGLE), // Y Axis
+//				0, 1, 0,
+//				-Math.sin(CAM_ANGLE), 0, Math.cos(CAM_ANGLE)};
 		rotateMatrix.put(0, 0, rmtx);
 
 		coneDetector = new ConeDetector(opMode);
+//		poleDetector = new PoleDetector(opMode);
 
 		// initiate AprilTag detector
 		nativeAprilTagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
@@ -149,6 +159,8 @@ public class CameraPipeline extends OpenCvPipeline {
 
 
 		coneDetector.detect(input);
+//		poleDetector.detect(input);
+
 		return input;
 	}
 
@@ -173,13 +185,23 @@ public class CameraPipeline extends OpenCvPipeline {
 	}
 
 	public static Point2D pointToPosition(Point p) {
-		double x = p.x, y = p.y;
-		MatOfPoint2f pointMat = new MatOfPoint2f(p);
-		MatOfPoint2f result = new MatOfPoint2f();
+		MatOfPoint2f pointMat = new MatOfPoint2f(p); // Convert point to a mat
+		MatOfPoint2f result = new MatOfPoint2f(); // holds the result
 
+		// undistort point
 		Calib3d.undistortPoints(pointMat, result, cameraMatrix, coeffs, rotateMatrix);
 
+		// extract point from mat
 		Point point = result.toList().get(0);
+
+		// negate camera height
+		point.y *= -CAM_HEIGHT;
+//		point.x *= -CAM_HEIGHT;
+
+		// translate to the center of mass of the robot
+//		point.x += CENTER_MASS_X_OFFSET;
+//		point.y += CENTER_MASS_Y_OFFSET;
+
 		return new Point2D(point.x, point.y);
 	}
 

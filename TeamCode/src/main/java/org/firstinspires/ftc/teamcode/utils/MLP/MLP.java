@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.utils.NN;
+package org.firstinspires.ftc.teamcode.utils.MLP;
 
 import android.os.Build;
 
@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Formatter;
 
 public class MLP {
 	ArrayList<double[][]> weights;

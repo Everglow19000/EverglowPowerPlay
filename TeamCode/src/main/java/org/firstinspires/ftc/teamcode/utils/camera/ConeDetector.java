@@ -1,16 +1,19 @@
 package org.firstinspires.ftc.teamcode.utils.camera;
 
+import static org.firstinspires.ftc.teamcode.utils.MathUtils.floatingPrecision;
+import static org.firstinspires.ftc.teamcode.utils.camera.CvTools.getLowestPointOfContour;
+import static org.firstinspires.ftc.teamcode.utils.camera.CvTools.largestContour;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -41,21 +44,27 @@ public class ConeDetector {
 		yellowMask = Mat.zeros(mat.size(), CvType.CV_8U);
 	}
 
-	public Point2D detect(Mat mat) {
+	public void detect(Mat mat) {
 		generateConeMask(mat);
 
 		List<MatOfPoint> contours = getContours(yellowMask);
 		MatOfPoint largestContour = largestContour(contours);
+		if (largestContour == null) {
+			opmode.telemetry.addLine("No largest contour");
+			opmode.telemetry.update();
+			return;
+		}
 		Point lowestPoint = getLowestPointOfContour(largestContour);
 
 		opmode.telemetry.addData("Num of contours:", contours.size());
 		opmode.telemetry.addData("Contour Area:", Imgproc.contourArea(largestContour));
 		Imgproc.drawContours(mat, Collections.singletonList(largestContour), 0, new Scalar(30, 255, 30), 20);
+		Imgproc.ellipse(mat, lowestPoint, new Size(10f, 10f), 0, 0, 0, new Scalar(255,0,0));
 
 		Point2D pos = CameraPipeline.pointToPosition(lowestPoint);
-		opmode.telemetry.addData("Cone Position:", "(" + pos.x+ ", " +pos.y + ")");
+		opmode.telemetry.addData("Cone Position:", "(" + floatingPrecision(pos.x, 2) + ", " + floatingPrecision(pos.y, 2) + ")");
 		opmode.telemetry.update();
-		return CameraPipeline.pointToPosition(lowestPoint);
+		CameraPipeline.pointToPosition(lowestPoint);
 	}
 
 	private void generateConeMask(Mat mat) {
@@ -71,33 +80,5 @@ public class ConeDetector {
 		Imgproc.findContours(yellowMask, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
 		return contours;
-	}
-
-	private Point getLowestPointOfContour(MatOfPoint cnt) {
-		List<Point> cntList = cnt.toList();
-		Point lowestPoint = cntList.get(0);
-		double lowestY = lowestPoint.y;
-
-		for (Point p:cntList) {
-			if (p.y > lowestY) {
-				lowestPoint = p;
-				lowestY = p.y;
-			}
-		}
-
-		return lowestPoint.clone();
-	}
-
-	private static MatOfPoint largestContour(List<MatOfPoint> contours) {
-		double largestContourArea = 0;
-		MatOfPoint largestContour = null;
-		for (MatOfPoint contour: contours){
-			double area = Imgproc.contourArea(contour);
-			if (area > largestContourArea){
-				largestContourArea = area;
-				largestContour = contour;
-			}
-		}
-		return largestContour;
 	}
 }

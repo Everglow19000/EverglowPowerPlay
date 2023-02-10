@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.utils.camera;
 
+import static org.firstinspires.ftc.teamcode.utils.camera.CvTools.getLowestPointOfContour;
+import static org.firstinspires.ftc.teamcode.utils.camera.CvTools.largestContour;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
-import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -18,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-public class poleDetector {
+public class PoleDetector {
     private OpMode opmode;
     private Mat hsv;
     private Mat yellowMask1;
@@ -31,7 +32,7 @@ public class poleDetector {
     private static final Scalar YELLOW_THRESHOLD_2_LOWER = new Scalar(160, 100, 20); //need to change this numbers to fit the color of the pole
     private static final Scalar YELLOW_THRESHOLD_2_UPPER = new Scalar(180, 255, 255); //need to change this numbers to fit the color of the pole
 
-    public poleDetector(OpMode opmode) {
+    public PoleDetector(OpMode opmode) {
         this.opmode = opmode;
     }
 
@@ -72,34 +73,6 @@ public class poleDetector {
         Imgproc.findContours(yellowMask, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
         return contours;
-    }
-
-    private Point getLowestPointOfContour(MatOfPoint cnt) {
-        List<Point> cntList = cnt.toList();
-        Point lowestPoint = cntList.get(0);
-        double lowestY = lowestPoint.y;
-
-        for (Point p:cntList) {
-            if (p.y > lowestY) {
-                lowestPoint = p;
-                lowestY = p.y;
-            }
-        }
-
-        return lowestPoint.clone();
-    }
-
-    private static MatOfPoint largestContour(List<MatOfPoint> contours) {
-        double largestContourArea = 0;
-        MatOfPoint largestContour = null;
-        for (MatOfPoint contour: contours){
-            double area = Imgproc.contourArea(contour);
-            if (area > largestContourArea){
-                largestContourArea = area;
-                largestContour = contour;
-            }
-        }
-        return largestContour;
     }
 }
 

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.systems.DrivingSystem;
@@ -15,6 +16,9 @@ public class CameraTeleop extends LinearOpMode {
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 		DrivingSystem drivingSystem = new DrivingSystem(this);
 		CameraSystem cameraSystem = new CameraSystem(this);
+		//temp for Adi's tests - Ethan's doing
+		final DcMotor gWheel = hardwareMap.get(DcMotor.class,"gWheel");
+		gWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 		Pose actPowers = new Pose();
 
 		waitForStart();
@@ -23,6 +27,12 @@ public class CameraTeleop extends LinearOpMode {
 
 		while (opModeIsActive()) {
 			gamepad.update();
+
+			// Move robot
+			actPowers.x = -gamepad1.left_stick_x;
+			actPowers.y = -gamepad1.left_stick_y;
+			actPowers.angle = -gamepad1.right_stick_x;
+			drivingSystem.driveMecanum(actPowers);
 
 			// Assign image capture to the circle button
 			if (gamepad.circle()) {
@@ -38,10 +48,16 @@ public class CameraTeleop extends LinearOpMode {
 				telemetry.update();
 			}
 
-			actPowers.x = -gamepad1.left_stick_x;
-			actPowers.y = -gamepad1.left_stick_y;
-			actPowers.angle = -gamepad1.right_stick_x;
-			drivingSystem.driveMecanum(actPowers);
+			// GWheel for Adi
+			if(gamepad.rt()) {
+				gWheel.setPower(0.5);
+			}
+			if(gamepad.lt()) {
+				gWheel.setPower(-0.5);
+			}
+			if(gamepad.triangle()){
+				gWheel.setPower(0);
+			}
 		}
 	}
 }
