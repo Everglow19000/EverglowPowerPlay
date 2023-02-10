@@ -24,7 +24,6 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 		Sequence sequence;
-		ClawSystem.Position clawPos = ClawSystem.Position.OPEN;
 
 		waitForStart();
 
@@ -46,7 +45,7 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 			}
 
 			// Apply calculated velocity to mecanum wheels
-			systems.drivingSystem.driveByAxis(powers);
+			systems.drivingSystem.driveMecanum(powers);
 
 
 			// Gwheel controls
@@ -56,24 +55,32 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 				systems.gWheelSystem.toggleCollect();
 			}
 
-			// Get ready for pickup
+			// Get ready for pickup from gWheel
+			if (gamepadB.cross()) {
+				systems.interrupt();
+				sequence = new Sequence(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.BACK),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
+				systems.executeSequence(sequence);
+			}
+			// Get ready for pickup from dropoff
 			if (gamepadB.triangle()) {
 				systems.interrupt();
 				sequence = new Sequence(
-						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
-						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.BACK),
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
 						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
-				clawPos = clawPos.flip();
 				systems.executeSequence(sequence);
 			}
 			// Pickup
 			else if (gamepadB.square()) {
 				systems.interrupt();
 				sequence = new Sequence(
+						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
 						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 						systems.sleepingSystem.goToSequenceItem(200),
 						systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1));
-				clawPos = clawPos.flip();
 				systems.executeSequence(sequence);
 			}
 			// Go to dropoff low
@@ -100,9 +107,10 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 						systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF));
 				systems.executeSequence(sequence);
 			}
+			// Open claw
 			else if (gamepadB.circle()) {
-				clawPos = clawPos.flip();
-				Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(clawPos, 1));
+				systems.interrupt();
+				Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1));
 				systems.executeSequence(clawSequence);
 			}
 			systems.tick();
