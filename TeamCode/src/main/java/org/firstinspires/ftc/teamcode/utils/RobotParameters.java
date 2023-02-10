@@ -44,21 +44,21 @@ public class RobotParameters {
 	 */
 	private static final double TICKS_PER_ROTATION = 8192;
 	/**
-	 * The size of a tile side in centimeters.
-	 */
-	public static final double TILE_SIZE = 71;
-	/**
 	 * Conversion factor from ticks to centimeters.
 	 */
 	public static final double CM_PER_TICK = 1. / TICKS_PER_ROTATION * WHEEL_RADIUS * 2 * PI;
 	/**
-	 * The distance between the two front wheels.
+	 * The distance between the two front odometry wheels, in centimeters.
 	 */
-	public static final double LATERAL_DISTANCE = 12.3;
+	public static final double LATERAL_DISTANCE = 13.5;
 	/**
-	 * The distance between the center of the robot and the back wheel.
+	 * The distance between the center of the robot and the back odometry wheel, in centimeters.
 	 */
-	public static final double FORWARD_OFFSET = -4.5;
+	public static final double FORWARD_OFFSET = -5.0;
+	/**
+	 * The size of a tile side, in centimeters.
+	 */
+	public static final double TILE_SIZE = 71;
 	/**
 	 * The distance from which the center robot drops the cones onto the polls, in centimeters.
 	 */

@@ -64,10 +64,10 @@ public class TrackingSystem {
 	public TrackingSystem(LinearOpMode opMode) {
 		this.opMode = opMode;
 
-		// Get odometry pod interfaces
+		// Get odometry pod interfaces (names because of cable management)
 		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
-		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
-		back = opMode.hardwareMap.get(DcMotor.class, "gWheel"); //Because there aren't enough motor slots
+		frontRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
+		back = opMode.hardwareMap.get(DcMotor.class, "gWheel");
 
 		// Reset the distances measured by the motors
 		flPreviousTicks = frontLeft.getCurrentPosition();
