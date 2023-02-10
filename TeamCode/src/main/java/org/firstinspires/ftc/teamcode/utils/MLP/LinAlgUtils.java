@@ -4,6 +4,7 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -78,8 +79,8 @@ public class LinAlgUtils {
 	 * @throws IOException
 	 */
 	@RequiresApi(api = Build.VERSION_CODES.O)
-	public static double[][] readMatrixFromFile(Path path, int[] shape) throws IOException {
-		List<String> arr = Files.readAllLines(path);
+	public static double[][] readMatrixFromFile(File path, int[] shape) throws IOException {
+		List<String> arr = Files.readAllLines(path.toPath());
 		String[] arr2;
 		double[][] arr3 = new double[shape[0]][shape[1]];
 		for (int i = 0; i < shape[0]; i++) {

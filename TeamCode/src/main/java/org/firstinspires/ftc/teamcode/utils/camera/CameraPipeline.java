@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.utils.camera;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -7,6 +11,7 @@ import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
 import org.firstinspires.ftc.teamcode.utils.AndroidUtils;
 import org.firstinspires.ftc.teamcode.utils.CameraCalibration;
+import org.firstinspires.ftc.teamcode.utils.MLP.MLP;
 import org.firstinspires.ftc.teamcode.utils.Point2D;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.opencv.calib3d.Calib3d;
@@ -23,6 +28,7 @@ import org.openftc.apriltag.AprilTagDetectorJNI;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +41,9 @@ public class CameraPipeline extends OpenCvPipeline {
 	private final LinearOpMode opMode; // The OpMode that's currently running
 	private boolean isCapturingImage = false;
 	private boolean isDetectingAprilTag = false;
+	private boolean isDetectingSignal = false;
+
+	private MLP signalDetector;
 
 	//// AprilTag ////
 	private long nativeAprilTagPtr; // A pointer to the JNI AprilTag detector
@@ -43,6 +52,7 @@ public class CameraPipeline extends OpenCvPipeline {
 	// AprilTag variables
 	static final double TAG_SIZE = 0.166; // UNITS ARE METERS
 	public CameraSystem.AprilTagType aprilTagID = CameraSystem.AprilTagType.UNIDENTIFIED; // Last identified AprilTag
+	public CameraSystem.AprilTagType signalType = CameraSystem.AprilTagType.UNIDENTIFIED; // Last identified signal
 
 
 	//// Image Detection ////
@@ -74,6 +84,7 @@ public class CameraPipeline extends OpenCvPipeline {
 		rotateMatrix.put(0, 0, rMtx);
 	}
 
+	@RequiresApi(api = Build.VERSION_CODES.O)
 	public CameraPipeline(LinearOpMode opMode) {
 		this.opMode = opMode;
 
@@ -94,6 +105,13 @@ public class CameraPipeline extends OpenCvPipeline {
 
 		coneDetector = new ConeDetector(opMode);
 //		poleDetector = new PoleDetector(opMode);
+
+		try {
+			signalDetector = new MLP(MLP.Activation.RELU);
+			signalDetector.defaultLoad();
+		} catch (IOException e) {
+
+		}
 
 		// initiate AprilTag detector
 		nativeAprilTagPtr = AprilTagDetectorJNI.createApriltagDetector(AprilTagDetectorJNI.TagFamily.TAG_36h11.string, 3, 3);
