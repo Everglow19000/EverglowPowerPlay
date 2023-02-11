@@ -71,6 +71,15 @@ public class MultiConeTeleop extends LinearOpMode {
 						new PointD(startPosition.x - 27.6, startPosition.y + 122.5)
 				}), RobotParameters.MAX_V_X * 0.5);
 
+
+		Trajectory startTrajectoryNew = new Trajectory(
+				new SplinePath(new PointD[]{
+						new PointD(startPosition.x, startPosition.y),
+						new PointD(startPosition.x, 110 + startPosition.y),
+						new PointD(startPosition.x - 27.6, startPosition.y + 127.2)
+				}), RobotParameters.MAX_V_X * 0.5);
+
+
 		Trajectory startTrajectory1 = new Trajectory(
 				new SplinePath(
 						new PointD[]{
@@ -116,13 +125,13 @@ public class MultiConeTeleop extends LinearOpMode {
 
 		systems.executeSequence(startSequence);
 		systems.drivingSystem.driveToY(-0.2 * TILE_SIZE);
-		systems.drivingSystem.driveToY(-0.4 * TILE_SIZE);
+		systems.drivingSystem.driveToY(-0.35 * TILE_SIZE);
 		systems.drivingSystem.driveToX(1 * TILE_SIZE);
 //		systems.drivingSystem.driveByPath(startTrajectory1, 0, 1);
-//		systems.drivingSystem.driveByPath(startTrajectory2, 0, 1);
+//		systems.drivingSystem.driveByPath(startTrajectoryNew, 0, 1);
 		systems.drivingSystem.stop();
 		systems.waitForSequencesDone();
-		systems.drivingSystem.driveToY(-0.37 * TILE_SIZE);
+		systems.drivingSystem.driveToY(-0.4 * TILE_SIZE);
 		stop();
 		systems.executeSequence(new Sequence(
 				systems.sleepingSystem.goToSequenceItem(250),
@@ -131,15 +140,15 @@ public class MultiConeTeleop extends LinearOpMode {
 				));
 		systems.waitForSequencesDone();
 
-		//systems.sleep(10000000000L);
-
 		for (int i = 0; i < coneNumber; i++) {
+			telemetry.addData("loc", 1);
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
 					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP)
 			));
 			systems.drivingSystem.move3(pickUpLocation);
 			stop();
+			telemetry.addData("loc", 2);
 			systems.waitForSequencesDone();
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i]),
@@ -147,7 +156,7 @@ public class MultiConeTeleop extends LinearOpMode {
 					systems.sleepingSystem.goToSequenceItem(250)
 			));
 			systems.waitForSequencesDone();
-
+			telemetry.addData("loc", 3);
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 					systems.fourBarSystem.goToSequenceItem(DROPOFF)
@@ -156,11 +165,12 @@ public class MultiConeTeleop extends LinearOpMode {
 			systems.sleep(500);
 			systems.drivingSystem.move3(dropOffLocation);
 			stop();
+			telemetry.addData("loc", 4);
 			systems.waitForSequencesDone();
-
 			systems.executeSequence(new Sequence(
 					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
 			));
+			telemetry.addData("loc", 5);
 		}
 
 		systems.executeSequence(endSequence);

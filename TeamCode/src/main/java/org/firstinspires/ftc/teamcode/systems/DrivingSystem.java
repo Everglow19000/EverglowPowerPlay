@@ -356,7 +356,22 @@ public class DrivingSystem {
 	}
 
 	public void driveToX(double targetX) {
-		driveX(targetX - SystemCoordinator.instance.trackingSystem.getPosition().x);
+		final double epsilon = 0.5;
+
+		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
+		double deviation = targetX - SystemCoordinator.instance.trackingSystem.getPosition().x;
+		double angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
+		Pose actPowers = new Pose();
+
+		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			SystemCoordinator.instance.tick();
+			actPowers.x = 0.003 * deviation + 0.4 * signum(deviation);
+			actPowers.angle = 1 * angleDeviation;
+			driveByAxis(actPowers);
+			deviation = targetX - SystemCoordinator.instance.trackingSystem.getPosition().x;
+			angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
+		}
+		stop();
 	}
 
 	public void driveY(double distance) {
@@ -379,7 +394,21 @@ public class DrivingSystem {
 	}
 
 	public void driveToY(double targetY) {
-		driveY(targetY - SystemCoordinator.instance.trackingSystem.getPosition().y);
+		final double epsilon = 1;
+
+		//PIDController myPIDController = new PIDController(0.1, 0.05, 0.2);
+		double deviation = targetY - SystemCoordinator.instance.trackingSystem.getPosition().y;
+		double angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
+		Pose actPowers = new Pose();
+
+		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+			SystemCoordinator.instance.tick();
+			actPowers.y = 0.003 * deviation + 0.4 * signum(deviation);
+			actPowers.angle = 1 * angleDeviation;
+			driveByAxis(actPowers);
+			deviation = targetY - SystemCoordinator.instance.trackingSystem.getPosition().y;
+			angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
+		}
 	}
 
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {

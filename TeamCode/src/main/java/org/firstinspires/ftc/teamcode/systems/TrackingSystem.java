@@ -156,6 +156,7 @@ public class TrackingSystem {
 	 */
 	public void tick() {
 		trackPosition();
+//		printPosition();
 	}
 
 	public void resetPosition(Pose location) {
