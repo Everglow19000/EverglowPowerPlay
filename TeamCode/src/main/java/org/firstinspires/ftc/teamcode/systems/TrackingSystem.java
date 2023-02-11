@@ -158,6 +158,12 @@ public class TrackingSystem {
 		trackPosition();
 	}
 
+	public void resetPosition(Pose location) {
+		position.x = location.x;
+		position.y = location.y;
+		position.angle = location.angle;
+	}
+
 	/**
 	 * Tracks the robot's position and updates the position variable.
 	 * Pose Exponentials Method and explanation from
@@ -170,9 +176,9 @@ public class TrackingSystem {
 		final double bCurrentTicks = back.getCurrentPosition();
 
 		//Log all info
-		opMode.telemetry.addData("fl location: ", flCurrentTicks * CM_PER_TICK);
-		opMode.telemetry.addData("fr location: ", frCurrentTicks * CM_PER_TICK);
-		opMode.telemetry.addData("b location: ", bCurrentTicks * CM_PER_TICK);
+		//opMode.telemetry.addData("fl location: ", flCurrentTicks * CM_PER_TICK);
+		//opMode.telemetry.addData("fr location: ", frCurrentTicks * CM_PER_TICK);
+		//opMode.telemetry.addData("b location: ", bCurrentTicks * CM_PER_TICK);
 		printPosition();
 
 		// The displacement of each wheel
@@ -292,6 +298,7 @@ public class TrackingSystem {
 	 * @return The location of the closest pole to the robot.
 	 */
 	public PointD getClosestPoleLocation() {
+		PointD tileLocation = getTileLocation();
 		PointD squareCenter = getTileCenter();
 		PointD bestCornerPosition = new PointD();
 
@@ -309,14 +316,25 @@ public class TrackingSystem {
 				continue;
 			}
 
-			PointD cornerDistance = new PointD(cornerSquarePosition.x - position.x, cornerSquarePosition.y - position.y);
+			PointD cornerDistance = new PointD(cornerSquarePosition.x - tileLocation.x, cornerSquarePosition.y - tileLocation.y);
 
-			double angleTo = abs(angleTo(cornerDistance) - position.angle);
-			if (angleTo < smallestAngle) {
+			double angleDiff = abs(angleTo(cornerDistance) - position.angle);
+			if (angleDiff < smallestAngle) {
 				bestCornerPosition = cornerSquarePosition;
-				smallestAngle = angleTo;
+				smallestAngle = angleDiff;
 			}
+			opMode.telemetry.addData("CornerInd", corner);
+			opMode.telemetry.addData("cornerSquarePosition.x", cornerSquarePosition.x);
+			opMode.telemetry.addData("cornerSquarePosition.y", cornerSquarePosition.y);
+			opMode.telemetry.addData("cornerDistance.x", cornerDistance.x);
+			opMode.telemetry.addData("cornerDistance.y", cornerDistance.y);
+			opMode.telemetry.addData("angleTo(cornerDistance)", angleTo(cornerDistance));
+			opMode.telemetry.addData("angleDiff", angleDiff);
+
+
 		}
+
+		opMode.telemetry.update();
 
 		bestCornerPosition.x *= TILE_SIZE;
 		bestCornerPosition.y *= TILE_SIZE;

@@ -62,7 +62,7 @@ public class RobotParameters {
 	/**
 	 * The size of a tile side, in centimeters.
 	 */
-	public static final double TILE_SIZE = 71;
+	public static final double TILE_SIZE = 60;
 	/**
 	 * The distance from which the center robot drops the cones onto the polls, in centimeters.
 	 */

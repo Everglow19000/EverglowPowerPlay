@@ -259,13 +259,13 @@ public class DrivingSystem {
 		final double K = 0.03;
 		PointD SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
 		PointD squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
-
+		/*
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
 		}
 		if (abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
 			Powers.y = 0;
-		}
+		}*/
 
 		if (abs(Powers.x) > abs(Powers.y)) {
 			Powers.x *= 1 - abs(squareDeviation.y);
@@ -286,13 +286,13 @@ public class DrivingSystem {
 
 		PointD SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
 		PointD squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
-
+		/*
 		if (abs(SquareLocation.x) >= 3 && signum(SquareLocation.x) == signum(Powers.x)) {
 			Powers.x = 0;
 		}
 		if (abs(SquareLocation.y) >= 3 && signum(SquareLocation.y) == signum(Powers.y)) {
 			Powers.y = 0;
-		}
+		}*/
 
 		if (abs(Powers.x) > abs(Powers.y)) {
 			Powers.x *= 1 - abs(squareDeviation.y);
@@ -318,13 +318,13 @@ public class DrivingSystem {
 
 		PointD SquareLocation = SystemCoordinator.instance.trackingSystem.getTileLocation();
 		PointD squareDeviation = SystemCoordinator.instance.trackingSystem.getTileDeviation();
-
+		/*
 		if (abs(SquareLocation.x) >= 3 && signum(squareDeviation.x) == signum(Powers.x)) {
 			Powers.x = 0;
 		}
 		if (abs(SquareLocation.y) >= 3 && signum(squareDeviation.y) == signum(Powers.y)) {
 			Powers.y = 0;
-		}
+		}*/
 
 		if (abs(Powers.x) > abs(Powers.y)) {
 			Powers.y = signum(squareDeviation.y) * abs(Powers.x) * (1 - abs(squareDeviation.x)) / (1 - abs(squareDeviation.y));
