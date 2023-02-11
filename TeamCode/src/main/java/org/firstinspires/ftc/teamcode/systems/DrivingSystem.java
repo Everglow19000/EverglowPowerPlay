@@ -147,7 +147,7 @@ public class DrivingSystem {
 	/**
 	 * Makes the robot stop in place.
 	 */
-	private void stop() {
+	public void stop() {
 		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 		frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 		backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -224,8 +224,8 @@ public class DrivingSystem {
 
 	public void move3(Pose targetPosition){
 		Pose k = new Pose(0.02, 0.02, 1);
-		Pose minPower = new Pose(0.1, 0.1, 0.1);
-		Pose epsilon = new Pose(2, 2, toRadians(2));
+		Pose minPower = new Pose(0.2, 0.2, 0.2);
+		Pose epsilon = new Pose(2, 2, toRadians(3));
 		boolean xArrived = false;
 		boolean yArrived = false;
 		boolean angleArrived = false;

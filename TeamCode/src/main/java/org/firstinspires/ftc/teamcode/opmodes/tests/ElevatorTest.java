@@ -40,6 +40,9 @@ public class ElevatorTest extends LinearOpMode {
 			if (gamepad.lb()) {
 				fourBar.goToImmediate(FourBarSystem.Position.DROPOFF);
 			}
+			if (gamepad.cross()) {
+				fourBar.goToImmediate(FourBarSystem.Position.AUTO_PICKUP);
+			}
 
 			leftElevator.setPower(gamepad1.left_stick_y);
 			rightElevator.setPower(gamepad1.left_stick_y);

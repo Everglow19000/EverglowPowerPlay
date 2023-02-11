@@ -72,6 +72,11 @@ public class Pose {
 		this.angle += other.angle;
 	}
 
+	public static Pose sum(Pose pose1, Pose pose2){
+		return new Pose(pose1.x + pose2.x, pose1.y + pose2.y, pose1.angle + pose2.angle);
+	}
+
+
 	public void normalizeAngle() {
 		this.angle = Utils.normalizeAngle(this.angle);
 	}

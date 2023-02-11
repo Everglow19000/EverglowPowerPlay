@@ -159,8 +159,9 @@ public class TrackingSystem {
 	}
 
 	public void resetPosition(Pose location) {
-		position.x = location.x;
-		position.y = location.y;
+		// flipping x and y, because x and y are swapped in our internal structure
+		position.x = location.y;
+		position.y = location.x;
 		position.angle = location.angle;
 	}
 
@@ -179,7 +180,6 @@ public class TrackingSystem {
 		//opMode.telemetry.addData("fl location: ", flCurrentTicks * CM_PER_TICK);
 		//opMode.telemetry.addData("fr location: ", frCurrentTicks * CM_PER_TICK);
 		//opMode.telemetry.addData("b location: ", bCurrentTicks * CM_PER_TICK);
-		printPosition();
 
 		// The displacement of each wheel
 		final double frontLeftDisplacement = (flCurrentTicks - flPreviousTicks) * CM_PER_TICK;

@@ -1,5 +1,10 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import static org.firstinspires.ftc.teamcode.systems.ElevatorSystem.Level.CONE1;
+import static org.firstinspires.ftc.teamcode.systems.ElevatorSystem.Level.CONE2;
+import static org.firstinspires.ftc.teamcode.systems.ElevatorSystem.Level.CONE3;
+import static org.firstinspires.ftc.teamcode.systems.ElevatorSystem.Level.CONE4;
+import static org.firstinspires.ftc.teamcode.systems.ElevatorSystem.Level.CONE5;
 import static java.lang.Math.abs;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -33,7 +38,7 @@ public class ElevatorSystem {
 	public enum Level {
 		START(0), PICKUP(-490), PRE_PICKUP(-750),
 		LOW(-990), MID(-2140), HIGH(-3310),
-		CONE1(-1), CONE2(-1), CONE3(-1), CONE4(-1), CONE5(-1);
+		CONE1(-650), CONE2(-500), CONE3(-320), CONE4(-165), CONE5(0);
 
 		public final int desiredPosition;
 
@@ -42,11 +47,13 @@ public class ElevatorSystem {
 		}
 	}
 
+	public static final Level[] conePickupLevels = {CONE1, CONE2, CONE3, CONE4, CONE5};
+
 	/**
 	 * A state used when the elevator should be moving.
 	 */
 	public class ActingState implements State {
-		private static final int EPSILON = 15;
+		private static final int EPSILON = 20;
 		private final Level level;
 
 		/**
