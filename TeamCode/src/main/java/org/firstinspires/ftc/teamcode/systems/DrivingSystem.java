@@ -13,7 +13,8 @@ import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_a_accelerat
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_a_decelerating;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_d_error;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_error;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_v;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_v_x;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.k_v_y;
 import static org.firstinspires.ftc.teamcode.utils.Utils.normalizeAngle;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,16 +26,13 @@ import org.firstinspires.ftc.teamcode.utils.DriveByPath.PDFFController;
 import org.firstinspires.ftc.teamcode.utils.PointD;
 import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.PID.PosePIDController;
-import org.firstinspires.ftc.teamcode.utils.StateMachine.State;
-import org.firstinspires.ftc.teamcode.utils.StateMachine.RestingState;
-import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
-import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
 import org.firstinspires.ftc.teamcode.utils.DriveByPath.Trajectory;
 
 /**
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
+	private static final double FRONT_SCALAR = 1.16;
 	/**
 	 * The current opMode running on the robot.
 	 */
@@ -123,8 +121,8 @@ public class DrivingSystem {
 		powers.y *= DRIVE_Y_FACTOR;
 
 		// Determine how much power each motor should receive.
-		double frontRightPower = powers.y + powers.x + powers.angle;
-		double frontLeftPower = powers.y - powers.x - powers.angle;
+		double frontRightPower = powers.y + powers.x * FRONT_SCALAR + powers.angle;
+		double frontLeftPower = powers.y - powers.x * FRONT_SCALAR - powers.angle;
 		double backRightPower = powers.y - powers.x + powers.angle;
 		double backLeftPower = powers.y + powers.x - powers.angle;
 
@@ -207,21 +205,51 @@ public class DrivingSystem {
 		final Pose Kd = new Pose(0.000001, 0.000001, 0.00002);
 
 		final Pose epsilon = new Pose(-0.5, -1, -toRadians(0.5));
-		Pose Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
-		Deviation.normalizeAngle();
+		Pose deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
+		deviation.normalizeAngle();
 		PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
 		while (opMode.opModeIsActive() && (
-				abs(Deviation.x) > epsilon.x ||
-						abs(Deviation.y) > epsilon.y ||
-						abs(Deviation.angle) > epsilon.angle)) {
+				abs(deviation.x) > epsilon.x ||
+						abs(deviation.y) > epsilon.y ||
+						abs(deviation.angle) > epsilon.angle)) {
 
-			driveByAxis(actPowers.powerByDeviation(Deviation));
-			opMode.telemetry.update();
-			Deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
-			Deviation.normalizeAngle();
+			SystemCoordinator.instance.tick();
+			deviation = Pose.difference(targetLocation, SystemCoordinator.instance.trackingSystem.getPosition());
+			deviation.normalizeAngle();
+			driveByAxis(actPowers.powerByDeviation(deviation));
 		}
 		stop();
+	}
+
+	public void move3(Pose targetPosition){
+		Pose k = new Pose(0.02, 0.02, 1);
+		Pose minPower = new Pose(0.1, 0.1, 0.1);
+		Pose epsilon = new Pose(2, 2, toRadians(2));
+		boolean xArrived = false;
+		boolean yArrived = false;
+		boolean angleArrived = false;
+
+		while (opMode.opModeIsActive() && (!xArrived || !yArrived || !angleArrived)){
+			SystemCoordinator.instance.tick();
+			Pose deviation = Pose.difference(targetPosition, SystemCoordinator.instance.trackingSystem.getPosition());
+			deviation.normalizeAngle();
+			xArrived = abs(deviation.x) < epsilon.x;
+			yArrived = abs(deviation.y) < epsilon.y;
+			angleArrived = abs(deviation.angle) < epsilon.angle;
+
+			Pose powers = new Pose();
+			if (!xArrived){
+				powers.x = deviation.x * k.x + minPower.x * signum(deviation.x);
+			}
+			if (!yArrived){
+				powers.y = deviation.y * k.y + minPower.y * signum(deviation.y);
+			}
+			if (!angleArrived){
+				powers.angle = deviation.angle * k.angle + minPower.angle * signum(deviation.angle);
+			}
+			driveByAxis(powers);
+		}
 	}
 
 	/**
@@ -350,7 +378,7 @@ public class DrivingSystem {
 	public void driveForwardByProfile(AccelerationProfile accelerationProfile) {
 		resetDistance();
 		ElapsedTime elapsedTime = new ElapsedTime();
-		PDFFController controller = new PDFFController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PDFFController controller = new PDFFController(k_v_y, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			SystemCoordinator.instance.tick();
 			Pose pose = SystemCoordinator.instance.trackingSystem.getPosition();
@@ -362,16 +390,38 @@ public class DrivingSystem {
 
 			double forwardPower = controller.getPower(currentTime, error, targetVelocity, targetAcceleration);
 			driveMecanum(new Pose(0, forwardPower, 0));
+			this.targetPosition = new Pose(0, targetPosition, 0);
 		}
 		stop();
 	}
+
+	public void driveSidewaysByProfile(AccelerationProfile accelerationProfile) {
+		resetDistance();
+		ElapsedTime elapsedTime = new ElapsedTime();
+		PDFFController controller = new PDFFController(k_v_x, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+			SystemCoordinator.instance.tick();
+			Pose pose = SystemCoordinator.instance.trackingSystem.getPosition();
+			final double currentTime = elapsedTime.seconds();
+			double targetPosition = accelerationProfile.getPosition(currentTime);
+			double targetVelocity = accelerationProfile.getVelocity(currentTime);
+			double targetAcceleration = accelerationProfile.acceleration(currentTime);
+			double error = targetPosition - pose.x;
+
+			double forwardPower = controller.getPower(currentTime, error, targetVelocity, targetAcceleration);
+			driveMecanum(new Pose(forwardPower, 0, 0));
+			this.targetPosition = new Pose(targetPosition, 0, 0);
+		}
+		stop();
+	}
+
 
 	public void driveByPath(Trajectory traj, double targetAngle, double anglePowerScalar) {
 		resetDistance();
 
 		ElapsedTime elapsedTime = new ElapsedTime();
-		PDFFController xController = new PDFFController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
-		PDFFController yController = new PDFFController(k_v, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PDFFController xController = new PDFFController(k_v_x, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
+		PDFFController yController = new PDFFController(k_v_y, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
 
 		double prev_t = 0;
 		double prev_v_x = 0;

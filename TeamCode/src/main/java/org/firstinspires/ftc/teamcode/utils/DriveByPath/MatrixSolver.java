@@ -15,7 +15,7 @@ public abstract class MatrixSolver {
 
 		PolynomialPath[] polynomials = new PolynomialPath[points.length - 1];
 
-		final double C = 1.25;
+		final double C = 1;
 
 		double m0X = (points[0].x - points[1].x) / -2;
 		double m0Y = (points[0].y - points[1].y) / -2;

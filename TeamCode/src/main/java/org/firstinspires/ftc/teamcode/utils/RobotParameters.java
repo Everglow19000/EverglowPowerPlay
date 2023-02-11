@@ -3,23 +3,27 @@ package org.firstinspires.ftc.teamcode.utils;
 import static java.lang.Math.PI;
 
 public class RobotParameters {
+
+	public static double ODOMETRY_SCALAR = 154./150;
+
 	// Maximal movement
-	public static double MAX_V_Y = 153.19296; // [cm/s]
+	public static double MAX_V_Y = 153.19296 * ODOMETRY_SCALAR; // [cm/s]
 	public static double MAX_A_Y = 100; // [cm/s^2]
 
-	public static double MAX_V_X = 136.17152; // [cm/s]
+	public static double MAX_V_X = 136.17152 * ODOMETRY_SCALAR; // [cm/s]
 	public static double MAX_A_X = 100; // [cm/s^2]
 
-	public static final double DRIVE_Y_FACTOR = RobotParameters.MAX_V_X / RobotParameters.MAX_V_Y;
+	public static final double DRIVE_Y_FACTOR = MAX_V_X / MAX_V_Y;
 
 	// Constants used to follow path
 	public static final double k_a_accelerating = 1. / 500.;
-	public static final double k_a_decelerating = 1. / 1000.;
-	public static final double k_error = 0;
-	public static final double k_d_error = 0;
-	//	private static final double k_error = 0.1;
-	//	private static final double k_d_error = 0.005;
-	public static final double k_v = 1 / MAX_V_X;
+	public static final double k_a_decelerating = 1. / 1500.;
+//	public static final double k_error = 0;
+//	public static final double k_d_error = 0;
+	public static final double k_error = 0.1;
+	public static final double k_d_error = 0.005;
+	public static final double k_v_y = 1 / MAX_V_X;
+	public static final double k_v_x = 1 / MAX_V_X * 1.5 * 150./140;
 
 
 	// Constants used for rotation
@@ -50,7 +54,7 @@ public class RobotParameters {
 	/**
 	 * The distance between the two front odometry wheels, in centimeters.
 	 */
-	public static final double LATERAL_DISTANCE = 13.5 * 1840./1801;
+	public static final double LATERAL_DISTANCE = 13.5 * 1840./1801 * 1783/1801;
 	/**
 	 * The distance between the center of the robot and the back odometry wheel, in centimeters.
 	 */

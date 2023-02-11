@@ -46,7 +46,7 @@ public class ElevatorSystem {
 	 * A state used when the elevator should be moving.
 	 */
 	public class ActingState implements State {
-		private static final int EPSILON = 10;
+		private static final int EPSILON = 15;
 		private final Level level;
 
 		/**
@@ -87,8 +87,8 @@ public class ElevatorSystem {
 		right.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 		left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 		right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-		left.setPower(0.7);
-		right.setPower(0.7);
+		left.setPower(1);
+		right.setPower(1);
 	}
 
 	/**

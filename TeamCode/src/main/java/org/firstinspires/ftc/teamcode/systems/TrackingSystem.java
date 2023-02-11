@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.CM_PER_TICK;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.FORWARD_OFFSET;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.LATERAL_DISTANCE;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -135,7 +134,6 @@ public class TrackingSystem {
 		frPreviousTicks = frontRight.getCurrentPosition();
 		bPreviousTicks = back.getCurrentPosition();
 
-		// todo: remove
 		imu = initializeImu(opMode);
 	}
 
@@ -183,14 +181,16 @@ public class TrackingSystem {
 		final double backDisplacement = (bCurrentTicks - bPreviousTicks) * CM_PER_TICK;
 
 		// Calculating the robot's displacement and rotation
-		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
-		final double centerDisplacement = (frontLeftDisplacement + frontRightDisplacement) / 2;
+//		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
+		final double currentAngle = getImuAngle();
+		final double angleChange = currentAngle - position.angle;
+		final double centerDisplacement = - (frontLeftDisplacement + frontRightDisplacement) / 2;
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
 		// Temp variable for readability
 		final double angleCos = cos(position.angle), angleSin = sin(position.angle);
 
-		// The angle was removed from the matrices and they were simplified to have only two rows
+		// The currentAngle was removed from the matrices and they were simplified to have only two rows
 		// because it wasn't actually used in the calculates.
 		final double[][] matrix1 = {{angleCos, -angleSin}, {angleSin, angleCos}};
 		final double[][] matrix2 = {
@@ -210,7 +210,7 @@ public class TrackingSystem {
 		// Assignment of the new position
 		position.x += resultMatrix[0];
 		position.y += resultMatrix[1];
-		position.angle += angleChange;
+		position.angle = currentAngle;
 
 		// Update the previous ticks
 		flPreviousTicks = flCurrentTicks;
@@ -332,21 +332,24 @@ public class TrackingSystem {
 		final double robot_width = 38 * INCH_TO_CM;
 		final double robot_height = 47 * INCH_TO_CM;
 
-		// Note that our x and y coordinate system is flipped because we define forward as x and sideways as y, so we must unflip now
-		final double y = position.x * INCH_TO_CM;
-		final double x = position.y * INCH_TO_CM;
+		Pose currentPosition = getPosition();
+		// Pose currentPosition = position;
 
-		opMode.telemetry.addData("x: ", position.x);
-		opMode.telemetry.addData("y: ", position.y);
-		opMode.telemetry.addData("Angle: ", toDegrees(position.angle));
-		opMode.telemetry.addData("Imu Angle: ", toDegrees(getImuAngle()));
+		// Note that our x and y coordinate system is flipped because we define forward as x and sideways as y, so we must unflip now
+		final double y = currentPosition.y * INCH_TO_CM;
+		final double x = currentPosition.x * INCH_TO_CM;
+
+		opMode.telemetry.addData("x: ", currentPosition.x);
+		opMode.telemetry.addData("y: ", currentPosition.y);
+		opMode.telemetry.addData("Angle: ", toDegrees(currentPosition.angle));
+//		opMode.telemetry.addData("Imu Angle: ", toDegrees(getImuAngle()));
 
 		TelemetryPacket packet = new TelemetryPacket();
 
-		double dx1 = robot_width * cos(position.angle);
-		double dx2 = -robot_height * sin(position.angle);
-		double dy1 = robot_width * sin(position.angle);
-		double dy2 = robot_height * cos(position.angle);
+		double dx1 = robot_width * cos(currentPosition.angle);
+		double dx2 = -robot_height * sin(currentPosition.angle);
+		double dy1 = robot_width * sin(currentPosition.angle);
+		double dy2 = robot_height * cos(currentPosition.angle);
 
 		packet.fieldOverlay().fillPolygon(new double[]{
 						x + dx1 + dx2,

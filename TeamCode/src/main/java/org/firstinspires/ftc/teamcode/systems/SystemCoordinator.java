@@ -128,7 +128,7 @@ public class SystemCoordinator {
 	 */
 	public void sleep(long milliseconds) {
 		ElapsedTime elapsedTime = new ElapsedTime();
-		while (elapsedTime.milliseconds() < milliseconds) {
+		while (opMode.opModeIsActive() && elapsedTime.milliseconds() < milliseconds) {
 			tick();
 		}
 	}
