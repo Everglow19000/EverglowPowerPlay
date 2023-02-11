@@ -20,7 +20,7 @@ public class SplinePath {
 	public PointD getPoint(double providedU) {
 		providedU *= myPath.length;
 		int indexU = (int) providedU;
-		if (indexU > 1) indexU = myPath.length - 1;
+		if (indexU > myPath.length - 1) indexU = myPath.length - 1;
 		else if (indexU < 0) indexU = 0;
 
 		double x = myPath[indexU].x(providedU - indexU);
@@ -32,7 +32,7 @@ public class SplinePath {
 	public PointD getDerivative(double providedU) {
 		providedU *= myPath.length;
 		int indexU = (int) providedU;
-		if (indexU > 1) indexU = myPath.length - 1;
+		if (indexU > myPath.length - 1) indexU = myPath.length - 1;
 		else if (indexU < 0) indexU = 0;
 
 		double xTag = myPath[indexU].xTag(providedU - indexU);

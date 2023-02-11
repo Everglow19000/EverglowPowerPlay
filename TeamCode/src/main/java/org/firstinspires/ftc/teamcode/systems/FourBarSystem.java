@@ -29,7 +29,7 @@ public class FourBarSystem {
 	public enum Position {
 		//BACK(30), START(0), PICKUP(-80), DROPOFF(-320);
 		BACK(30), START(0), PICKUP(-85), DROPOFF(-320),
-		AUTO_PICKUP(-240);
+		PRE_PICKUP(-30), AUTO_PICKUP(-240);
 
 		public final int desiredPosition;
 

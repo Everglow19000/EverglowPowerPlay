@@ -114,7 +114,7 @@ public class SystemCoordinator {
 	 * Waits for all sequences to finish, and blocks until then.
 	 */
 	public void waitForSequencesDone() {
-		while (!allSequencesDone()) {
+		while (opMode.opModeIsActive() && !allSequencesDone()) {
 			tick();
 		}
 	}

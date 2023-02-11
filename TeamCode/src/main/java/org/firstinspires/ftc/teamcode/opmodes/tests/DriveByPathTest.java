@@ -21,7 +21,7 @@ public class DriveByPathTest extends LinearOpMode {
 		PointD[] pts = {
 				new PointD(0, 0),
 				new PointD(0, 120),
-				new PointD(-27.6, 135.2),
+//				new PointD(-27.6, 135.2),
 		};
 
 		SplinePath spline = new SplinePath(pts);
@@ -42,12 +42,12 @@ public class DriveByPathTest extends LinearOpMode {
 				systemCoordinator.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
 				));
 		systemCoordinator.drivingSystem.driveByPath(traj, 0, 1);
-		systemCoordinator.waitForSequencesDone();
-		systemCoordinator.executeSequence(new Sequence(
-				systemCoordinator.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
-		));
+//		systemCoordinator.waitForSequencesDone();
+//		systemCoordinator.executeSequence(new Sequence(
+//				systemCoordinator.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
+//		));
 
-		systemCoordinator.positionLogger.saveTo(PositionLogger.generateLogFileName("drive-path-sm"));
+//		systemCoordinator.positionLogger.saveTo(PositionLogger.generateLogFileName("drive-path-sm"));
 		systemCoordinator.sleep(1000000000);
 	}
 }
