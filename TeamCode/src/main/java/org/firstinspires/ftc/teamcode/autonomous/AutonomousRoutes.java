@@ -17,50 +17,29 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 /**
  * A class that contains all of the autonomous routes for the robot.
  */
-public class AutonomousRoutes implements Runnable {
+public class AutonomousRoutes {
 	private final LinearOpMode opMode;
 	private final SystemCoordinator systems;
 	private final CameraSystem cameraSystem;
-	private boolean isTimerActive = false;
-	boolean isRightAutonomous;
+	final double lenSquare = 64;
+	private final int isRightAutonomous;
 
 	public AutonomousRoutes(LinearOpMode opMode, boolean isRightAutonomous) {
 		this.opMode = opMode;
 		cameraSystem = new CameraSystem(opMode);
 		systems = SystemCoordinator.init(opMode);
-		this.isRightAutonomous = isRightAutonomous;
+		this.isRightAutonomous  = isRightAutonomous ? 1 :-1;
 	}
 
 	/**
 	 * A test method that drives the robot forwards or sideways, depending on the value the AprilTag.
 	 */
-	@RequiresApi(api = Build.VERSION_CODES.O)
-	public void run() {
-		isTimerActive = true;
-		ElapsedTime elapsedTime = new ElapsedTime();
-		while (opMode.opModeIsActive() && elapsedTime.seconds() < 22) {
-
-		}
-		isTimerActive = false;
-	}
-
 	public void putConesAndBack() {
-		Thread timerThread = new Thread();
-		timerThread.start();
-
-		isTimerActive = true;
-		final double lenSquare = 64;
-
-		final int right;
-		if (isRightAutonomous) {
-			right = 1;
-		} else {
-			right = -1;
-		}
+		ElapsedTime elapsedTime = new ElapsedTime();
 
 		final Pose startPose = systems.trackingSystem.getPosition();
-		final Pose pickCone = new Pose(right * lenSquare / 2, 2 * lenSquare, 0);//PI/2
-		final Pose putCone = new Pose(-right * lenSquare / 4, 2.5 * lenSquare, 0);//PI/2
+		final Pose pickCone = new Pose(isRightAutonomous * lenSquare / 2, 2 * lenSquare, 0);//PI/2
+		final Pose putCone = new Pose(-isRightAutonomous * lenSquare / 4, 2.5 * lenSquare, 0);//PI/2
 
 		//starting Sequence
 		Sequence preparePickUp = new Sequence(
@@ -86,7 +65,7 @@ public class AutonomousRoutes implements Runnable {
 
 		Sequence prepareForAnotherRep = new Sequence(systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP));
 
-		while (opMode.opModeIsActive() && isTimerActive) {
+		while (opMode.opModeIsActive() && elapsedTime.seconds()<22) {
 
 			systems.executeSequence(toCone);
 			while (!toCone.isSequenceDone() && opMode.opModeIsActive()) { // may to upsideDown Sequence
@@ -149,5 +128,37 @@ public class AutonomousRoutes implements Runnable {
 		while (opMode.opModeIsActive() && !sequence.isSequenceDone()) {
 			systems.tick();
 		}
+	}
+
+	public void testDrive(){
+
+		final Pose startPose = systems.trackingSystem.getPosition();
+		final Pose pickCone = new Pose(-isRightAutonomous * lenSquare / 2, 2 * lenSquare, 0);//PI/2
+		final Pose putCone = new Pose(isRightAutonomous * lenSquare / 4, 2.5 * lenSquare, 0);//PI/2
+
+		Sequence toCone = new Sequence(
+				systems.drivingSystem.driveSidewaysSequenceItem(pickCone.x, pickCone.angle),
+				systems.drivingSystem.driveStraightSequenceItem(pickCone.y, pickCone.angle));
+
+		Sequence toPole = new Sequence(
+				systems.drivingSystem.driveSidewaysSequenceItem(putCone.x, putCone.angle),
+				systems.drivingSystem.driveStraightSequenceItem(putCone.y, putCone.angle));
+
+//		opMode.telemetry.addLine("in sequence");
+//		opMode.telemetry.update();
+//		systems.executeSequence(toCone);
+//		systems.waitForSequencesDone();
+//		systems.executeSequence(toPole);
+//		systems.waitForSequencesDone();
+
+
+		opMode.telemetry.addLine("move 2");
+		opMode.telemetry.update();
+		systems.drivingSystem.driveX(pickCone.x);
+		systems.drivingSystem.driveY(pickCone.y);
+		systems.waitForSequencesDone();
+		systems.drivingSystem.driveX(putCone.x);
+		systems.drivingSystem.driveY(putCone.y);
+		systems.waitForSequencesDone();
 	}
 }
