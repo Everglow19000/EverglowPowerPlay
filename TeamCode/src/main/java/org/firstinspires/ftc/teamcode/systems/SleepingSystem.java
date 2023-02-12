@@ -59,9 +59,9 @@ public class SleepingSystem {
 	}
 
 
-	public Sequence.SequenceItem goToSequenceItem(int time) {
+	public Sequence.SequenceItem goToSequenceItem(int millies) {
 		return new Sequence.SequenceItem(StateMessages.SLEEP_DONE, () -> {
-			state = new SleepingSystem.SleepingState(time);
+			state = new SleepingSystem.SleepingState(millies);
 		});
 	}
 }

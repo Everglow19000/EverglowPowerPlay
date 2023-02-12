@@ -53,11 +53,11 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
             }
 
             // Apply calculated velocity to mecanum wheels
-            systems.drivingSystem.driveByAxis(powers);
+            systems.drivingSystem.driveMecanum(powers);
 
 
             // Claw
-            if (gamepadB.triangle()) {
+            if (gamepadB.circle()) {
                 claw = claw.flip();
                 Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(claw, 1));
                 systems.executeSequence(clawSequence);
@@ -105,9 +105,9 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
             if (gamepadB.triangle()) {
                 systems.interrupt();
                 sequence = new Sequence(
-                        systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 0.5),
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
-                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
+                        systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
                 );
                 systems.executeSequence(sequence);
             }

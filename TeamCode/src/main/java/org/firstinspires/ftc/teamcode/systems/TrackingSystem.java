@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.CM_PER_TICK;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.FORWARD_OFFSET;
+import static org.firstinspires.ftc.teamcode.utils.RobotParameters.LATERAL_DISTANCE;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -186,8 +187,10 @@ public class TrackingSystem {
 
 		// Calculating the robot's displacement and rotation
 //		final double angleChange = (frontLeftDisplacement - frontRightDisplacement) / LATERAL_DISTANCE;
+
 		final double currentAngle = getImuAngle();
 		final double angleChange = currentAngle - position.angle;
+
 		final double centerDisplacement = - (frontLeftDisplacement + frontRightDisplacement) / 2;
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
@@ -215,6 +218,7 @@ public class TrackingSystem {
 		position.x += resultMatrix[0];
 		position.y += resultMatrix[1];
 		position.angle = currentAngle;
+//		position.angle += angleChange;
 
 		// Update the previous ticks
 		flPreviousTicks = flCurrentTicks;

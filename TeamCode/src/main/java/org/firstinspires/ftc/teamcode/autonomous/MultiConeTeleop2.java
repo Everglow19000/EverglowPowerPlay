@@ -64,7 +64,7 @@ public class MultiConeTeleop2 extends LinearOpMode {
 						new PointD(startPosition.x, startPosition.y),
 						new PointD(1.5 * TILE_SIZE, -2 * TILE_SIZE),
 						new PointD(1.5 * TILE_SIZE, - 0.45 * TILE_SIZE),
-						new PointD(1.5 * TILE_SIZE - 30.6, -2 * TILE_SIZE - 32.5 + 130.2)
+						new PointD(1.5 * TILE_SIZE - 30.6, -2 * TILE_SIZE - 32.5 + 120.2)
 				}), RobotParameters.MAX_V_X * 0.5);
 
 		systems.trackingSystem.resetPosition(startPosition);
