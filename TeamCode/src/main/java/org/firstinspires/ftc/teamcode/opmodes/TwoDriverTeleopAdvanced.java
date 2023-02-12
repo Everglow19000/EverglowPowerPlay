@@ -20,7 +20,7 @@ public class TwoDriverTeleopAdvanced extends LinearOpMode {
 
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systems = SystemCoordinator.init(this);
+		SystemCoordinator systems = SystemCoordinator.init(this, false);
 		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
 		EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 		Sequence sequence;

@@ -20,11 +20,10 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
-@Autonomous(name = "MultiConeTeleop2", group = "Template")
-public class MultiConeTeleop2 extends LinearOpMode {
+@Autonomous(name = "MultiConeTeleop3", group = "Template")
+public class MultiConeTeleop3 extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-
 		Pose startPosition = new Pose(1 * TILE_SIZE + (25.5 + 59)/2, -2 * TILE_SIZE - (51.5 + 22.5) / 2, 0);
 
 		SystemCoordinator systems = SystemCoordinator.init(this);
@@ -113,7 +112,7 @@ public class MultiConeTeleop2 extends LinearOpMode {
 		systems.drivingSystem.stop();
 		systems.waitForSequencesDone();
 
-		systems.sleep(400);
+		systems.sleep(2000);
 		systems.executeSequence(new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
@@ -121,51 +120,11 @@ public class MultiConeTeleop2 extends LinearOpMode {
 		systems.waitForSequencesDone();
 		systems.drivingSystem.driveY(-5);
 		systems.drivingSystem.stop();
-//		systems.sleep(100000000L);
-
-		systems.waitForSequencesDone();
-		for (int i = 0; i < coneNumber; i++) {
-			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
-					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP)
-			));
-			systems.drivingSystem.move3(pickUpLocation);
-//			pickUpLocation.y += 0.07 * TILE_SIZE;
-//			pickUpLocation.x += 0.07 * TILE_SIZE;
-			systems.drivingSystem.stop();
-//			systems.sleep(1000);
-			systems.waitForSequencesDone();
-
-
-			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i]),
-					systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED),
-					systems.sleepingSystem.goToSequenceItem(200)
-			));
-			systems.waitForSequencesDone();
-
-			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
-					systems.fourBarSystem.goToSequenceItem(DROPOFF)
-			));
-			systems.sleep(200);
-
-			systems.drivingSystem.move3(middleLocation);
-			systems.drivingSystem.move3(dropOffLocation);
-			systems.drivingSystem.stop();
-			systems.waitForSequencesDone();
-
-			systems.sleep(200);
-			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
-					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10)
-			));
-			systems.waitForSequencesDone();
-			systems.drivingSystem.move3(middleLocation);
-		}
-
+		systems.drivingSystem.driveY(5);
+		systems.drivingSystem.stop();
 		systems.executeSequence(endSequence);
 		systems.drivingSystem.move3(finalPose);
-		systems.sleep(10000000000L);
+		systems.drivingSystem.stop();
+		systems.waitForSequencesDone();
 	}
 }

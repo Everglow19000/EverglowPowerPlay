@@ -126,7 +126,7 @@ public class DrivingSystem {
 		// If any number that we want to give it is greater than 1,
 		// we must divide all the numbers equally so the maximum is 1
 		// and the proportions are preserved.
-		double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower))) * 1.5;
+		double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower)));
 		if (norm > 1) {
 			frontRightPower /= norm;
 			frontLeftPower /= norm;

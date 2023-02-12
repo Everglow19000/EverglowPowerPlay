@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.systems;
 
+import androidx.annotation.Nullable;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -22,6 +24,7 @@ public class SystemCoordinator {
 
 	//Create a new instance of each system
 	public final DrivingSystem drivingSystem;
+	@Nullable
 	public final TrackingSystem trackingSystem;
 	public final ClawSystem clawSystem;
 	public final FourBarSystem fourBarSystem;
@@ -40,17 +43,21 @@ public class SystemCoordinator {
 	}
 
 	public static SystemCoordinator init(LinearOpMode opMode) {
-//		if (instance == null){
-		instance = new SystemCoordinator(opMode);
+		return init(opMode, true);
+	}
+
+	public static SystemCoordinator init(LinearOpMode opMode, boolean useTrackingSystem) {
+//		if (instance == null) {
+		instance = new SystemCoordinator(opMode, useTrackingSystem);
 //		}
-//		instance.opMode = opMode;
+		instance.opMode = opMode;
 		return instance;
 	}
 
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	private SystemCoordinator(LinearOpMode opMode) {
+	private SystemCoordinator(LinearOpMode opMode, boolean useTrackingSystem) {
 		instance = this;
 		this.opMode = opMode;
 
@@ -58,7 +65,7 @@ public class SystemCoordinator {
 
 		// Initiate all the systems
 		drivingSystem = new DrivingSystem(opMode);
-		trackingSystem = new TrackingSystem(opMode);
+		trackingSystem = new TrackingSystem(opMode, useTrackingSystem);
 		clawSystem = new ClawSystem(opMode);
 		fourBarSystem = new FourBarSystem(opMode);
 		elevatorSystem = new ElevatorSystem(opMode);
@@ -80,7 +87,9 @@ public class SystemCoordinator {
 		clawSystem.tick();
 		elevatorSystem.tick();
 		fourBarSystem.tick();
-		trackingSystem.tick();
+		if (trackingSystem != null) {
+			trackingSystem.tick();
+		}
 		positionLogger.tick();
 		sleepingSystem.tick();
 	}

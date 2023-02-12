@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.systems;
 
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.CM_PER_TICK;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.FORWARD_OFFSET;
-import static org.firstinspires.ftc.teamcode.utils.RobotParameters.LATERAL_DISTANCE;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -31,22 +30,22 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
  * A class for handling tracking the robot's position.
  */
 public class TrackingSystem {
-	/**
-	 * The current opMode running on the robot.
-	 */
+
+	public boolean enabled;
+	public boolean doPrint = true;
 
 	/**
 	 * The front left odometry wheel.
 	 */
-	private final DcMotor frontLeft;
+	private DcMotor frontLeft;
 	/**
 	 * The front right odometry wheel.
 	 */
-	private final DcMotor frontRight;
+	private DcMotor frontRight;
 	/**
 	 * The back odometry wheel.
 	 */
-	private final DcMotor back;
+	private DcMotor back;
 
 	/**
 	 * The robot's current position.
@@ -121,18 +120,21 @@ public class TrackingSystem {
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public TrackingSystem(LinearOpMode opMode) {
-		// Get odometry pod interfaces (names because of cable management)
-		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
-		frontRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
-		back = opMode.hardwareMap.get(DcMotor.class, "gWheel");
+	public TrackingSystem(LinearOpMode opMode, boolean enabled) {
+		this.enabled = enabled;
+		if (enabled) {
+			// Get odometry pod interfaces (names because of cable management)
+			frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
+			frontRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
+			back = opMode.hardwareMap.get(DcMotor.class, "gWheel");
 
-		// Reset the distances measured by the motors
-		flPreviousTicks = frontLeft.getCurrentPosition();
-		frPreviousTicks = frontRight.getCurrentPosition();
-		bPreviousTicks = back.getCurrentPosition();
+			// Reset the distances measured by the motors
+			flPreviousTicks = frontLeft.getCurrentPosition();
+			frPreviousTicks = frontRight.getCurrentPosition();
+			bPreviousTicks = back.getCurrentPosition();
 
-		imu = initializeImu(opMode);
+			imu = initializeImu(opMode);
+		}
 	}
 
 	public double getImuAngle() {
@@ -153,8 +155,13 @@ public class TrackingSystem {
 	 * Ticks the tracking system.
 	 */
 	public void tick() {
-		trackPosition();
-//		printPosition();
+		if (enabled) {
+			trackPosition();
+		}
+
+		if (doPrint) {
+			printPosition();
+		}
 	}
 
 	public void resetPosition(Pose location) {
@@ -191,7 +198,7 @@ public class TrackingSystem {
 		final double currentAngle = getImuAngle();
 		final double angleChange = currentAngle - position.angle;
 
-		final double centerDisplacement = - (frontLeftDisplacement + frontRightDisplacement) / 2;
+		final double centerDisplacement = -(frontLeftDisplacement + frontRightDisplacement) / 2;
 		final double horizontalDisplacement = backDisplacement - FORWARD_OFFSET * angleChange;
 
 		// Temp variable for readability

@@ -102,8 +102,16 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.executeSequence(sequence);
             }
 
+            if (gamepadB.square()){
+                sequence = new Sequence(
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.LOW_DROPOFF)
+                );
+                systems.executeSequence(sequence);
+            }
+
             if (gamepadB.triangle()) {
                 systems.interrupt();
+                claw = ClawSystem.Position.OPEN;
                 sequence = new Sequence(
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
                         systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
@@ -111,7 +119,6 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 );
                 systems.executeSequence(sequence);
             }
-
             systems.tick();
         }
     }
