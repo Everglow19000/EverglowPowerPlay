@@ -46,6 +46,7 @@ public class ElevatorTest extends LinearOpMode {
 
 			leftElevator.setPower(gamepad1.left_stick_y);
 			rightElevator.setPower(gamepad1.left_stick_y);
+			rightElevator.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 			telemetry.addData("left position", leftElevator.getCurrentPosition());
 			telemetry.addData("right position", rightElevator.getCurrentPosition());
 

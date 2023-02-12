@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.AUTO_PICKUP;
 import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.DROPOFF;
+import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.LOW_DROPOFF;
+import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.START;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.toRadians;
 
@@ -112,19 +114,67 @@ public class MultiConeTeleop3 extends LinearOpMode {
 		systems.drivingSystem.stop();
 		systems.waitForSequencesDone();
 
+		//drop the first cone
 		systems.sleep(2000);
 		systems.executeSequence(new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
 		));
 		systems.waitForSequencesDone();
-		systems.drivingSystem.driveY(-5);
-		systems.drivingSystem.stop();
-		systems.drivingSystem.driveY(5);
-		systems.drivingSystem.stop();
+
+		for(int i = 0; i<coneNumber; i++){
+			systems.executeSequence(new Sequence(
+					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
+					systems.fourBarSystem.goToSequenceItem(START),
+					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP),
+					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP)
+			));
+			driveXYAngle(pickUpLocation, systems);
+			systems.waitForSequencesDone();
+
+			systems.executeSequence(new Sequence(
+					systems.sleepingSystem.goToSequenceItem(100),
+					systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED),
+					systems.sleepingSystem.goToSequenceItem(100)
+			));
+			systems.waitForSequencesDone();
+
+			systems.sleep(200);
+			systems.executeSequence(new Sequence(
+					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+					systems.fourBarSystem.goToSequenceItem(DROPOFF)
+
+			));
+			driveXYAngle(dropOffLocation, systems);
+			systems.waitForSequencesDone();
+
+			systems.sleep(1000);
+			systems.executeSequence(new Sequence(
+					systems.fourBarSystem.goToSequenceItem(LOW_DROPOFF),
+					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
+			));
+			systems.waitForSequencesDone();
+
+		}
+//		systems.drivingSystem.driveY(-5);
+//		systems.drivingSystem.stop();
+//		systems.drivingSystem.driveY(5);
+//		systems.drivingSystem.stop();
 		systems.executeSequence(endSequence);
-		systems.drivingSystem.move3(finalPose);
+
+		driveXYAngle(finalPose, systems);
+
 		systems.drivingSystem.stop();
 		systems.waitForSequencesDone();
+	}
+
+	private void driveXYAngle(Pose driveToPose, SystemCoordinator systems){
+		systems.drivingSystem.driveX(driveToPose.x);
+		systems.drivingSystem.driveY(driveToPose.y);
+
+		Pose newAngle = new Pose(systems.trackingSystem.getPosition());
+		newAngle.angle = driveToPose.angle;
+
+		systems.drivingSystem.move3(newAngle);
 	}
 }
