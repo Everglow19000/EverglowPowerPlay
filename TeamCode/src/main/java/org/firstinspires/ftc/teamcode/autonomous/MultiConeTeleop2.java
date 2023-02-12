@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.autonomous;
 
 import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.AUTO_PICKUP;
 import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.DROPOFF;
+import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.LOW_DROPOFF;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.toRadians;
 
@@ -39,7 +40,7 @@ public class MultiConeTeleop2 extends LinearOpMode {
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-//				systems.sleepingSystem.goToSequenceItem(500),
+				systems.sleepingSystem.goToSequenceItem(100),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 2),
 				systems.sleepingSystem.goToSequenceItem(200),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
@@ -73,14 +74,6 @@ public class MultiConeTeleop2 extends LinearOpMode {
 				}), RobotParameters.MAX_V_X * 0.5);
 
 
-		// copied from before
-//		Trajectory startTrajectoryNew = new Trajectory(
-//				new SplinePath(new PointD[]{
-//						new PointD(startPosition.x, startPosition.y),
-//						new PointD(1.5 * TILE_SIZE, -2 * TILE_SIZE),
-//						new PointD(1.5 * TILE_SIZE, - 0.45 * TILE_SIZE),
-//						new PointD(1 * TILE_SIZE, -2 * TILE_SIZE - 32.5 + 130.2)
-//				}), RobotParameters.MAX_V_X * 0.5);
 
 
 		systems.trackingSystem.resetPosition(startPosition);
@@ -121,7 +114,7 @@ public class MultiConeTeleop2 extends LinearOpMode {
 		systems.waitForSequencesDone();
 		systems.drivingSystem.driveY(-5);
 		systems.drivingSystem.stop();
-//		systems.sleep(100000000L);
+
 
 		systems.waitForSequencesDone();
 		for (int i = 0; i < coneNumber; i++) {
@@ -129,18 +122,18 @@ public class MultiConeTeleop2 extends LinearOpMode {
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
 					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP)
 			));
+			systems.drivingSystem.move3(middleLocation);
 			systems.drivingSystem.move3(pickUpLocation);
-//			pickUpLocation.y += 0.07 * TILE_SIZE;
-//			pickUpLocation.x += 0.07 * TILE_SIZE;
+
 			systems.drivingSystem.stop();
-//			systems.sleep(1000);
 			systems.waitForSequencesDone();
 
 
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i]),
+					systems.sleepingSystem.goToSequenceItem(100),
 					systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED),
-					systems.sleepingSystem.goToSequenceItem(200)
+					systems.sleepingSystem.goToSequenceItem(100)
 			));
 			systems.waitForSequencesDone();
 
@@ -157,11 +150,11 @@ public class MultiConeTeleop2 extends LinearOpMode {
 
 			systems.sleep(200);
 			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
+					systems.fourBarSystem.goToSequenceItem(LOW_DROPOFF),
 					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10)
 			));
+
 			systems.waitForSequencesDone();
-			systems.drivingSystem.move3(middleLocation);
 		}
 
 		systems.executeSequence(endSequence);

@@ -38,7 +38,6 @@ public class MultiConeTeleop3 extends LinearOpMode {
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-//				systems.sleepingSystem.goToSequenceItem(500),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 2),
 				systems.sleepingSystem.goToSequenceItem(200),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
@@ -72,14 +71,6 @@ public class MultiConeTeleop3 extends LinearOpMode {
 				}), RobotParameters.MAX_V_X * 0.5);
 
 
-		// copied from before
-//		Trajectory startTrajectoryNew = new Trajectory(
-//				new SplinePath(new PointD[]{
-//						new PointD(startPosition.x, startPosition.y),
-//						new PointD(1.5 * TILE_SIZE, -2 * TILE_SIZE),
-//						new PointD(1.5 * TILE_SIZE, - 0.45 * TILE_SIZE),
-//						new PointD(1 * TILE_SIZE, -2 * TILE_SIZE - 32.5 + 130.2)
-//				}), RobotParameters.MAX_V_X * 0.5);
 
 
 		systems.trackingSystem.resetPosition(startPosition);

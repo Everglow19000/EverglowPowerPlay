@@ -17,7 +17,7 @@ public class FourBarSystem {
 	/**
 	 * The fourBar motor.
 	 */
-	private final DcMotor fourBar;
+	public final DcMotor fourBar;
 	/**
 	 * The current state of the fourBar system.
 	 */

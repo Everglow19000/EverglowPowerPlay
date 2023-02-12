@@ -35,6 +35,18 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP));
         systems.executeSequence(startSequence);
 
+        Sequence triangleSequence = new Sequence(
+                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.LOW_DROPOFF),
+                systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
+                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
+                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
+        );
+
+        Sequence squareSequence = new Sequence(
+                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
+                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP)
+        );
+
         while (opModeIsActive()) {
             gamepadA.update();
             gamepadB.update();
@@ -102,22 +114,17 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.executeSequence(sequence);
             }
 
-            if (gamepadB.square()){
-                sequence = new Sequence(
-                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.LOW_DROPOFF)
-                );
-                systems.executeSequence(sequence);
+            if (gamepadB.square() && systems.fourBarSystem.fourBar.getCurrentPosition() >= -85) {
+                systems.interrupt();
+                claw = ClawSystem.Position.OPEN;
+                systems.executeSequence(squareSequence);
             }
+
 
             if (gamepadB.triangle()) {
                 systems.interrupt();
                 claw = ClawSystem.Position.OPEN;
-                sequence = new Sequence(
-                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
-                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
-                        systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
-                );
-                systems.executeSequence(sequence);
+                systems.executeSequence(triangleSequence);
             }
             systems.tick();
         }
