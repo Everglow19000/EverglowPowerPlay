@@ -20,7 +20,7 @@ public class OneDriverTeleopBasic extends LinearOpMode {
 
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systems = new SystemCoordinator(this);
+		SystemCoordinator systems = SystemCoordinator.init(this);
 		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
 		Pose actPowers = new Pose(0, 0, 0);
 

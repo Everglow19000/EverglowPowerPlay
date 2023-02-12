@@ -27,11 +27,11 @@ public class MultiConeTeleop extends LinearOpMode {
 
 		Pose startPosition = new Pose(1.5 * TILE_SIZE, -2 * TILE_SIZE - 32.5, 0);
 
-		SystemCoordinator systems = new SystemCoordinator(this);
+		SystemCoordinator systems = SystemCoordinator.init(this);
 		CameraSystem cameraSystem = new CameraSystem(this);
 
 		double sidewaysDistance;
-		int coneNumber = 1;
+		int coneNumber = 3;
 
 		Sequence startSequence = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
@@ -39,16 +39,16 @@ public class MultiConeTeleop extends LinearOpMode {
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-				systems.sleepingSystem.goToSequenceItem(500),
-				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 1),
-				systems.sleepingSystem.goToSequenceItem(500),
+//				systems.sleepingSystem.goToSequenceItem(500),
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 2),
+				systems.sleepingSystem.goToSequenceItem(200),
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
 		);
 
 //		Pose endStartSequenceLocation = new Pose(1.6 * TILE_SIZE, -0.8 * TILE_SIZE, toRadians(90));
-		Pose pickUpLocation = new Pose(2.7 * TILE_SIZE, -0.7 * TILE_SIZE, toRadians(90));
-		Pose dropOffLocation = new Pose(1 * TILE_SIZE, -23.5, 0);
+		Pose pickUpLocation = new Pose(2.68 * TILE_SIZE, -0.59 * TILE_SIZE, toRadians(90));
+		Pose dropOffLocation = new Pose(1 * TILE_SIZE, -23.2, 0);
 
 		Pose firstDropoffLocation = new Pose(startPosition.x - 27.6, startPosition.y + 132.5, 0);
 
@@ -57,12 +57,13 @@ public class MultiConeTeleop extends LinearOpMode {
 
 
 		Sequence endSequence = new Sequence(
-				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.START),
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.START),
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.START),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
 		);
 
-
+		/*
 		Trajectory startTrajectoryOld = new Trajectory(
 				new SplinePath(new PointD[]{
 						new PointD(startPosition.x, startPosition.y),
@@ -71,15 +72,17 @@ public class MultiConeTeleop extends LinearOpMode {
 						new PointD(startPosition.x - 27.6, startPosition.y + 122.5)
 				}), RobotParameters.MAX_V_X * 0.5);
 
+		 */
+
 
 		Trajectory startTrajectoryNew = new Trajectory(
 				new SplinePath(new PointD[]{
 						new PointD(startPosition.x, startPosition.y),
 						new PointD(startPosition.x, 110 + startPosition.y),
-						new PointD(startPosition.x - 27.6, startPosition.y + 127.2)
+						new PointD(startPosition.x - 30.6, startPosition.y + 133.2)
 				}), RobotParameters.MAX_V_X * 0.5);
 
-
+		/*
 		Trajectory startTrajectory1 = new Trajectory(
 				new SplinePath(
 						new PointD[]{
@@ -96,14 +99,14 @@ public class MultiConeTeleop extends LinearOpMode {
 								new PointD(startPosition.x - 27.6, startPosition.y + 122.5)
 						}
 				),RobotParameters.MAX_V_X * 0.5
-		);
+		);*/
 
 
 		systems.trackingSystem.resetPosition(startPosition);
 
 		Pose finalPose = new Pose(1.5 * TILE_SIZE, -33, 0);
 
-		telemetry.addData("Ready", coneNumber);
+		telemetry.addLine("Ready");
 		telemetry.update();
 
 		waitForStart();
@@ -124,31 +127,34 @@ public class MultiConeTeleop extends LinearOpMode {
 		}
 
 		systems.executeSequence(startSequence);
-		systems.drivingSystem.driveToY(-0.2 * TILE_SIZE);
-		systems.drivingSystem.driveToY(-0.35 * TILE_SIZE);
-		systems.drivingSystem.driveToX(1 * TILE_SIZE);
+//		systems.drivingSystem.driveToY(-0.2 * TILE_SIZE);
+//		systems.drivingSystem.driveToY(-0.35 * TILE_SIZE);
+//		systems.drivingSystem.driveToX(1 * TILE_SIZE);
 //		systems.drivingSystem.driveByPath(startTrajectory1, 0, 1);
-//		systems.drivingSystem.driveByPath(startTrajectoryNew, 0, 1);
+		systems.sleep(1250);
+		systems.drivingSystem.driveByPath(startTrajectoryNew, 0, 1);
 		systems.drivingSystem.stop();
 		systems.waitForSequencesDone();
-		systems.drivingSystem.driveToY(-0.4 * TILE_SIZE);
-		stop();
+//		systems.drivingSystem.driveToY(-0.4 * TILE_SIZE);
+//		stop();
+		systems.sleep(200);
 		systems.executeSequence(new Sequence(
-				systems.sleepingSystem.goToSequenceItem(250),
-				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
-						systems.sleepingSystem.goToSequenceItem(2000)
-				));
+				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
+				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
+		));
+//		systems.executeSequence(new Sequence(
+//				systems.sleepingSystem.goToSequenceItem(500),
+//				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
+//						systems.sleepingSystem.goToSequenceItem(500)
+//				));
 		systems.waitForSequencesDone();
-
 		for (int i = 0; i < coneNumber; i++) {
-			telemetry.addData("loc", 1);
 			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
+					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
 					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP)
 			));
 			systems.drivingSystem.move3(pickUpLocation);
-			stop();
-			telemetry.addData("loc", 2);
+			systems.drivingSystem.stop();
 			systems.waitForSequencesDone();
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i]),
@@ -156,21 +162,22 @@ public class MultiConeTeleop extends LinearOpMode {
 					systems.sleepingSystem.goToSequenceItem(250)
 			));
 			systems.waitForSequencesDone();
-			telemetry.addData("loc", 3);
+
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 					systems.fourBarSystem.goToSequenceItem(DROPOFF)
 			));
-
 			systems.sleep(500);
 			systems.drivingSystem.move3(dropOffLocation);
-			stop();
-			telemetry.addData("loc", 4);
+			systems.drivingSystem.stop();
 			systems.waitForSequencesDone();
+
+			systems.sleep(200);
 			systems.executeSequence(new Sequence(
-					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
+					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
+					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
 			));
-			telemetry.addData("loc", 5);
+			systems.waitForSequencesDone();
 		}
 
 		systems.executeSequence(endSequence);

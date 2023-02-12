@@ -33,7 +33,6 @@ public class TrackingSystem {
 	/**
 	 * The current opMode running on the robot.
 	 */
-	private final LinearOpMode opMode;
 
 	/**
 	 * The front left odometry wheel.
@@ -122,8 +121,6 @@ public class TrackingSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public TrackingSystem(LinearOpMode opMode) {
-		this.opMode = opMode;
-
 		// Get odometry pod interfaces (names because of cable management)
 		frontLeft = opMode.hardwareMap.get(DcMotor.class, "front_left");
 		frontRight = opMode.hardwareMap.get(DcMotor.class, "back_right");
@@ -267,7 +264,8 @@ public class TrackingSystem {
 	 * @return The robot's current position as a Point2D object, measured in tiles.
 	 */
 	public PointD getTileLocation() {
-		return new PointD(position.x / TILE_SIZE, position.y / TILE_SIZE);
+		Pose corPosition = getPosition();
+		return new PointD(corPosition.x / TILE_SIZE, corPosition.y / TILE_SIZE);
 	}
 
 	/**
@@ -324,6 +322,7 @@ public class TrackingSystem {
 				bestCornerPosition = cornerSquarePosition;
 				smallestAngle = angleDiff;
 			}
+			/*
 			opMode.telemetry.addData("CornerInd", corner);
 			opMode.telemetry.addData("cornerSquarePosition.x", cornerSquarePosition.x);
 			opMode.telemetry.addData("cornerSquarePosition.y", cornerSquarePosition.y);
@@ -331,11 +330,11 @@ public class TrackingSystem {
 			opMode.telemetry.addData("cornerDistance.y", cornerDistance.y);
 			opMode.telemetry.addData("angleTo(cornerDistance)", angleTo(cornerDistance));
 			opMode.telemetry.addData("angleDiff", angleDiff);
-
+			*/
 
 		}
 
-		opMode.telemetry.update();
+		SystemCoordinator.instance.opMode.telemetry.update();
 
 		bestCornerPosition.x *= TILE_SIZE;
 		bestCornerPosition.y *= TILE_SIZE;
@@ -358,9 +357,9 @@ public class TrackingSystem {
 		final double y = currentPosition.y * INCH_TO_CM;
 		final double x = currentPosition.x * INCH_TO_CM;
 
-		opMode.telemetry.addData("x: ", currentPosition.x);
-		opMode.telemetry.addData("y: ", currentPosition.y);
-		opMode.telemetry.addData("Angle: ", toDegrees(currentPosition.angle));
+		SystemCoordinator.instance.opMode.telemetry.addData("x: ", currentPosition.x);
+		SystemCoordinator.instance.opMode.telemetry.addData("y: ", currentPosition.y);
+		SystemCoordinator.instance.opMode.telemetry.addData("Angle: ", toDegrees(currentPosition.angle));
 //		opMode.telemetry.addData("Imu Angle: ", toDegrees(getImuAngle()));
 
 		TelemetryPacket packet = new TelemetryPacket();

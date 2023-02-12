@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.systems.SystemCoordinator;
 public class MainAutonomous extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
+		SystemCoordinator systems = SystemCoordinator.init(this);
 		CameraSystem cameraSystem = new CameraSystem(this);
 		AutonomousRoutes autonomousRoutes = new AutonomousRoutes(this, true);
 		waitForStart();

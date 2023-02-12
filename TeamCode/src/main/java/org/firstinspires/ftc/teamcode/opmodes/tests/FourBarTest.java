@@ -14,10 +14,13 @@ public class FourBarTest extends LinearOpMode {
 		fourBar.setPower(0.5);
 		fourBar.setTargetPosition(targetPosition);
 		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//		fourBar.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 		waitForStart();
 		while (opModeIsActive()) {
 			targetPosition += gamepad1.left_stick_y * 5;
+//			fourBar.setPower(gamepad1.left_stick_y * 0.01);
+//			fourBar.setPower(gamepad1.left_stick_y * 0.5);
 			fourBar.setTargetPosition(targetPosition);
 			telemetry.addData("position", fourBar.getCurrentPosition());
 			telemetry.addData("targetPosition", targetPosition);

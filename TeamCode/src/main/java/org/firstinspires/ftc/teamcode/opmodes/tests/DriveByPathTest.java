@@ -27,7 +27,7 @@ public class DriveByPathTest extends LinearOpMode {
 		SplinePath spline = new SplinePath(pts);
 		Trajectory traj = new Trajectory(spline, RobotParameters.MAX_V_X * 0.5);
 
-		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
+		SystemCoordinator systemCoordinator = SystemCoordinator.init(this);
 		waitForStart();
 
 		systemCoordinator.executeSequence(new Sequence(

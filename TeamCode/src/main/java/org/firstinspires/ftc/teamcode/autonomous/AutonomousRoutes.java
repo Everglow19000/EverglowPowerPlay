@@ -27,7 +27,7 @@ public class AutonomousRoutes implements Runnable {
 	public AutonomousRoutes(LinearOpMode opMode, boolean isRightAutonomous) {
 		this.opMode = opMode;
 		cameraSystem = new CameraSystem(opMode);
-		systems = new SystemCoordinator(opMode);
+		systems = SystemCoordinator.init(opMode);
 		this.isRightAutonomous = isRightAutonomous;
 	}
 

@@ -191,6 +191,10 @@ public class CameraSystem {
 //		}
 
 		// return the id
-		return cameraPipeline.aprilTagId.get();
+		AprilTagType tagType = cameraPipeline.aprilTagId.get();
+		new Thread(()->{
+				camera.stopStreaming();
+		}).start();
+		return tagType;
 	}
 }

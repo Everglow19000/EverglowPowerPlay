@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.systems;
 
-import java.util.ArrayList;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
+
+import java.util.ArrayList;
 
 /**
  * A class for coordinating the all systems on the robot in a state machine.
@@ -18,7 +18,7 @@ public class SystemCoordinator {
 	 */
 	public static SystemCoordinator instance;
 
-	public final LinearOpMode opMode;
+	public LinearOpMode opMode;
 
 	//Create a new instance of each system
 	public final DrivingSystem drivingSystem;
@@ -39,10 +39,18 @@ public class SystemCoordinator {
 		return lastCycleTime;
 	}
 
+	public static SystemCoordinator init(LinearOpMode opMode) {
+//		if (instance == null){
+		instance = new SystemCoordinator(opMode);
+//		}
+//		instance.opMode = opMode;
+		return instance;
+	}
+
 	/**
 	 * @param opMode The current opMode running on the robot.
 	 */
-	public SystemCoordinator(LinearOpMode opMode) {
+	private SystemCoordinator(LinearOpMode opMode) {
 		instance = this;
 		this.opMode = opMode;
 
@@ -139,6 +147,8 @@ public class SystemCoordinator {
 	 * @param message The message to be broadcasted.
 	 */
 	public void sendMessage(StateMessages message) {
+		opMode.telemetry.addData("Recieved Message: ", message);
+		opMode.telemetry.update();
 		//TODO: remove the sequences if they are done. This isn't critical but should probably be done for elegance.
 		for (Sequence sequence : actionSequences) {
 			sequence.handleMessage(message);

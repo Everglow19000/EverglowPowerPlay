@@ -33,10 +33,7 @@ import org.firstinspires.ftc.teamcode.utils.DriveByPath.Trajectory;
  */
 public class DrivingSystem {
 	private static final double FRONT_SCALAR = 1.16;
-	/**
-	 * The current opMode running on the robot.
-	 */
-	private final LinearOpMode opMode;
+
 	/**
 	 * The front left wheel.
 	 */
@@ -67,7 +64,6 @@ public class DrivingSystem {
 	 * @param opMode The current opMode running on the robot.
 	 */
 	public DrivingSystem(LinearOpMode opMode) {
-		this.opMode = opMode;
 
 		// Get mecanum wheels interfaces
 		frontRight = opMode.hardwareMap.get(DcMotor.class, "front_right");
@@ -130,7 +126,7 @@ public class DrivingSystem {
 		// If any number that we want to give it is greater than 1,
 		// we must divide all the numbers equally so the maximum is 1
 		// and the proportions are preserved.
-		double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower)));
+		double norm = max(max(abs(frontRightPower), abs(frontLeftPower)), max(abs(backRightPower), abs(backLeftPower))) * 1.5;
 		if (norm > 1) {
 			frontRightPower /= norm;
 			frontLeftPower /= norm;
@@ -209,7 +205,7 @@ public class DrivingSystem {
 		deviation.normalizeAngle();
 		PosePIDController actPowers = new PosePIDController(Kp, Ki, Kd);
 
-		while (opMode.opModeIsActive() && (
+		while (SystemCoordinator.instance.opMode.opModeIsActive() && (
 				abs(deviation.x) > epsilon.x ||
 						abs(deviation.y) > epsilon.y ||
 						abs(deviation.angle) > epsilon.angle)) {
@@ -230,7 +226,7 @@ public class DrivingSystem {
 		boolean yArrived = false;
 		boolean angleArrived = false;
 
-		while (opMode.opModeIsActive() && (!xArrived || !yArrived || !angleArrived)){
+		while (SystemCoordinator.instance.opMode.opModeIsActive() && (!xArrived || !yArrived || !angleArrived)){
 			SystemCoordinator.instance.tick();
 			Pose deviation = Pose.difference(targetPosition, SystemCoordinator.instance.trackingSystem.getPosition());
 			deviation.normalizeAngle();
@@ -327,9 +323,9 @@ public class DrivingSystem {
 		}*/
 
 		if (abs(Powers.x) > abs(Powers.y)) {
-			Powers.y = signum(squareDeviation.y) * abs(Powers.x) * (1 - abs(squareDeviation.x)) / (1 - abs(squareDeviation.y));
+			Powers.y = -squareDeviation.y * abs(Powers.x) * (1 - abs(squareDeviation.x)) / (1 - abs(squareDeviation.y));
 		} else {
-			Powers.x = signum(squareDeviation.x) * abs(Powers.y) * (1 - abs(squareDeviation.y)) / (1 - abs(squareDeviation.x));
+			Powers.x = -squareDeviation.x * abs(Powers.y) * (1 - abs(squareDeviation.y)) / (1 - abs(squareDeviation.x));
 		}
 
 		driveByAxis(Powers);
@@ -344,7 +340,7 @@ public class DrivingSystem {
 		double angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		Pose actPowers = new Pose();
 
-		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+		while (abs(deviation) > epsilon && SystemCoordinator.instance.opMode.opModeIsActive()) {
 			SystemCoordinator.instance.tick();
 			actPowers.x = 0.003 * deviation + 0.4 * signum(deviation);
 			actPowers.angle = 1 * angleDeviation;
@@ -363,7 +359,7 @@ public class DrivingSystem {
 		double angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		Pose actPowers = new Pose();
 
-		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+		while (abs(deviation) > epsilon && SystemCoordinator.instance.opMode.opModeIsActive()) {
 			SystemCoordinator.instance.tick();
 			actPowers.x = 0.003 * deviation + 0.4 * signum(deviation);
 			actPowers.angle = 1 * angleDeviation;
@@ -383,7 +379,7 @@ public class DrivingSystem {
 		double angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		Pose actPowers = new Pose();
 
-		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+		while (abs(deviation) > epsilon && SystemCoordinator.instance.opMode.opModeIsActive()) {
 			SystemCoordinator.instance.tick();
 			actPowers.y = 0.003 * deviation + 0.4 * signum(deviation);
 			actPowers.angle = 1 * angleDeviation;
@@ -401,7 +397,7 @@ public class DrivingSystem {
 		double angleDeviation = - SystemCoordinator.instance.trackingSystem.getPosition().angle;
 		Pose actPowers = new Pose();
 
-		while (abs(deviation) > epsilon && opMode.opModeIsActive()) {
+		while (abs(deviation) > epsilon && SystemCoordinator.instance.opMode.opModeIsActive()) {
 			SystemCoordinator.instance.tick();
 			actPowers.y = 0.003 * deviation + 0.4 * signum(deviation);
 			actPowers.angle = 1 * angleDeviation;
@@ -415,7 +411,7 @@ public class DrivingSystem {
 		resetDistance();
 		ElapsedTime elapsedTime = new ElapsedTime();
 		PDFFController controller = new PDFFController(k_v_y, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
-		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+		while (SystemCoordinator.instance.opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			SystemCoordinator.instance.tick();
 			Pose pose = SystemCoordinator.instance.trackingSystem.getPosition();
 			final double currentTime = elapsedTime.seconds();
@@ -435,7 +431,7 @@ public class DrivingSystem {
 		resetDistance();
 		ElapsedTime elapsedTime = new ElapsedTime();
 		PDFFController controller = new PDFFController(k_v_x, k_a_accelerating, k_a_decelerating, k_error, k_d_error);
-		while (opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
+		while (SystemCoordinator.instance.opMode.opModeIsActive() && elapsedTime.seconds() < accelerationProfile.finalTime()) {
 			SystemCoordinator.instance.tick();
 			Pose pose = SystemCoordinator.instance.trackingSystem.getPosition();
 			final double currentTime = elapsedTime.seconds();
@@ -464,7 +460,7 @@ public class DrivingSystem {
 		double prev_v_y = 0;
 		double prev_v_rot = 0;
 
-		while (opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
+		while (SystemCoordinator.instance.opMode.opModeIsActive() && elapsedTime.seconds() < traj.getTotalTime()) {
 			SystemCoordinator.instance.tick();
 			final double time = elapsedTime.seconds();
 			final double dt = time - prev_t;

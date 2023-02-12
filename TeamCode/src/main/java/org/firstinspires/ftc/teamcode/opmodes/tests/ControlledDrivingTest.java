@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.utils.RobotParameters;
 public class ControlledDrivingTest extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systems = new SystemCoordinator(this);
-		EverglowGamepad gamepad = new EverglowGamepad(gamepad1);
+		SystemCoordinator systems = SystemCoordinator.init(this);
+		EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
 		Pose actPowers = new Pose();
 
 		int driveType = 0;
@@ -25,9 +25,9 @@ public class ControlledDrivingTest extends LinearOpMode {
 
 		waitForStart();
 		while (opModeIsActive()) {
-			gamepad.update();
+			gamepadA.update();
 
-			if (gamepad.square()) {
+			if (gamepadA.square()) {
 				systems.drivingSystem.driveToClosestPole();
 			}
 
@@ -37,38 +37,43 @@ public class ControlledDrivingTest extends LinearOpMode {
 			actPowers.angle = -gamepad1.right_stick_x * 0.3;
 
 			// Change driving mode
-			if (gamepad.triangle()) {
-				//driveType = (driveType + 1) % 4;
+			if (gamepadA.cross()) {
+				driveType = (driveType + 1) % 4;
 			}
 
 			systems.drivingSystem.driveMecanum(actPowers);
-			/*
+
 			switch (driveType) {
 				case 0:
 					systems.drivingSystem.driveMecanum(actPowers);
+					break;
 				case 1:
 					systems.drivingSystem.controlledDriveByAxis(actPowers);
+					break;
 				case 2:
 					systems.drivingSystem.controlledDriveByAxis2(actPowers);
+					break;
 				case 3:
 					systems.drivingSystem.controlledDriveByAxis3(actPowers);
-			}*/
+					break;
+			}
 
 			PointD tileLocation = systems.trackingSystem.getTileLocation();
 			PointD tileDeviation = systems.trackingSystem.getTileDeviation();
 			PointD tileLCenter = systems.trackingSystem.getTileCenter();
 			PointD closePole = systems.trackingSystem.getClosestPoleLocation();
+			telemetry.addData("driveType: ", driveType);
 
-			//telemetry.addData("tileLocation.x: ", tileLocation.x);
-			//telemetry.addData("tileLocation.y: ", tileLocation.y);
-			//telemetry.addData("tileDeviation.x: ", tileDeviation.x);
-			//telemetry.addData("tileDeviation.y: ", tileDeviation.y);
+			telemetry.addData("tileLocation.x: ", tileLocation.x);
+			telemetry.addData("tileLocation.y: ", tileLocation.y);
+			telemetry.addData("tileDeviation.x: ", tileDeviation.x);
+			telemetry.addData("tileDeviation.y: ", tileDeviation.y);
 			//telemetry.addData("tileLCenter.x: ", tileLCenter.x);
 			//telemetry.addData("tileLCenter.y: ", tileLCenter.y);
-			telemetry.addData("closePole.x: ", closePole.x);
-			telemetry.addData("closePole.y: ", closePole.y);
+			//telemetry.addData("closePole.x: ", closePole.y);
+			//telemetry.addData("closePole.y: ", closePole.x);
 
-			//telemetry.update();
+			telemetry.update();
 			systems.tick();
 		}
 	}

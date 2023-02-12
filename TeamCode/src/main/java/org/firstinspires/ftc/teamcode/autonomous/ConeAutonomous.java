@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 public class ConeAutonomous extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systems = new SystemCoordinator(this);
+		SystemCoordinator systems = SystemCoordinator.init(this);
 		CameraSystem cameraSystem = new CameraSystem(this);
 		//AutonomousRoutes autonomousRoutes = new AutonomousRoutes(this);
 

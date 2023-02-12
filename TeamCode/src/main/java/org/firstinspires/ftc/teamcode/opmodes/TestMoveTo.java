@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 public class TestMoveTo extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
+		SystemCoordinator systemCoordinator = SystemCoordinator.init(this);
 		waitForStart();
 		systemCoordinator.drivingSystem.move3(new Pose(0, 100, Math.toRadians(90)));
 		systemCoordinator.positionLogger.saveTo(PositionLogger.generateLogFileName("posLog"));

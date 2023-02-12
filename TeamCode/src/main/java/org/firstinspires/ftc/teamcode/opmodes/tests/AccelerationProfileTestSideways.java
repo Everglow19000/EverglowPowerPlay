@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utils.RobotParameters;
 public class AccelerationProfileTestSideways extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		SystemCoordinator systemCoordinator = new SystemCoordinator(this);
+		SystemCoordinator systemCoordinator = SystemCoordinator.init(this);
 		double d = 30;
 		AccelerationProfile accelerationProfile = new AccelerationProfile(RobotParameters.MAX_A_X, RobotParameters.MAX_V_X * 0.9, d);
 		waitForStart();
