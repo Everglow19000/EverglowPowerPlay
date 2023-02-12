@@ -119,7 +119,7 @@ public class MultiConeTeleop3 extends LinearOpMode {
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
 					systems.fourBarSystem.goToSequenceItem(START),
 					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP),
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP)
+					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i])
 			));
 			driveXYAngle(pickUpLocation, systems);
 			systems.waitForSequencesDone();
