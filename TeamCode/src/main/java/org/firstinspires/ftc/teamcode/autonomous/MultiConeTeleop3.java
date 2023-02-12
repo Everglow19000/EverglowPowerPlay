@@ -26,7 +26,8 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 public class MultiConeTeleop3 extends LinearOpMode {
 	@Override
 	public void runOpMode() {
-		Pose startPosition = new Pose(1 * TILE_SIZE + (25.5 + 59)/2, -2 * TILE_SIZE - (51.5 + 22.5) / 2, 0);
+		int right = -1;
+		Pose startPosition = new Pose(right * 1 * TILE_SIZE + (25.5 + 59)/2, -2 * TILE_SIZE - (51.5 + 22.5) / 2, 0);
 
 		SystemCoordinator systems = SystemCoordinator.init(this);
 		CameraSystem cameraSystem = new CameraSystem(this);
@@ -52,10 +53,10 @@ public class MultiConeTeleop3 extends LinearOpMode {
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
 		);
 
-		Pose pickUpLocation = new Pose(2.6 * TILE_SIZE, -0.5 * TILE_SIZE, toRadians(90));
-		Pose afterFirstDropOffLocation = new Pose(1 * TILE_SIZE + 5, - 0.42 * TILE_SIZE - 10, 0);
-		Pose middleLocation = new Pose(1.5 * TILE_SIZE, -0.45 * TILE_SIZE, toRadians(-45));
-		Pose dropOffLocation = new Pose(1.5 * TILE_SIZE - 12 - 10, -0.5 * TILE_SIZE + 12 + 10, toRadians(-45));
+		Pose pickUpLocation = new Pose(right* 2.6 * TILE_SIZE, -0.5 * TILE_SIZE, toRadians(90));
+		Pose afterFirstDropOffLocation = new Pose(right*1 * TILE_SIZE + 5, - 0.42 * TILE_SIZE - 10, 0);
+		Pose middleLocation = new Pose(right*1.5 * TILE_SIZE, -0.45 * TILE_SIZE, toRadians(-45));
+		Pose dropOffLocation = new Pose(right*1.5 * TILE_SIZE - 12 - 10, -0.5 * TILE_SIZE + 12 + 10, toRadians(-45));
 
 		Sequence endSequence = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
@@ -86,7 +87,7 @@ public class MultiConeTeleop3 extends LinearOpMode {
 
 		systems.trackingSystem.resetPosition(startPosition);
 
-		Pose finalPose = new Pose(1.5 * TILE_SIZE, -33, 0);
+		Pose finalPose = new Pose(right*1.5 * TILE_SIZE, -33, 0);
 
 		telemetry.addLine("Ready");
 		telemetry.update();
