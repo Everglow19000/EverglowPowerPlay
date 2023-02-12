@@ -46,10 +46,10 @@ public class MultiConeTeleop2 extends LinearOpMode {
 				systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
 		);
 
-		Pose pickUpLocation = new Pose(2.68 * TILE_SIZE, -0.59 * TILE_SIZE, toRadians(90));
-		Pose firstDropOff = new Pose(1.5 * TILE_SIZE - 30.6, -2 * TILE_SIZE - 32.5 + 133.2, 0);
+		Pose pickUpLocation = new Pose(2.72 * TILE_SIZE, -0.64 * TILE_SIZE + 4, toRadians(90));
+		Pose afterFirstDropOffLocation = new Pose(1.5 * TILE_SIZE - 30.6, -2 * TILE_SIZE - 32.5 + 130.2 - 10, 0);
 		Pose middleLocation = new Pose(1.5 * TILE_SIZE, -0.5 * TILE_SIZE, toRadians(-45));
-		Pose dropOffLocation = new Pose(1.5 * TILE_SIZE - 20, -0.5 * TILE_SIZE + 20, toRadians(-45));
+		Pose dropOffLocation = new Pose(1.5 * TILE_SIZE - 12, -0.5 * TILE_SIZE + 12, toRadians(-45));
 
 		Sequence endSequence = new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
@@ -64,7 +64,7 @@ public class MultiConeTeleop2 extends LinearOpMode {
 						new PointD(startPosition.x, startPosition.y),
 						new PointD(1.5 * TILE_SIZE, -2 * TILE_SIZE),
 						new PointD(1.5 * TILE_SIZE, - 0.45 * TILE_SIZE),
-						new PointD(1.5 * TILE_SIZE - 30.6, -2 * TILE_SIZE - 32.5 + 133.2)
+						new PointD(1.5 * TILE_SIZE - 30.6, -2 * TILE_SIZE - 32.5 + 130.2)
 				}), RobotParameters.MAX_V_X * 0.5);
 
 		systems.trackingSystem.resetPosition(startPosition);
@@ -91,28 +91,18 @@ public class MultiConeTeleop2 extends LinearOpMode {
 				break;
 		}
 
-//		systems.executeSequence(startSequence);
-//		systems.drivingSystem.driveToY(-0.2 * TILE_SIZE);
-//		systems.drivingSystem.driveToY(-0.35 * TILE_SIZE);
-//		systems.drivingSystem.driveToX(1 * TILE_SIZE);
-//		systems.drivingSystem.driveByPath(startTrajectory1, 0, 1);
-//		systems.sleep(1250);
+		systems.executeSequence(startSequence);
 		systems.drivingSystem.driveByPath(startTrajectoryNew, 0, 1);
-		systems.sleep(50000000000L);
 		systems.drivingSystem.stop();
 		systems.waitForSequencesDone();
-//		systems.drivingSystem.driveToY(-0.4 * TILE_SIZE);
-//		stop();
+
 		systems.sleep(200);
 		systems.executeSequence(new Sequence(
 				systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
 				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
 		));
-//		systems.executeSequence(new Sequence(
-//				systems.sleepingSystem.goToSequenceItem(500),
-//				systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
-//						systems.sleepingSystem.goToSequenceItem(500)
-//				));
+		systems.drivingSystem.move3(afterFirstDropOffLocation);
+
 		systems.waitForSequencesDone();
 		for (int i = 0; i < coneNumber; i++) {
 			systems.executeSequence(new Sequence(
@@ -121,6 +111,7 @@ public class MultiConeTeleop2 extends LinearOpMode {
 			));
 			systems.drivingSystem.move3(pickUpLocation);
 			systems.drivingSystem.stop();
+			systems.sleep(1000);
 			systems.waitForSequencesDone();
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i]),
@@ -133,7 +124,9 @@ public class MultiConeTeleop2 extends LinearOpMode {
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
 					systems.fourBarSystem.goToSequenceItem(DROPOFF)
 			));
-			systems.sleep(500);
+			systems.sleep(200);
+
+			systems.drivingSystem.move3(middleLocation);
 			systems.drivingSystem.move3(dropOffLocation);
 			systems.drivingSystem.stop();
 			systems.waitForSequencesDone();
@@ -141,9 +134,10 @@ public class MultiConeTeleop2 extends LinearOpMode {
 			systems.sleep(200);
 			systems.executeSequence(new Sequence(
 					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
-					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
+					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10)
 			));
 			systems.waitForSequencesDone();
+			systems.drivingSystem.move3(middleLocation);
 		}
 
 		systems.executeSequence(endSequence);
