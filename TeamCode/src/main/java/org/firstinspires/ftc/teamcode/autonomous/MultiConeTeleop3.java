@@ -115,38 +115,42 @@ public class MultiConeTeleop3 extends LinearOpMode {
 		systems.waitForSequencesDone();
 
 		for(int i = 0; i<coneNumber; i++){
-			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
-					systems.fourBarSystem.goToSequenceItem(START),
-					systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP),
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i])
-			));
-			driveXYAngle(pickUpLocation, systems);
-			systems.waitForSequencesDone();
+			if(opModeIsActive()) {
+				systems.executeSequence(new Sequence(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
+						systems.fourBarSystem.goToSequenceItem(START),
+						systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP),
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i])
+				));
+				driveXYAngle(pickUpLocation, systems);
+				systems.waitForSequencesDone();
 
-			systems.executeSequence(new Sequence(
-					systems.sleepingSystem.goToSequenceItem(100),
-					systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED),
-					systems.sleepingSystem.goToSequenceItem(100)
-			));
-			systems.waitForSequencesDone();
+				systems.executeSequence(new Sequence(
+						systems.sleepingSystem.goToSequenceItem(100),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED),
+						systems.sleepingSystem.goToSequenceItem(100)
+				));
+				systems.waitForSequencesDone();
 
-			systems.sleep(200);
-			systems.executeSequence(new Sequence(
-					systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
-					systems.fourBarSystem.goToSequenceItem(DROPOFF)
+				systems.sleep(200);
+				systems.executeSequence(new Sequence(
+						systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+						systems.fourBarSystem.goToSequenceItem(DROPOFF)
 
-			));
-			driveXYAngle(dropOffLocation, systems);
-			systems.waitForSequencesDone();
+				));
+				driveXYAngle(dropOffLocation, systems);
+				systems.waitForSequencesDone();
 
-			systems.sleep(1000);
-			systems.executeSequence(new Sequence(
-					systems.fourBarSystem.goToSequenceItem(LOW_DROPOFF),
-					systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
-			));
-			systems.waitForSequencesDone();
-
+				systems.sleep(1000);
+				systems.executeSequence(new Sequence(
+						systems.fourBarSystem.goToSequenceItem(LOW_DROPOFF),
+						systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
+				));
+				systems.waitForSequencesDone();
+			}
+			else {
+				break;
+			}
 		}
 //		systems.drivingSystem.driveY(-5);
 //		systems.drivingSystem.stop();

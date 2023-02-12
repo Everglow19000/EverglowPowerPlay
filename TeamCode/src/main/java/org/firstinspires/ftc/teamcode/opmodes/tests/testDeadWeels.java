@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 public class testDeadWeels extends LinearOpMode {
     @Override
     public void runOpMode(){
-        SystemCoordinator systems = new SystemCoordinator(this);
+        SystemCoordinator systems = SystemCoordinator.init(this, true);
         Pose powers = new Pose();
         while (opModeIsActive()) {
             powers.x = -gamepad1.left_stick_x * 0.75;

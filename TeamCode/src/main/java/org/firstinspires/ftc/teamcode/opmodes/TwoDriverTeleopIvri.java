@@ -33,20 +33,10 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
                 systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
                 systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP));
+        Sequence triangleSequence;
+        Sequence squareSequence;
+
         systems.executeSequence(startSequence);
-
-        Sequence triangleSequence = new Sequence(
-                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.LOW_DROPOFF),
-                systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
-                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
-                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
-        );
-
-        Sequence squareSequence = new Sequence(
-                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
-                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP)
-        );
-
         while (opModeIsActive()) {
             gamepadA.update();
             gamepadB.update();
@@ -85,11 +75,12 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.interrupt();
                 sequence = new Sequence(
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
+                        systems.sleepingSystem.goToSequenceItem(600),
                         systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP)
                 );
+                telemetry.addData("pos: ", systems.fourBarSystem.fourBar.getCurrentPosition());
                 systems.executeSequence(sequence);
             }
-
             if(gamepadB.dpad_up()) {
                 systems.interrupt();
                 sequence = new Sequence(
@@ -114,9 +105,13 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.executeSequence(sequence);
             }
 
-            if (gamepadB.square() && systems.fourBarSystem.fourBar.getCurrentPosition() >= -85) {
+            if (gamepadB.square() && systems.fourBarSystem.fourBar.getCurrentPosition() >= -100) {
                 systems.interrupt();
                 claw = ClawSystem.Position.OPEN;
+                squareSequence = new Sequence(
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP)
+                );
                 systems.executeSequence(squareSequence);
             }
 
@@ -124,6 +119,12 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
             if (gamepadB.triangle()) {
                 systems.interrupt();
                 claw = ClawSystem.Position.OPEN;
+                triangleSequence = new Sequence(
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.LOW_DROPOFF),
+                        systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
+                );
                 systems.executeSequence(triangleSequence);
             }
             systems.tick();
