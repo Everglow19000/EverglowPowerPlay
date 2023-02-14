@@ -18,7 +18,7 @@ public class FourBarTest extends LinearOpMode {
 
 		waitForStart();
 		while (opModeIsActive()) {
-			targetPosition += gamepad1.left_stick_y * 5;
+			targetPosition += gamepad1.left_stick_y;
 //			fourBar.setPower(gamepad1.left_stick_y * 0.01);
 //			fourBar.setPower(gamepad1.left_stick_y * 0.5);
 			fourBar.setTargetPosition(targetPosition);

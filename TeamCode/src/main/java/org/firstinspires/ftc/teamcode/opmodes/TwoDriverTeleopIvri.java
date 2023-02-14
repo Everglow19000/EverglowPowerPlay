@@ -20,7 +20,7 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        SystemCoordinator systems = SystemCoordinator.init(this);
+        SystemCoordinator systems = SystemCoordinator.init(this, false);
         EverglowGamepad gamepadA = new EverglowGamepad(gamepad1);
         EverglowGamepad gamepadB = new EverglowGamepad(gamepad2);
 
@@ -35,6 +35,7 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP));
         Sequence triangleSequence;
         Sequence squareSequence;
+        Sequence clawSequence;
 
         systems.executeSequence(startSequence);
         while (opModeIsActive()) {
@@ -61,7 +62,7 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
             // Claw
             if (gamepadB.circle()) {
                 claw = claw.flip();
-                Sequence clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(claw, 1));
+                clawSequence = new Sequence(systems.clawSystem.goToSequenceItem(claw, 1));
                 systems.executeSequence(clawSequence);
             }
 
@@ -71,7 +72,7 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 systems.gWheelSystem.toggleCollect();
             }
 
-            if(gamepadB.dpad_right()) {
+            if (gamepadB.dpad_right()) {
                 systems.interrupt();
                 sequence = new Sequence(
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
@@ -81,40 +82,56 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 telemetry.addData("pos: ", systems.fourBarSystem.fourBar.getCurrentPosition());
                 systems.executeSequence(sequence);
             }
-            if(gamepadB.dpad_up()) {
+            if (gamepadB.dpad_up()) {
                 systems.interrupt();
+                systems.fourBarSystem.fourBar.setPower((0.3));
                 sequence = new Sequence(
-                    systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
-                    systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
                 );
                 systems.executeSequence(sequence);
-            } else if(gamepadB.dpad_left()) {
+                systems.fourBarSystem.fourBar.setPower((0.7));
+            } else if (gamepadB.dpad_left()) {
                 systems.interrupt();
+                systems.fourBarSystem.fourBar.setPower((0.3));
                 sequence = new Sequence(
                         systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
                 );
                 systems.executeSequence(sequence);
-            } else if(gamepadB.dpad_down()) {
+                systems.fourBarSystem.fourBar.setPower((0.7));
+            } else if (gamepadB.dpad_down()) {
                 systems.interrupt();
+                systems.fourBarSystem.fourBar.setPower((0.3));
                 sequence = new Sequence(
                         systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
                         systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
                         systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW)
                 );
                 systems.executeSequence(sequence);
+                systems.fourBarSystem.fourBar.setPower((0.7));
             }
 
-            if (gamepadB.square() && systems.fourBarSystem.fourBar.getCurrentPosition() >= -100) {
+            if (gamepadB.square()) {
                 systems.interrupt();
                 claw = ClawSystem.Position.OPEN;
-                squareSequence = new Sequence(
-                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
-                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP)
-                );
-                systems.executeSequence(squareSequence);
-            }
+                if (systems.fourBarSystem.fourBar.getCurrentPosition() >= -120) {
 
+                    squareSequence = new Sequence(
+                            systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
+                            systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP)
+                    );
+                    systems.executeSequence(squareSequence);
+
+                } else {
+                    squareSequence = new Sequence(
+                            systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
+                            systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
+                            systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
+                    );
+                    systems.executeSequence(squareSequence);
+                }
+            }
 
             if (gamepadB.triangle()) {
                 systems.interrupt();
@@ -127,6 +144,20 @@ public class TwoDriverTeleopIvri extends LinearOpMode {
                 );
                 systems.executeSequence(triangleSequence);
             }
+
+            if (gamepadB.cross()) {
+                systems.interrupt();
+                claw = ClawSystem.Position.OPEN;
+                triangleSequence = new Sequence(
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF),
+                        systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1),
+                        systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
+                        systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP)
+                );
+                systems.executeSequence(triangleSequence);
+            }
+
             systems.tick();
         }
     }

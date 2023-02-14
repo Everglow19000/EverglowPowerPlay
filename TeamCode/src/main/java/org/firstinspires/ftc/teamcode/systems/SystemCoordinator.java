@@ -14,6 +14,7 @@ import java.util.ArrayList;
  * A class for coordinating the all systems on the robot in a state machine.
  */
 public class SystemCoordinator {
+
 	/**
 	 * The instance of the system coordinator, for use in other classes.
 	 * It is used to avoid dependency injection.
@@ -32,6 +33,7 @@ public class SystemCoordinator {
 	public final GWheelSystem gWheelSystem;
 	public final SleepingSystem sleepingSystem;
 	public final PositionLogger positionLogger;
+	public final VerifyStopSequence verifyStopSequence;
 	//There is no camera system because it runs in a separate thread.
 
 	private final ArrayList<Sequence> actionSequences;
@@ -72,10 +74,10 @@ public class SystemCoordinator {
 		gWheelSystem = new GWheelSystem(opMode);
 		sleepingSystem = new SleepingSystem(opMode);
 		positionLogger = new PositionLogger(drivingSystem);
+		verifyStopSequence = new VerifyStopSequence();
 
 		// Initiate the list of sequences
 		actionSequences = new ArrayList<>();
-
 	}
 
 	/**
@@ -92,6 +94,7 @@ public class SystemCoordinator {
 		}
 		positionLogger.tick();
 		sleepingSystem.tick();
+		verifyStopSequence.tick();
 	}
 
 	/**

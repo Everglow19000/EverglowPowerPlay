@@ -32,7 +32,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 public class TrackingSystem {
 
 	public boolean enabled;
-	public boolean doPrint = true;
+	public boolean doPrint = false;
 
 	/**
 	 * The front left odometry wheel.

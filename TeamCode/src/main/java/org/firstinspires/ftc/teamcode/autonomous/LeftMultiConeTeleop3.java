@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
-import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.AUTO_PICKUP;
-import static org.firstinspires.ftc.teamcode.systems.FourBarSystem.Position.DROPOFF;
 import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.toRadians;
 
@@ -20,28 +18,28 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
-@Autonomous(name = "RightMultiConeTeleop2", group = "Template")
-public class RightMultiConeTeleop2 extends LinearOpMode {
+@Autonomous(name = "LeftMultiConeTeleop3", group = "Template")
+public class LeftMultiConeTeleop3 extends LinearOpMode {
     @Override
     public void runOpMode() {
-
-        Pose startPosition = new Pose(1 * TILE_SIZE + (25.5 + 59)/2, -2 * TILE_SIZE - (51.5 + 22.5) / 2, 0);
+        int left = 1;
+        Pose startPosition = new Pose(left * (1 * TILE_SIZE + (25.5 + 59) / 2), -2 * TILE_SIZE - (51.5 + 22.5) / 2, 0);
 
         SystemCoordinator systems = SystemCoordinator.init(this);
         CameraSystem cameraSystem = new CameraSystem(this);
 
         double sidewaysDistance;
         int coneNumber = 3;
-        // no other sleeps allowed
+
         Sequence startSequence1 = new Sequence(
                 systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
                 systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PRE_PICKUP),
                 systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10),
                 systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.PICKUP),
                 systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PICKUP),
-                systems.sleepingSystem.goToSequenceItem(100),
+				systems.sleepingSystem.goToSequenceItem(600),
                 systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED, 2),
-                systems.sleepingSystem.goToSequenceItem(200),
+                systems.sleepingSystem.goToSequenceItem(600),
                 systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH)
         );
 
@@ -51,15 +49,17 @@ public class RightMultiConeTeleop2 extends LinearOpMode {
                 systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.DROPOFF)
         );
 
-        Pose pickUpLocation = new Pose(2.6 * TILE_SIZE, -0.5 * TILE_SIZE, toRadians(90));
-        Pose afterFirstDropOffLocation = new Pose(1 * TILE_SIZE + 5, - 0.42 * TILE_SIZE - 10, 0);
-        Pose middleLocation = new Pose(1.5 * TILE_SIZE, -0.45 * TILE_SIZE, toRadians(-45));
-        Pose dropOffLocation = new Pose(1.5 * TILE_SIZE - 12 - 10, -0.5 * TILE_SIZE + 12 + 10, toRadians(-45));
+        Pose pickUpLocation = new Pose(left * 2.6 * TILE_SIZE, -0.5 * TILE_SIZE, toRadians(90));
+        Pose afterFirstDropOffLocation = new Pose(left * (1 * TILE_SIZE + 5), -0.42 * TILE_SIZE - 10, 0);
+        Pose middleLocation = new Pose(left * 1.5 * TILE_SIZE, -0.45 * TILE_SIZE, toRadians(-45));
+        Pose dropOffLocation = new Pose(left * (1.5 * TILE_SIZE - 22), -0.5 * TILE_SIZE + 12 + 10, toRadians(-45));
 
         Sequence endSequence = new Sequence(
-                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.MID),
-                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.START),
+                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
+                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.BACK),
+                systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOW),
                 systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.START),
+                systems.fourBarSystem.goToSequenceItem(FourBarSystem.Position.START),
                 systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 1)
         );
 
@@ -67,35 +67,37 @@ public class RightMultiConeTeleop2 extends LinearOpMode {
         Trajectory startTrajectoryNew = new Trajectory(
                 new SplinePath(new PointD[]{
                         new PointD(startPosition.x, startPosition.y),
-                        new PointD(1.5 * TILE_SIZE, -2 * TILE_SIZE),
-                        new PointD(1.5 * TILE_SIZE, - 0.8 * TILE_SIZE),
-                        new PointD(1 * TILE_SIZE + 5, - 0.4 * TILE_SIZE - 5 + 2)
+                        new PointD(left * 1.5 * TILE_SIZE, -2 * TILE_SIZE),
+                        new PointD(left * 1.5 * TILE_SIZE, -0.8 * TILE_SIZE),
+                        new PointD(left * (1 * TILE_SIZE), -0.4 * TILE_SIZE)
                 }), RobotParameters.MAX_V_X * 0.5);
-
-
 
 
         systems.trackingSystem.resetPosition(startPosition);
 
-        Pose finalPose = new Pose(1.5 * TILE_SIZE, -33, 0);
+        Pose finalPose = new Pose(left * 1.5 * TILE_SIZE, -33, 0);
 
         telemetry.addLine("Ready");
         telemetry.update();
 
         waitForStart();
 
+		/*systems.drivingSystem.driveX(20);
+		systems.drivingSystem.stop();
+		systems.sleep(1000);*/
+
         CameraSystem.AprilTagType detectedTag = cameraSystem.detectAprilTag();
         telemetry.addData("Detected Tag: ", detectedTag);
         telemetry.update();
         switch (detectedTag) {
             case TAG_1:
-                finalPose.x += TILE_SIZE;
+                finalPose.x += TILE_SIZE * 1.3;
                 break;
             case TAG_2:
             default:
                 break;
             case TAG_3:
-                finalPose.x -= TILE_SIZE;
+                finalPose.x -= TILE_SIZE * 1.3;
                 break;
         }
 
@@ -105,7 +107,7 @@ public class RightMultiConeTeleop2 extends LinearOpMode {
         systems.drivingSystem.stop();
         systems.waitForSequencesDone();
 
-        systems.sleep(400);
+        systems.sleep(2000);
         systems.executeSequence(new Sequence(
                 systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
                 systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN)
@@ -113,51 +115,12 @@ public class RightMultiConeTeleop2 extends LinearOpMode {
         systems.waitForSequencesDone();
         systems.drivingSystem.driveY(-5);
         systems.drivingSystem.stop();
-//		systems.sleep(100000000L);
 
-        systems.waitForSequencesDone();
-        for (int i = 0; i < coneNumber; i++) {
-            systems.executeSequence(new Sequence(
-                    systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.PRE_PICKUP),
-                    systems.fourBarSystem.goToSequenceItem(AUTO_PICKUP)
-            ));
-            systems.drivingSystem.move3(pickUpLocation);
-//			pickUpLocation.y += 0.07 * TILE_SIZE;
-//			pickUpLocation.x += 0.07 * TILE_SIZE;
-            systems.drivingSystem.stop();
-//			systems.sleep(1000);
-            systems.waitForSequencesDone();
-
-
-            systems.executeSequence(new Sequence(
-                    systems.elevatorSystem.goToSequenceItem(ElevatorSystem.conePickupLevels[i]),
-                    systems.clawSystem.goToSequenceItem(ClawSystem.Position.CLOSED),
-                    systems.sleepingSystem.goToSequenceItem(200)
-            ));
-            systems.waitForSequencesDone();
-
-            systems.executeSequence(new Sequence(
-                    systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.HIGH),
-                    systems.fourBarSystem.goToSequenceItem(DROPOFF)
-            ));
-            systems.sleep(200);
-
-            systems.drivingSystem.move3(middleLocation);
-            systems.drivingSystem.move3(dropOffLocation);
-            systems.drivingSystem.stop();
-            systems.waitForSequencesDone();
-
-            systems.sleep(200);
-            systems.executeSequence(new Sequence(
-                    systems.elevatorSystem.goToSequenceItem(ElevatorSystem.Level.LOCK_IN),
-                    systems.clawSystem.goToSequenceItem(ClawSystem.Position.OPEN, 10)
-            ));
-            systems.waitForSequencesDone();
-            systems.drivingSystem.move3(middleLocation);
-        }
 
         systems.executeSequence(endSequence);
         systems.drivingSystem.move3(finalPose);
-        systems.sleep(10000000000L);
+        systems.drivingSystem.stop();
+        systems.waitForSequencesDone();
+        sleep(1000000000);
     }
 }

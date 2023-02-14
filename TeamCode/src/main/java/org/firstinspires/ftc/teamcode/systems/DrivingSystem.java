@@ -32,6 +32,7 @@ import org.firstinspires.ftc.teamcode.utils.DriveByPath.Trajectory;
  * A class for handling moving the robot through space.
  */
 public class DrivingSystem {
+	public boolean enabled = true;
 	private static final double FRONT_SCALAR = 1.16;
 
 	/**
@@ -106,6 +107,10 @@ public class DrivingSystem {
 	 *               -1 <= x, y, angle <= 1.
 	 */
 	public void driveMecanum(Pose powers) {
+		if (!enabled){
+			stop();
+			return;
+		}
 		// makes the motors float if their power is set to zero when driving.
 		// calling this once each cycle shouldn't be a problem, as it seems the library keeps track of the previous value, and only updates if needed.
 		frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

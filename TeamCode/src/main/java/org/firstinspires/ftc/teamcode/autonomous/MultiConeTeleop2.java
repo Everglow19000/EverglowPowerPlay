@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.utils.RobotParameters.TILE_SIZE;
 import static java.lang.Math.toRadians;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.systems.CameraSystem;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.utils.Pose;
 import org.firstinspires.ftc.teamcode.utils.RobotParameters;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 
+@Disabled
 @Autonomous(name = "MultiConeTeleop2", group = "Template")
 public class MultiConeTeleop2 extends LinearOpMode {
 	@Override

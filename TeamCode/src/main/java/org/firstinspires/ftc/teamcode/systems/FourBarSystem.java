@@ -4,6 +4,7 @@ import static java.lang.Math.abs;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.StateMachine.RestingState;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
  * A class for handling the fourBar system.
  */
 public class FourBarSystem {
+	public static final int MAX_WAIT = 2000;
 	/**
 	 * The fourBar motor.
 	 */
@@ -28,8 +30,8 @@ public class FourBarSystem {
 	 */
 	public enum Position {
 		//BACK(30), START(0), PICKUP(-80), DROPOFF(-320);
-		BACK(30), START(0), PICKUP(-90), DROPOFF(-320),
-		LOW_DROPOFF(-285), PRE_PICKUP(-15), AUTO_PICKUP(-240);
+		BACK(30), START(0), PICKUP(-40), DROPOFF(-290),
+		LOW_DROPOFF(-265), PRE_PICKUP(20), AUTO_PICKUP(-240);
 
 		public final int desiredPosition;
 
@@ -44,6 +46,7 @@ public class FourBarSystem {
 	public class ActingState implements State {
 		private static final int EPSILON = 20;
 		private final Position position;
+		private final ElapsedTime elapsedTime;
 
 		/**
 		 * @param position A fourBar position to move to (FourBarPosition.PICKUP or FourBarPosition.DROPOFF).
@@ -51,12 +54,13 @@ public class FourBarSystem {
 		public ActingState(Position position) {
 			this.position = position;
 			fourBar.setTargetPosition(position.desiredPosition);
+			elapsedTime = new ElapsedTime();
 		}
 
 		public void tick() {
 			// The fourBar has reached its desired position
 			int error = abs(position.desiredPosition - fourBar.getCurrentPosition());
-			if (error <= EPSILON) {
+			if (error <= EPSILON || (elapsedTime.milliseconds() > MAX_WAIT)) {
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(StateMessages.FOURBAR_DONE);
 			}
@@ -73,7 +77,7 @@ public class FourBarSystem {
 		fourBar.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 		fourBar.setTargetPosition(0);
 		fourBar.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		fourBar.setPower(0.5);
+		fourBar.setPower(0.8);
 	}
 
 	public Sequence.SequenceItem goToSequenceItem(Position position) {

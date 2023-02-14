@@ -9,6 +9,7 @@ import static java.lang.Math.abs;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.utils.StateMachine.Sequence;
 import org.firstinspires.ftc.teamcode.utils.StateMachine.State;
@@ -19,6 +20,9 @@ import org.firstinspires.ftc.teamcode.utils.StateMachine.StateMessages;
  * A class for handling the elevator system.
  */
 public class ElevatorSystem {
+
+	public static long MAX_TIME = 4000;
+
 	/**
 	 * The left elevator motor.
 	 */
@@ -33,10 +37,10 @@ public class ElevatorSystem {
 	private State state = new RestingState();
 
 	/**
-	 * Enum encapsulating all the positions the system should reach.
+	 * Enum encapsulating all the positions the system should reach.`
 	 */
 	public enum Level {
-		START(0), PICKUP(-490), PRE_PICKUP(-750),
+		START(0), PICKUP(-490), PRE_PICKUP(-1000),
 		LOW(-990), MID(-2140), HIGH(-3310), LOCK_IN(-2800),
 		CONE1(-650), CONE2(-500), CONE3(-320), CONE4(-165), CONE5(0);
 
@@ -55,6 +59,7 @@ public class ElevatorSystem {
 	public class ActingState implements State {
 		private static final int EPSILON = 20;
 		private final Level level;
+		private final ElapsedTime elapsedTime = new ElapsedTime();
 
 		/**
 		 * @param level A elevator level to move to (e.g. ElevatorLevel.GROUND).
@@ -71,7 +76,7 @@ public class ElevatorSystem {
 			boolean leftArrived = leftError < EPSILON;
 			int rightError = abs(level.desiredPosition - right.getCurrentPosition());
 			boolean rightArrived = rightError < EPSILON;
-			if (leftArrived && rightArrived) {
+			if ((leftArrived && rightArrived) || (elapsedTime.milliseconds() > MAX_TIME)) {
 				state = new RestingState();
 				SystemCoordinator.instance.sendMessage(StateMessages.ELEVATOR_DONE);
 			}
